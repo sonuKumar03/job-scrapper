@@ -130,9 +130,12 @@ class StandardDeduplicationEngine:
                 merged[k] = v
                 changed = True
             elif isinstance(existing_val, list) and isinstance(v, list):
-                # Union lists (e.g. tech stack / tags)
-                combined = list(dict.fromkeys(existing_val + v))
-                if len(combined) > len(existing_val):
+                # ponytail: equality handles JSON objects; index values if label lists grow large.
+                combined: list[Any] = []
+                for item in existing_val + v:
+                    if item not in combined:
+                        combined.append(item)
+                if combined != existing_val:
                     merged[k] = combined
                     changed = True
 

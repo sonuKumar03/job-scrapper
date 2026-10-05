@@ -109,6 +109,7 @@ def test_layer3_attribute_enrichment() -> None:
         "currency": None,
         "tech_stack": ["Python"],
         "location": "Remote",
+        "nested_labels": [["engineering"], {"category": "software"}],
     }
     duplicate_attrs = {
         "salary_min": 140000,
@@ -116,6 +117,7 @@ def test_layer3_attribute_enrichment() -> None:
         "currency": "USD",
         "tech_stack": ["Python", "Docker", "PostgreSQL"],
         "location": "Remote",
+        "nested_labels": [["engineering"], {"category": "data"}],
     }
 
     merged, changed = engine.enrich_attributes(canonical_attrs, duplicate_attrs)
@@ -124,3 +126,6 @@ def test_layer3_attribute_enrichment() -> None:
     assert merged["salary_max"] == 180000
     assert merged["currency"] == "USD"
     assert set(merged["tech_stack"]) == {"Python", "Docker", "PostgreSQL"}
+    assert merged["nested_labels"] == [
+        ["engineering"], {"category": "software"}, {"category": "data"}
+    ]
