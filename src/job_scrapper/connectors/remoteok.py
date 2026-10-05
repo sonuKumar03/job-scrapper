@@ -12,15 +12,16 @@ class RemoteOKConnector(BaseConnector):
     name: str = "remoteok"
     API_URL: str = "https://remoteok.com/api"
 
-    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, int]:
-        stats = {"found": 0, "inserted": 0, "skipped": 0}
+    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
+        stats = self.new_stats()
 
-        response = await self.http_client.get(self.API_URL)
-        if response.status_code != 200:
-            return stats
-
-        data = response.json()
-        if not isinstance(data, list):
+        try:
+            response = await self.http_client.get(self.API_URL)
+            data = response.json()
+            if not isinstance(data, list) or any(not isinstance(item, dict) for item in data):
+                raise ValueError("response must be a list of objects")
+        except Exception as exc:
+            self.record_error(stats, "feed", exc)
             return stats
 
         batch: list[JobPosting] = []

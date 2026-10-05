@@ -46,19 +46,21 @@ class GreenhouseConnector(BaseConnector):
         super().__init__(**kwargs)
         self.companies = companies or DEFAULT_GREENHOUSE_COMPANIES
 
-    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, int]:
-        stats = {"found": 0, "inserted": 0, "skipped": 0}
+    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
+        stats = self.new_stats()
 
         for company in self.companies:
             url = f"{self.BASE_URL}/{company}/jobs?content=true"
             try:
                 response = await self.http_client.get(url)
-                if response.status_code != 200:
-                    continue
-
                 data = response.json()
-                raw_jobs = data.get("jobs", [])
-            except Exception:
+                if not isinstance(data, dict):
+                    raise ValueError("response must be an object")
+                raw_jobs = data.get("jobs")
+                if not isinstance(raw_jobs, list) or any(not isinstance(item, dict) for item in raw_jobs):
+                    raise ValueError("response jobs must be a list of objects")
+            except Exception as exc:
+                self.record_error(stats, f"company {company}", exc)
                 continue
 
             batch: list[JobPosting] = []

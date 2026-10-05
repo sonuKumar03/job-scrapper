@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 from job_scrapper.storage.base import JobSink
-from job_scrapper.utils.http_client import ResilientHttpClient
+from job_scrapper.utils.http_client import RequestError, ResilientHttpClient
 
 
 class BaseConnector(ABC):
@@ -15,7 +15,7 @@ class BaseConnector(ABC):
         self.http_client = http_client or ResilientHttpClient()
 
     @abstractmethod
-    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, int]:
+    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
         """Execute the scrape run for this connector.
 
         Args:
@@ -23,6 +23,16 @@ class BaseConnector(ABC):
             max_days: Only include postings within the last max_days.
 
         Returns:
-            Dict summarizing run: {"found": int, "inserted": int, "skipped": int}
+            Counts plus source-level errors and whether coverage was incomplete.
         """
         pass
+
+    @staticmethod
+    def new_stats() -> dict[str, Any]:
+        return {"found": 0, "inserted": 0, "skipped": 0, "errors": [], "truncated": False}
+
+    @staticmethod
+    def record_error(stats: dict[str, Any], context: str, error: Exception) -> None:
+        reason = str(error) if isinstance(error, RequestError) else type(error).__name__
+        stats["errors"].append(f"{context}: {reason}")
+        stats["truncated"] = True

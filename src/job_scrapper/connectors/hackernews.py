@@ -14,36 +14,47 @@ class HackerNewsConnector(BaseConnector):
     name: str = "hackernews"
     SEARCH_URL: str = "https://hn.algolia.com/api/v1/search_by_date"
 
-    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, int]:
-        stats = {"found": 0, "inserted": 0, "skipped": 0}
+    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
+        stats = self.new_stats()
 
         # 1. Discover recent "Ask HN: Who is hiring?" thread IDs
         story_query_url = f"{self.SEARCH_URL}?tags=ask_hn&query=Who%20is%20hiring&hitsPerPage=5"
         try:
             resp = await self.http_client.get(story_query_url)
-            if resp.status_code != 200:
-                return stats
             data = resp.json()
+            if (
+                not isinstance(data, dict)
+                or not isinstance(data.get("hits"), list)
+                or any(not isinstance(hit, dict) for hit in data["hits"])
+            ):
+                raise ValueError("response hits must be a list of objects")
             stories = [
                 h for h in data.get("hits", [])
                 if "Who is hiring?" in h.get("title", "")
             ]
-        except Exception:
+        except Exception as exc:
+            self.record_error(stats, "story search", exc)
             return stats
 
         for story in stories:
             story_id = story.get("objectID")
             if not story_id:
+                self.record_error(stats, "story result", ValueError("missing story id"))
                 continue
 
             comments_url = f"{self.SEARCH_URL}?tags=comment,story_{story_id}&hitsPerPage=500"
             try:
                 c_resp = await self.http_client.get(comments_url)
-                if c_resp.status_code != 200:
-                    continue
                 c_data = c_resp.json()
+                if (
+                    not isinstance(c_data, dict)
+                    or not isinstance(c_data.get("hits"), list)
+                    or any(not isinstance(hit, dict) for hit in c_data["hits"])
+                ):
+                    raise ValueError("response hits must be a list of objects")
                 comments = c_data.get("hits", [])
-            except Exception:
+            except Exception as exc:
+                self.record_error(stats, f"story {story_id}", exc)
                 continue
 
             batch: list[JobPosting] = []

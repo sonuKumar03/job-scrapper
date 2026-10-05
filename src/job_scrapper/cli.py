@@ -15,7 +15,7 @@ app = typer.Typer(help="High-volume job scraper and ML dataset generator.")
 console = Console()
 
 
-async def _run_scrape(sources: list[str], days: int) -> None:
+async def _run_scrape(sources: list[str], days: int) -> bool:
     session_manager = DatabaseSessionManager()
     sink = PostgresJobSink(session_manager)
 
@@ -24,6 +24,9 @@ async def _run_scrape(sources: list[str], days: int) -> None:
     table.add_column("Found", justify="right")
     table.add_column("New Inserted", justify="right", style="green")
     table.add_column("Skipped / Duplicate", justify="right", style="dim")
+    table.add_column("Errors", style="red")
+    table.add_column("Truncated", style="yellow")
+    failed = False
 
     for source_name in sources:
         try:
@@ -35,14 +38,19 @@ async def _run_scrape(sources: list[str], days: int) -> None:
                 str(stats["found"]),
                 str(stats["inserted"]),
                 str(stats["skipped"]),
+                "; ".join(stats["errors"]),
+                "yes" if stats["truncated"] else "no",
             )
+            failed |= bool(stats["errors"] or stats["truncated"])
         except Exception as e:
-            console.print(f"[bold red]Error scraping {source_name}: {e}[/bold red]")
+            failed = True
+            console.print(f"[bold red]Error scraping {source_name}: {type(e).__name__}[/bold red]")
 
     console.print(table)
     total_jobs = await sink.count()
     console.print(f"\n[bold green]Total jobs stored in database: {total_jobs}[/bold green]")
     await session_manager.close()
+    return failed
 
 
 @app.command()
@@ -61,12 +69,13 @@ def scrape(
         sources_to_run = available
     else:
         requested = [s.strip().lower() for s in source.split(",")]
-        sources_to_run = [s for s in requested if s in available]
-        if not sources_to_run:
-            console.print(f"[red]No valid sources provided. Available: {', '.join(available)}[/red]")
-            raise typer.Exit(1)
+        unknown = sorted(set(requested) - set(available))
+        if unknown:
+            raise typer.BadParameter(f"unknown source(s): {', '.join(unknown)}. Available: {', '.join(available)}")
+        sources_to_run = requested
 
-    asyncio.run(_run_scrape(sources_to_run, days))
+    if asyncio.run(_run_scrape(sources_to_run, days)):
+        raise typer.Exit(1)
 
 
 @app.command()

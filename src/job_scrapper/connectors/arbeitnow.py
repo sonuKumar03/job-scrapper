@@ -12,19 +12,26 @@ class ArbeitnowConnector(BaseConnector):
     name: str = "arbeitnow"
     API_URL: str = "https://www.arbeitnow.com/api/job-board-api"
 
-    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, int]:
-        stats = {"found": 0, "inserted": 0, "skipped": 0}
+    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
+        stats = self.new_stats()
         page = 1
         max_pages = 50  # Up to 50 pages (~5,000+ jobs)
 
         while page <= max_pages:
             url = f"{self.API_URL}?page={page}"
-            response = await self.http_client.get(url)
-            if response.status_code != 200:
+            try:
+                response = await self.http_client.get(url)
+                data = response.json()
+                if (
+                    not isinstance(data, dict)
+                    or not isinstance(data.get("data"), list)
+                    or any(not isinstance(item, dict) for item in data["data"])
+                ):
+                    raise ValueError("response data must be a list of objects")
+            except Exception as exc:
+                self.record_error(stats, f"page {page}", exc)
                 break
-
-            data = response.json()
-            items = data.get("data", [])
+            items = data["data"]
             if not items:
                 break
 
@@ -81,9 +88,16 @@ class ArbeitnowConnector(BaseConnector):
                 stats["inserted"] += inserted
                 stats["skipped"] += len(batch) - inserted
 
-            if reached_cutoff or not data.get("links", {}).get("next"):
+            links = data.get("links") or {}
+            if not isinstance(links, dict):
+                self.record_error(stats, f"page {page}", ValueError("links must be an object"))
+                break
+            if reached_cutoff or not links.get("next"):
                 break
 
             page += 1
+        else:
+            stats["truncated"] = True
+            stats["errors"].append(f"page safety limit reached ({max_pages} pages)")
 
         return stats

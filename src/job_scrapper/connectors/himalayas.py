@@ -14,19 +14,24 @@ class HimalayasConnector(BaseConnector):
     API_URL: str = "https://himalayas.app/jobs/api"
     PAGE_SIZE: int = 20  # Himalayas enforces 20 items per page
 
-    async def _fetch_page(self, offset: int) -> list[dict[str, Any]]:
+    async def _fetch_page(self, offset: int, stats: dict[str, Any]) -> list[dict[str, Any]] | None:
         url = f"{self.API_URL}?limit={self.PAGE_SIZE}&offset={offset}"
         try:
             resp = await self.http_client.get(url)
-            if resp.status_code == 200:
-                data = resp.json()
-                return data.get("jobs", [])
-        except Exception:
-            pass
-        return []
+            data = resp.json()
+            if (
+                not isinstance(data, dict)
+                or not isinstance(data.get("jobs"), list)
+                or any(not isinstance(item, dict) for item in data["jobs"])
+            ):
+                raise ValueError("response jobs must be a list")
+            return data["jobs"]
+        except Exception as exc:
+            self.record_error(stats, f"page offset {offset}", exc)
+            return None
 
-    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, int]:
-        stats = {"found": 0, "inserted": 0, "skipped": 0}
+    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
+        stats = self.new_stats()
         offset = 0
         concurrency = 3
         chunk_step = self.PAGE_SIZE * concurrency
@@ -34,12 +39,14 @@ class HimalayasConnector(BaseConnector):
 
         while offset < max_total_jobs:
             # Fetch a chunk of pages concurrently
-            tasks = [self._fetch_page(offset + (i * self.PAGE_SIZE)) for i in range(concurrency)]
+            tasks = [self._fetch_page(offset + (i * self.PAGE_SIZE), stats) for i in range(concurrency)]
             results = await asyncio.gather(*tasks)
+            if any(page is None for page in results):
+                break
 
             chunk_jobs: list[dict[str, Any]] = []
             for page_jobs in results:
-                chunk_jobs.extend(page_jobs)
+                chunk_jobs.extend(page_jobs or [])
 
             if not chunk_jobs:
                 break
@@ -102,5 +109,9 @@ class HimalayasConnector(BaseConnector):
                 break
 
             offset += chunk_step
+
+        else:
+            stats["truncated"] = True
+            stats["errors"].append(f"page safety limit reached ({max_total_jobs} jobs)")
 
         return stats

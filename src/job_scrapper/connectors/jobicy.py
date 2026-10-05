@@ -12,15 +12,22 @@ class JobicyConnector(BaseConnector):
     name: str = "jobicy"
     API_URL: str = "https://jobicy.com/api/v2/remote-jobs"
 
-    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, int]:
-        stats = {"found": 0, "inserted": 0, "skipped": 0}
+    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
+        stats = self.new_stats()
 
-        response = await self.http_client.get(f"{self.API_URL}?count=50")
-        if response.status_code != 200:
+        try:
+            response = await self.http_client.get(f"{self.API_URL}?count=50")
+            data = response.json()
+            if (
+                not isinstance(data, dict)
+                or not isinstance(data.get("jobs"), list)
+                or any(not isinstance(item, dict) for item in data["jobs"])
+            ):
+                raise ValueError("response jobs must be a list of objects")
+        except Exception as exc:
+            self.record_error(stats, "feed", exc)
             return stats
-
-        data = response.json()
-        raw_jobs = data.get("jobs", [])
+        raw_jobs = data["jobs"]
         batch: list[JobPosting] = []
 
         for item in raw_jobs:
