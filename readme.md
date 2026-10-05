@@ -42,25 +42,12 @@ Job boards → connectors → `JobPosting` → `PostgresJobSink` → PostgreSQL 
 Make sure you have [uv](https://docs.astral.sh/uv/) and Docker installed.
 
 ```bash
-# Clone and enter repo
-cd job-scrapper
-
-# Install dependencies into virtualenv
-uv sync
-
-# Copy environment file
-cp .env.example .env
-
-# Start local PostgreSQL 16
-docker compose up -d
-
-# Run database migrations
-uv run alembic upgrade head
+make setup
 ```
 
 The CLI and Alembic both load `.env`. Process environment variables take precedence. Scraping settings are `DATABASE_URL`, `MAX_CONCURRENT_REQUESTS` (1–3), `MIN_REQUEST_DELAY_SECONDS` and `MAX_REQUEST_DELAY_SECONDS` (1–3 seconds), `REQUEST_TIMEOUT_SECONDS` (positive seconds), and `HTTP_PROXY`.
 
-For a fresh scrape, apply schema updates with `uv run alembic upgrade head` before starting the CLI. Existing scraped jobs may be removed when changing collection or deduplication behavior; if clearing them, pause scrapers and truncate only `job_sightings`, `jobs`, and `scrape_runs` in the explicitly configured project database. Preserve Alembic history and unrelated tables. The current migration does not require clearing existing rows. Downgrading to the old unique-content-hash schema requires that no two jobs share a content hash.
+For a fresh scrape, apply schema updates with `make migrate` before starting the CLI. Existing scraped jobs may be removed when changing collection or deduplication behavior; if clearing them, pause scrapers and truncate only `job_sightings`, `jobs`, and `scrape_runs` in the explicitly configured project database. Preserve Alembic history and unrelated tables. The current migration does not require clearing existing rows. Downgrading to the old unique-content-hash schema requires that no two jobs share a content hash.
 
 ## Source coverage limits
 
@@ -72,23 +59,14 @@ The scrape CLI reports errors and incomplete coverage, then exits with status 1.
 
 ### 2. Scraping Jobs
 ```bash
-# Scrape jobs from Himalayas posted in the last 7 days
-uv run job-scrapper scrape --source himalayas --days 7
-
-# Scrape from all configured sources
-uv run job-scrapper scrape --source all --days 7
+make scrape
 ```
 
 ### 3. Exporting Datasets for ML Training
 ```bash
-# Export recent jobs to JSONL
-uv run job-scrapper export --days 7 --format jsonl --output data/jobs_dataset.jsonl
-
-# Export a Parquet dataset with the optional dependency
-uv run --extra export job-scrapper export --days 7 --format parquet --output data/jobs_dataset.parquet
-
-# Check database statistics
-uv run job-scrapper status
+make export
+make parquet
+make status
 ```
 
 Parquet stores `labels` as a UTF-8 JSON string so postings with different attribute keys share one schema. JSONL keeps `labels` as a JSON object. Both exports write 500-row batches and replace the destination only after a successful write.
