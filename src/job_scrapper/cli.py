@@ -27,29 +27,34 @@ async def _run_scrape(sources: list[str], days: int) -> bool:
     table.add_column("Errors", style="red")
     table.add_column("Truncated", style="yellow")
     failed = False
+    try:
+        for source_name in sources:
+            connector = None
+            try:
+                connector = get_connector(source_name)
+                console.print(f"[bold blue]Scraping {source_name}...[/bold blue]")
+                stats = await connector.scrape(sink=sink, max_days=days)
+                table.add_row(
+                    source_name,
+                    str(stats["found"]),
+                    str(stats["inserted"]),
+                    str(stats["skipped"]),
+                    "; ".join(stats["errors"]),
+                    "yes" if stats["truncated"] else "no",
+                )
+                failed |= bool(stats["errors"] or stats["truncated"])
+            except Exception as e:
+                failed = True
+                console.print(f"[bold red]Error scraping {source_name}: {type(e).__name__}[/bold red]")
+            finally:
+                if connector is not None:
+                    await connector.close()
 
-    for source_name in sources:
-        try:
-            connector = get_connector(source_name)
-            console.print(f"[bold blue]Scraping {source_name}...[/bold blue]")
-            stats = await connector.scrape(sink=sink, max_days=days)
-            table.add_row(
-                source_name,
-                str(stats["found"]),
-                str(stats["inserted"]),
-                str(stats["skipped"]),
-                "; ".join(stats["errors"]),
-                "yes" if stats["truncated"] else "no",
-            )
-            failed |= bool(stats["errors"] or stats["truncated"])
-        except Exception as e:
-            failed = True
-            console.print(f"[bold red]Error scraping {source_name}: {type(e).__name__}[/bold red]")
-
-    console.print(table)
-    total_jobs = await sink.count()
-    console.print(f"\n[bold green]Total jobs stored in database: {total_jobs}[/bold green]")
-    await session_manager.close()
+        console.print(table)
+        total_jobs = await sink.count()
+        console.print(f"\n[bold green]Total jobs stored in database: {total_jobs}[/bold green]")
+    finally:
+        await session_manager.close()
     return failed
 
 
@@ -90,10 +95,12 @@ def export(
 
     async def _export() -> None:
         session_manager = DatabaseSessionManager()
-        console.print(f"[cyan]Exporting jobs (posted within last {days} days) to {output}...[/cyan]")
-        count = await export_jobs_to_jsonl(session_manager, output_path=output, max_days=days)
-        console.print(f"[bold green]Successfully exported {count} jobs to {output}[/bold green]")
-        await session_manager.close()
+        try:
+            console.print(f"[cyan]Exporting jobs (posted within last {days} days) to {output}...[/cyan]")
+            count = await export_jobs_to_jsonl(session_manager, output_path=output, max_days=days)
+            console.print(f"[bold green]Successfully exported {count} jobs to {output}[/bold green]")
+        finally:
+            await session_manager.close()
 
     asyncio.run(_export())
 
@@ -103,23 +110,25 @@ def status() -> None:
     """Show current database job counts and source breakdowns."""
     async def _status() -> None:
         session_manager = DatabaseSessionManager()
-        async with session_manager.session() as session:
-            stmt = select(JobModel.source, func.count(JobModel.id)).group_by(JobModel.source)
-            result = await session.execute(stmt)
-            rows = result.all()
+        try:
+            async with session_manager.session() as session:
+                stmt = select(JobModel.source, func.count(JobModel.id)).group_by(JobModel.source)
+                result = await session.execute(stmt)
+                rows = result.all()
 
-            table = Table(title="Database Job Breakdown")
-            table.add_column("Source", style="cyan")
-            table.add_column("Total Postings", justify="right", style="green")
+                table = Table(title="Database Job Breakdown")
+                table.add_column("Source", style="cyan")
+                table.add_column("Total Postings", justify="right", style="green")
 
-            total = 0
-            for src, count in rows:
-                table.add_row(src, str(count))
-                total += count
+                total = 0
+                for src, count in rows:
+                    table.add_row(src, str(count))
+                    total += count
 
-            console.print(table)
-            console.print(f"\n[bold]Total Stored Postings: {total}[/bold]")
-        await session_manager.close()
+                console.print(table)
+                console.print(f"\n[bold]Total Stored Postings: {total}[/bold]")
+        finally:
+            await session_manager.close()
 
     asyncio.run(_status())
 

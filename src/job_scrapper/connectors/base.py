@@ -12,7 +12,13 @@ class BaseConnector(ABC):
     name: str = "base"
 
     def __init__(self, http_client: ResilientHttpClient | None = None) -> None:
-        self.http_client = http_client or ResilientHttpClient()
+        self._owns_http_client = http_client is None
+        self.http_client = http_client if http_client is not None else ResilientHttpClient()
+
+    async def close(self) -> None:
+        """Close an owned client; injected shared clients belong to their creator."""
+        if self._owns_http_client:
+            await self.http_client.close()
 
     @abstractmethod
     async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
