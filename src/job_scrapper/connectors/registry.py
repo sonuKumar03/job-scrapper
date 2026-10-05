@@ -10,6 +10,7 @@ from job_scrapper.connectors.jobicy import JobicyConnector
 from job_scrapper.connectors.lever import LeverConnector
 from job_scrapper.connectors.remoteok import RemoteOKConnector
 from job_scrapper.connectors.weworkremotely import WeWorkRemotelyConnector
+from job_scrapper.utils.http_client import ResilientHttpClient
 
 CONNECTORS: dict[str, Type[BaseConnector]] = {
     HimalayasConnector.name: HimalayasConnector,
@@ -23,13 +24,13 @@ CONNECTORS: dict[str, Type[BaseConnector]] = {
 }
 
 
-def get_connector(name: str) -> BaseConnector:
+def get_connector(name: str, http_client: ResilientHttpClient | None = None) -> BaseConnector:
     """Retrieve an instantiated connector by name."""
     cls = CONNECTORS.get(name.lower())
     if not cls:
         available = ", ".join(CONNECTORS.keys())
         raise ValueError(f"Unknown connector '{name}'. Available: {available}")
-    return cls()
+    return cls(http_client=http_client)
 
 
 def list_connectors() -> list[str]:

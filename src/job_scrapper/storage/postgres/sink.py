@@ -1,8 +1,9 @@
 """PostgreSQL storage sink with 3-layer deduplication and sightings ledger."""
 
 import uuid
+from datetime import timedelta
 from hashlib import sha256
-from sqlalchemy import func, or_, select, text, tuple_
+from sqlalchemy import func, select, text, tuple_
 from sqlalchemy.dialects.postgresql import insert
 from job_scrapper.domain.dedup import DeduplicationEngine
 from job_scrapper.domain.models import JobPosting
@@ -23,38 +24,34 @@ class PostgresJobSink:
         self.dedup_engine = dedup_engine or StandardDeduplicationEngine()
 
     async def contains(self, source: str, source_job_id: str) -> bool:
-        """Check if job exists in jobs or job_sightings."""
-        async with self.session_manager.session() as session:
-            stmt = (
-                select(JobSightingModel.id)
-                .where(
-                    JobSightingModel.source == source,
-                    JobSightingModel.source_job_id == source_job_id,
-                )
-                .limit(1)
-            )
-            result = await session.execute(stmt)
-            if result.scalar_one_or_none() is not None:
-                return True
+        return source_job_id in await self.contains_many(source, [source_job_id])
 
-            # Also fallback check in jobs table
-            stmt_job = (
-                select(JobModel.id)
-                .where(
-                    JobModel.source == source,
-                    JobModel.source_job_id == source_job_id,
+    async def contains_many(self, source: str, source_job_ids: list[str]) -> set[str]:
+        if not source_job_ids:
+            return set()
+        found: set[str] = set()
+        async with self.session_manager.session() as session:
+            for start in range(0, len(source_job_ids), 500):
+                ids = source_job_ids[start:start + 500]
+                stmt = select(JobModel.source_job_id).where(
+                    JobModel.source == source, JobModel.source_job_id.in_(ids)
+                ).union(
+                    select(JobSightingModel.source_job_id).where(
+                        JobSightingModel.source == source, JobSightingModel.source_job_id.in_(ids)
+                    )
                 )
-                .limit(1)
-            )
-            result_job = await session.execute(stmt_job)
-            return result_job.scalar_one_or_none() is not None
+                found.update((await session.execute(stmt)).scalars().all())
+        return found
 
     async def save_batch(self, jobs: list[JobPosting]) -> int:
         if not jobs:
             return 0
 
         source_keys = list(dict.fromkeys((job.source, job.source_job_id) for job in jobs))
+        source_names = {job.source for job in jobs}
         signatures = {self.dedup_engine.compute_canonical_signature(job) for job in jobs}
+        earliest = min(job.posted_at for job in jobs) - timedelta(days=7)
+        latest = max(job.posted_at for job in jobs) + timedelta(days=7)
         lock_keys = sorted(
             {
                 int.from_bytes(sha256(signature.encode()).digest()[:8], "big", signed=True)
@@ -85,13 +82,12 @@ class PostgresJobSink:
             )
             identity_sightings = identity_sightings_result.all()
 
-            content_hashes = [job.content_hash for job in jobs]
             stmt = select(JobModel).where(
-                or_(
-                    JobModel.content_hash.in_(content_hashes),
-                    JobModel.canonical_signature.in_(signatures),
-                )
+                JobModel.canonical_signature.in_(signatures),
+                JobModel.posted_at.between(earliest, latest),
             ).order_by(JobModel.posted_at, JobModel.id)
+            if len(source_names) == 1:
+                stmt = stmt.where(JobModel.source != next(iter(source_names)))
             existing_results = await session.execute(stmt)
             existing_jobs = existing_results.scalars().all()
 
@@ -102,13 +98,18 @@ class PostgresJobSink:
                 (self._as_posting(model), model.id, model)
                 for model in sorted(models_by_id.values(), key=lambda row: (row.posted_at, str(row.id)))
             ]
+            refs_by_id = {candidate[1]: candidate for candidate in candidates}
+            candidates_by_signature: dict[
+                str, dict[str, list[tuple[JobPosting, uuid.UUID, JobModel | None]]]
+            ] = {}
+            for candidate in candidates:
+                signature = self.dedup_engine.compute_canonical_signature(candidate[0])
+                candidates_by_signature.setdefault(signature, {}).setdefault(candidate[0].source, []).append(candidate)
             identity_map: dict[tuple[str, str], tuple[JobPosting, uuid.UUID, JobModel | None]] = {}
             for model in identity_jobs:
-                ref = next(candidate for candidate in candidates if candidate[1] == model.id)
-                identity_map[(model.source, model.source_job_id)] = ref
+                identity_map[(model.source, model.source_job_id)] = refs_by_id[model.id]
             for sighting, model in identity_sightings:
-                ref = next(candidate for candidate in candidates if candidate[1] == model.id)
-                identity_map[(sighting.source, sighting.source_job_id)] = ref
+                identity_map[(sighting.source, sighting.source_job_id)] = refs_by_id[model.id]
 
             records_by_id: dict[uuid.UUID, dict[str, object]] = {}
             new_ids_by_source: dict[tuple[str, str], uuid.UUID] = {}
@@ -118,8 +119,13 @@ class PostgresJobSink:
                 source_key = (job.source, job.source_job_id)
                 ref = identity_map.get(source_key)
                 if ref is None:
+                    signature = self.dedup_engine.compute_canonical_signature(job)
                     ref = next(
-                        (candidate for candidate in candidates if self.dedup_engine.is_duplicate(candidate[0], job)),
+                        (candidate
+                         for source, group in candidates_by_signature.get(signature, {}).items()
+                         if source != job.source
+                         for candidate in group
+                         if self.dedup_engine.is_duplicate(candidate[0], job)),
                         None,
                     )
 
@@ -137,14 +143,14 @@ class PostgresJobSink:
                         "posted_at": job.posted_at,
                         "scraped_at": job.scraped_at,
                         "content_hash": job.content_hash,
-                        "canonical_signature": self.dedup_engine.compute_canonical_signature(job),
+                        "canonical_signature": signature,
                         "simhash": simhash,
                         "attributes": job.attributes,
                     }
                     records_by_id[new_id] = record
                     new_ids_by_source[source_key] = new_id
                     ref = (job, new_id, None)
-                    candidates.append(ref)
+                    candidates_by_signature.setdefault(signature, {}).setdefault(job.source, []).append(ref)
                 else:
                     canonical, canonical_id, canonical_model = ref
                     merged, changed = self.dedup_engine.enrich_attributes(canonical.attributes, job.attributes)

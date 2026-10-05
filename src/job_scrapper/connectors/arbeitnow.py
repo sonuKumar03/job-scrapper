@@ -41,6 +41,10 @@ class ArbeitnowConnector(BaseConnector):
                     self.record_error(stats, f"page {page}", ValueError("empty page has a next link"))
                 break
 
+            known_ids = await sink.contains_many(
+                self.name, [str(item["slug"]) for item in items if item.get("slug")]
+            )
+
             batch: list[JobPosting] = []
             unknown_dates = 0
 
@@ -62,7 +66,7 @@ class ArbeitnowConnector(BaseConnector):
                     stats["skipped"] += 1
                     continue
 
-                if await sink.contains(self.name, slug):
+                if slug in known_ids:
                     stats["skipped"] += 1
                     continue
 
@@ -89,10 +93,7 @@ class ArbeitnowConnector(BaseConnector):
                 )
                 batch.append(job)
 
-            if batch:
-                inserted = await sink.save_batch(batch)
-                stats["inserted"] += inserted
-                stats["skipped"] += len(batch) - inserted
+            await self.save_jobs(sink, batch, stats)
             self.record_unknown_dates(stats, f"page {page}", unknown_dates)
 
             if not links.get("next"):

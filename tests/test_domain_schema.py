@@ -91,3 +91,5 @@ async def test_job_posting_auto_hash_and_sink_dedup() -> None:
     assert inserted_dup_hash == 0
     assert await sink.count() == 1
     assert await sink.contains("another_source", "999") is True
+    assert await sink.contains_many("another_source", ["999", "missing", "999"]) == {"999"}
+    assert await sink.contains_many("test_source", ["101", "999", "new"]) == {"101"}

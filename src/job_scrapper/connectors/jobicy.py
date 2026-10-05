@@ -52,6 +52,9 @@ class JobicyConnector(BaseConnector):
                 break
 
             raw_jobs = data["jobs"]
+            known_ids = await sink.contains_many(
+                self.name, [str(item["id"]) for item in raw_jobs if item.get("id") is not None]
+            )
             batch: list[JobPosting] = []
             for item in raw_jobs:
                 stats["found"] += 1
@@ -64,7 +67,7 @@ class JobicyConnector(BaseConnector):
                 if not is_within_days(pub_date, max_days=max_days):
                     stats["skipped"] += 1
                     continue
-                if source_id and await sink.contains(self.name, source_id):
+                if source_id in known_ids:
                     stats["skipped"] += 1
                     continue
 
@@ -90,10 +93,7 @@ class JobicyConnector(BaseConnector):
                     attributes=attributes,
                 ))
 
-            if batch:
-                inserted = await sink.save_batch(batch)
-                stats["inserted"] += inserted
-                stats["skipped"] += len(batch) - inserted
+            await self.save_jobs(sink, batch, stats)
             cursor = data.get("nextCursor")
             if cursor is None:
                 break

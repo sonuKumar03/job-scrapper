@@ -25,6 +25,9 @@ class RemoteOKConnector(BaseConnector):
             return stats
 
         batch: list[JobPosting] = []
+        known_ids = await sink.contains_many(
+            self.name, [str(item["id"]) for item in data if item.get("id") is not None]
+        )
 
         for item in data:
             # Skip legal notices or tag summary items without 'id'
@@ -39,7 +42,7 @@ class RemoteOKConnector(BaseConnector):
                 stats["skipped"] += 1
                 continue
 
-            if await sink.contains(self.name, source_id):
+            if source_id in known_ids:
                 stats["skipped"] += 1
                 continue
 
@@ -68,9 +71,6 @@ class RemoteOKConnector(BaseConnector):
             )
             batch.append(job)
 
-        if batch:
-            inserted = await sink.save_batch(batch)
-            stats["inserted"] += inserted
-            stats["skipped"] += len(batch) - inserted
+        await self.save_jobs(sink, batch, stats)
 
         return stats

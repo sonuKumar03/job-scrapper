@@ -104,6 +104,11 @@ class HackerNewsConnector(BaseConnector):
                     self.record_error(stats, f"story {story_id} page {page + 1}", ValueError("missing or repeated result id"))
                     break
                 comment_ids.update(page_ids)
+                known_ids = await sink.contains_many(
+                    self.name,
+                    [str(hit["objectID"]) for hit in data["hits"]
+                     if str(hit.get("parent_id")) == story_id],
+                )
                 batch: list[JobPosting] = []
                 for comment in data["hits"]:
                     if str(comment.get("parent_id")) != story_id:
@@ -118,7 +123,7 @@ class HackerNewsConnector(BaseConnector):
                     if not is_within_days(pub_date, max_days=max_days):
                         stats["skipped"] += 1
                         continue
-                    if await sink.contains(self.name, comment_id):
+                    if comment_id in known_ids:
                         stats["skipped"] += 1
                         continue
 
@@ -150,10 +155,7 @@ class HackerNewsConnector(BaseConnector):
                         posted_at=pub_date,
                         attributes={"work_arrangement": work_arrangement, "author": comment.get("author"), "hn_story_id": story_id},
                     ))
-                if batch:
-                    inserted = await sink.save_batch(batch)
-                    stats["inserted"] += inserted
-                    stats["skipped"] += len(batch) - inserted
+                await self.save_jobs(sink, batch, stats)
                 if page + 1 >= comment_pages:
                     break
             if comment_pages > self.MAX_PAGES:

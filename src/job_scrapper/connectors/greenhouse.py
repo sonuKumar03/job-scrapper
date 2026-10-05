@@ -1,5 +1,6 @@
 """Greenhouse ATS direct employer board connector."""
 
+import asyncio
 import html
 from typing import Any
 from job_scrapper.connectors.base import BaseConnector
@@ -49,7 +50,7 @@ class GreenhouseConnector(BaseConnector):
     async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
         stats = self.new_stats()
 
-        for company in self.companies:
+        async def scrape_company(company: str) -> None:
             unknown_dates = 0
             url = f"{self.BASE_URL}/{company}/jobs?content=true"
             try:
@@ -62,9 +63,12 @@ class GreenhouseConnector(BaseConnector):
                     raise ValueError("response jobs must be a list of objects")
             except Exception as exc:
                 self.record_error(stats, f"company {company}", exc)
-                continue
+                return
 
             batch: list[JobPosting] = []
+            known_ids = await sink.contains_many(
+                self.name, [str(item["id"]) for item in raw_jobs if item.get("id") is not None]
+            )
 
             for item in raw_jobs:
                 stats["found"] += 1
@@ -79,7 +83,7 @@ class GreenhouseConnector(BaseConnector):
                     stats["skipped"] += 1
                     continue
 
-                if source_id and await sink.contains(self.name, source_id):
+                if source_id in known_ids:
                     stats["skipped"] += 1
                     continue
 
@@ -121,10 +125,15 @@ class GreenhouseConnector(BaseConnector):
                 )
                 batch.append(job)
 
-            if batch:
-                inserted = await sink.save_batch(batch)
-                stats["inserted"] += inserted
-                stats["skipped"] += len(batch) - inserted
+            await self.save_jobs(sink, batch, stats)
             self.record_unknown_dates(stats, f"company {company}", unknown_dates)
 
+        for start in range(0, len(self.companies), 3):
+            companies = self.companies[start:start + 3]
+            results = await asyncio.gather(
+                *(scrape_company(company) for company in companies), return_exceptions=True
+            )
+            for company, result in zip(companies, results):
+                if isinstance(result, Exception):
+                    self.record_error(stats, f"company {company}", result)
         return stats

@@ -1,5 +1,6 @@
 """Lever ATS direct employer board connector."""
 
+import asyncio
 from typing import Any
 from job_scrapper.connectors.base import BaseConnector
 from job_scrapper.domain.models import JobPosting
@@ -38,7 +39,7 @@ class LeverConnector(BaseConnector):
     async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
         stats = self.new_stats()
 
-        for company in self.companies:
+        async def scrape_company(company: str) -> None:
             skip = 0
             for page in range(self.MAX_PAGES):
                 url = f"{self.BASE_URL}/{company}?mode=json&skip={skip}&limit={self.PAGE_SIZE}"
@@ -53,6 +54,10 @@ class LeverConnector(BaseConnector):
                 if not raw_jobs:
                     break
 
+                known_ids = await sink.contains_many(
+                    self.name, [str(item["id"]) for item in raw_jobs if item.get("id") is not None]
+                )
+
                 batch: list[JobPosting] = []
                 unknown_dates = 0
                 for item in raw_jobs:
@@ -66,7 +71,7 @@ class LeverConnector(BaseConnector):
                     if not is_within_days(pub_date, max_days=max_days):
                         stats["skipped"] += 1
                         continue
-                    if source_id and await sink.contains(self.name, source_id):
+                    if source_id in known_ids:
                         stats["skipped"] += 1
                         continue
 
@@ -104,10 +109,7 @@ class LeverConnector(BaseConnector):
                     )
                     batch.append(job)
 
-                if batch:
-                    inserted = await sink.save_batch(batch)
-                    stats["inserted"] += inserted
-                    stats["skipped"] += len(batch) - inserted
+                await self.save_jobs(sink, batch, stats)
                 self.record_unknown_dates(stats, f"company {company} page {page + 1}", unknown_dates)
                 if len(raw_jobs) < self.PAGE_SIZE:
                     break
@@ -116,4 +118,12 @@ class LeverConnector(BaseConnector):
                 stats["truncated"] = True
                 stats["errors"].append(f"company {company}: page safety limit reached ({self.MAX_PAGES} pages)")
 
+        for start in range(0, len(self.companies), 3):
+            companies = self.companies[start:start + 3]
+            results = await asyncio.gather(
+                *(scrape_company(company) for company in companies), return_exceptions=True
+            )
+            for company, result in zip(companies, results):
+                if isinstance(result, Exception):
+                    self.record_error(stats, f"company {company}", result)
         return stats

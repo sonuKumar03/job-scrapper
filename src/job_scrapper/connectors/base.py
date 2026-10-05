@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import Any
+from job_scrapper.domain.models import JobPosting
 from job_scrapper.storage.base import JobSink
 from job_scrapper.utils.http_client import RequestError, ResilientHttpClient
 
@@ -48,3 +49,11 @@ class BaseConnector(ABC):
         if count:
             stats["errors"].append(f"{context}: {count} listings had unknown or invalid publication dates")
             stats["truncated"] = True
+
+    @staticmethod
+    async def save_jobs(sink: JobSink, jobs: list[JobPosting], stats: dict[str, Any]) -> None:
+        for start in range(0, len(jobs), 500):
+            batch = jobs[start:start + 500]
+            inserted = await sink.save_batch(batch)
+            stats["inserted"] += inserted
+            stats["skipped"] += len(batch) - inserted

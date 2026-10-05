@@ -32,6 +32,13 @@ class WeWorkRemotelyConnector(BaseConnector):
                 continue
 
             batch: list[JobPosting] = []
+            identities = []
+            for item in items:
+                guid = item.findtext("guid")
+                link = item.findtext("link")
+                if guid or link:
+                    identities.append((guid or link).strip())
+            known_ids = await sink.contains_many(self.name, identities)
 
             for item in items:
                 stats["found"] += 1
@@ -52,7 +59,7 @@ class WeWorkRemotelyConnector(BaseConnector):
                     stats["skipped"] += 1
                     continue
 
-                if source_id and await sink.contains(self.name, source_id):
+                if (source_id or source_url) in known_ids:
                     stats["skipped"] += 1
                     continue
 
@@ -84,9 +91,6 @@ class WeWorkRemotelyConnector(BaseConnector):
                 )
                 batch.append(job)
 
-            if batch:
-                inserted = await sink.save_batch(batch)
-                stats["inserted"] += inserted
-                stats["skipped"] += len(batch) - inserted
+            await self.save_jobs(sink, batch, stats)
 
         return stats

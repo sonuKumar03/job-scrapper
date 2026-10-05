@@ -2,6 +2,7 @@
 
 import asyncio
 import random
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from typing import Any
@@ -19,6 +20,13 @@ class RequestError(RuntimeError):
         safe_url = urlunsplit((parsed.scheme, safe_netloc, parsed.path, "", ""))
         self.status_code = status_code
         super().__init__(f"{reason}{f' (HTTP {status_code})' if status_code else ''}: {safe_url}")
+
+
+@dataclass
+class _DomainLimit:
+    semaphore: asyncio.Semaphore
+    start_lock: asyncio.Lock
+    next_start: float = 0.0
 
 
 class ResilientHttpClient:
@@ -49,7 +57,8 @@ class ResilientHttpClient:
         )
         self.min_delay = settings.min_request_delay_seconds
         self.max_delay = settings.max_request_delay_seconds
-        self.semaphore = asyncio.Semaphore(settings.max_concurrent_requests)
+        self.max_concurrency = settings.max_concurrent_requests
+        self._domains: dict[str, _DomainLimit] = {}
         self.proxy = proxy if proxy is not None else defaults.http_proxy
         self.timeout = settings.request_timeout_seconds
         self._session: AsyncSession | None = None
@@ -71,11 +80,20 @@ class ResilientHttpClient:
             "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,application/json,*/*;q=0.8",
         )
         headers.setdefault("Accept-Language", "en-US,en;q=0.9")
+        host = urlsplit(url).hostname or ""
+        domain = self._domains.get(host)
+        if domain is None:
+            domain = self._domains[host] = _DomainLimit(
+                asyncio.Semaphore(self.max_concurrency), asyncio.Lock()
+            )
 
         for attempt in range(3):
             try:
-                async with self.semaphore:
-                    await asyncio.sleep(random.uniform(self.min_delay, self.max_delay))
+                async with domain.semaphore:
+                    async with domain.start_lock:
+                        loop = asyncio.get_running_loop()
+                        await asyncio.sleep(max(0.0, domain.next_start - loop.time()))
+                        domain.next_start = loop.time() + random.uniform(self.min_delay, self.max_delay)
                     response = await session.get(url, **kwargs)
                 if response.status_code not in {429, 500, 502, 503, 504}:
                     if response.status_code >= 400:

@@ -60,6 +60,11 @@ class HimalayasConnector(BaseConnector):
             if total_count is None:
                 total_count = page_total
             scanned_count += len(page_jobs)
+            known_ids = await sink.contains_many(
+                self.name,
+                [str(item.get("guid") or item.get("applicationLink")) for item in page_jobs
+                 if item.get("guid") or item.get("applicationLink")],
+            )
             batch: list[JobPosting] = []
             for item in page_jobs:
                 stats["found"] += 1
@@ -75,7 +80,7 @@ class HimalayasConnector(BaseConnector):
                     stats["skipped"] += 1
                     continue
 
-                if source_id and await sink.contains(self.name, source_id):
+                if source_id in known_ids:
                     stats["skipped"] += 1
                     continue
 
@@ -107,10 +112,7 @@ class HimalayasConnector(BaseConnector):
                 )
                 batch.append(job)
 
-            if batch:
-                inserted = await sink.save_batch(batch)
-                stats["inserted"] += inserted
-                stats["skipped"] += len(batch) - inserted
+            await self.save_jobs(sink, batch, stats)
 
             if next_cursor is None:
                 if total_count is not None and scanned_count < total_count:

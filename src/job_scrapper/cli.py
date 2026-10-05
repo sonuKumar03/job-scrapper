@@ -10,6 +10,7 @@ from job_scrapper.exporters.jsonl import export_jobs_to_jsonl
 from job_scrapper.storage.postgres.models import JobModel
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
 from job_scrapper.storage.postgres.sink import PostgresJobSink
+from job_scrapper.utils.http_client import ResilientHttpClient
 
 app = typer.Typer(help="High-volume job scraper and ML dataset generator.")
 console = Console()
@@ -18,6 +19,7 @@ console = Console()
 async def _run_scrape(sources: list[str], days: int) -> bool:
     session_manager = DatabaseSessionManager()
     sink = PostgresJobSink(session_manager)
+    http_client = ResilientHttpClient()
 
     table = Table(title=f"Scrape Results (Cutoff: Last {days} Days)")
     table.add_column("Source", style="cyan")
@@ -26,35 +28,47 @@ async def _run_scrape(sources: list[str], days: int) -> bool:
     table.add_column("Skipped / Duplicate", justify="right", style="dim")
     table.add_column("Errors", style="red")
     table.add_column("Truncated", style="yellow")
-    failed = False
-    try:
-        for source_name in sources:
+    source_limit = asyncio.Semaphore(3)
+
+    async def scrape_one(source_name: str) -> tuple[str, dict | None]:
+        async with source_limit:
             connector = None
             try:
-                connector = get_connector(source_name)
+                connector = get_connector(source_name, http_client=http_client)
                 console.print(f"[bold blue]Scraping {source_name}...[/bold blue]")
-                stats = await connector.scrape(sink=sink, max_days=days)
-                table.add_row(
-                    source_name,
-                    str(stats["found"]),
-                    str(stats["inserted"]),
-                    str(stats["skipped"]),
-                    "; ".join(stats["errors"]),
-                    "yes" if stats["truncated"] else "no",
-                )
-                failed |= bool(stats["errors"] or stats["truncated"])
+                return source_name, await connector.scrape(sink=sink, max_days=days)
             except Exception as e:
-                failed = True
                 console.print(f"[bold red]Error scraping {source_name}: {type(e).__name__}[/bold red]")
+                return source_name, None
             finally:
                 if connector is not None:
                     await connector.close()
+
+    try:
+        results = await asyncio.gather(*(scrape_one(source_name) for source_name in sources))
+        failed = False
+        for source_name, stats in results:
+            if stats is None:
+                failed = True
+                continue
+            table.add_row(
+                source_name,
+                str(stats["found"]),
+                str(stats["inserted"]),
+                str(stats["skipped"]),
+                "; ".join(stats["errors"]),
+                "yes" if stats["truncated"] else "no",
+            )
+            failed |= bool(stats["errors"] or stats["truncated"])
 
         console.print(table)
         total_jobs = await sink.count()
         console.print(f"\n[bold green]Total jobs stored in database: {total_jobs}[/bold green]")
     finally:
-        await session_manager.close()
+        try:
+            await http_client.close()
+        finally:
+            await session_manager.close()
     return failed
 
 
