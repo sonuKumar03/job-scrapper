@@ -19,10 +19,13 @@ rtk make scrape
 rtk make export
 rtk make parquet
 rtk make status
+rtk make reset
 rtk make test
 ```
 
 Defaults: scrape all sources from the last seven days; export the last seven days. Use `rtk make help` for other targets. For a specific source, use `rtk make scrape source=himalayas`.
+
+`rtk make reset` deletes jobs, sightings, and scrape-run records from the configured database. Stop scrapers before resetting. Schema and migration history are preserved.
 
 ---
 

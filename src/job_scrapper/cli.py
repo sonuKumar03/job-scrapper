@@ -4,7 +4,7 @@ import asyncio
 from importlib.util import find_spec
 from rich.console import Console
 from rich.table import Table
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 import typer
 from job_scrapper.connectors.registry import get_connector, list_connectors
 from job_scrapper.exporters.jsonl import export_jobs_to_jsonl
@@ -153,6 +153,22 @@ def status() -> None:
             await session_manager.close()
 
     asyncio.run(_status())
+
+
+@app.command()
+def reset() -> None:
+    """Delete collected jobs, sightings, and scrape runs from the configured database."""
+    async def _reset() -> None:
+        session_manager = DatabaseSessionManager()
+        try:
+            async with session_manager.session() as session:
+                await session.execute(text("TRUNCATE TABLE job_sightings, jobs, scrape_runs"))
+                await session.commit()
+            console.print("[green]Cleared jobs, sightings, and scrape runs.[/green]")
+        finally:
+            await session_manager.close()
+
+    asyncio.run(_reset())
 
 
 if __name__ == "__main__":

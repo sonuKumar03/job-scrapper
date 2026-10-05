@@ -1,4 +1,4 @@
-.PHONY: help setup up down migrate scrape export parquet status test clean
+.PHONY: help setup up down migrate scrape export parquet status reset test clean
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -35,6 +35,9 @@ parquet: ## Export recent jobs to Parquet
 
 status: ## Show current database status and job counts
 	@rtk uv run job-scrapper status
+
+reset: ## Delete all collected jobs, sightings, and scrape runs
+	@rtk uv run job-scrapper reset
 
 test: ## Run unit tests
 	@rtk uv run pytest tests/
