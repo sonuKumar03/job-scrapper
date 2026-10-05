@@ -26,7 +26,7 @@ class JobModel(Base):
     scraped_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
     )
-    content_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True, nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
     canonical_signature: Mapped[str | None] = mapped_column(String(64), index=True, nullable=True)
     simhash: Mapped[int | None] = mapped_column(BigInteger, index=True, nullable=True)
     attributes: Mapped[dict[str, Any]] = mapped_column(JSONB, server_default="{}", nullable=False)

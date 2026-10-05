@@ -101,6 +101,8 @@ uv run alembic upgrade head
 
 The CLI and Alembic both load `.env`. Process environment variables take precedence. Scraping settings are `DATABASE_URL`, `MAX_CONCURRENT_REQUESTS` (1–3), `MIN_REQUEST_DELAY_SECONDS` and `MAX_REQUEST_DELAY_SECONDS` (1–3 seconds), `REQUEST_TIMEOUT_SECONDS` (positive seconds), and `HTTP_PROXY`.
 
+For a fresh scrape, apply schema updates with `uv run alembic upgrade head` before starting the CLI. Existing scraped jobs may be removed when changing collection or deduplication behavior; if clearing them, pause scrapers and truncate only `job_sightings`, `jobs`, and `scrape_runs` in the explicitly configured project database. Preserve Alembic history and unrelated tables. The current migration does not require clearing existing rows. Downgrading to the old unique-content-hash schema requires that no two jobs share a content hash.
+
 ### 2. Scraping Jobs
 ```bash
 # Scrape jobs from Himalayas posted in the last 7 days
