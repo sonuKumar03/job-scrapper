@@ -1,12 +1,14 @@
 """Typer CLI interface for Job Scrapper."""
 
 import asyncio
+from importlib.util import find_spec
 from rich.console import Console
 from rich.table import Table
 from sqlalchemy import func, select
 import typer
 from job_scrapper.connectors.registry import get_connector, list_connectors
 from job_scrapper.exporters.jsonl import export_jobs_to_jsonl
+from job_scrapper.exporters.parquet import export_jobs_to_parquet
 from job_scrapper.storage.postgres.models import JobModel
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
 from job_scrapper.storage.postgres.sink import PostgresJobSink
@@ -99,20 +101,26 @@ def scrape(
 
 @app.command()
 def export(
-    output: str = typer.Option("data/jobs_dataset.jsonl", "--output", "-o", help="Output file path"),
+    output: str | None = typer.Option(None, "--output", "-o", help="Output file path"),
     days: int = typer.Option(7, "--days", "-d", help="Only export jobs posted in the last X days"),
-    format: str = typer.Option("jsonl", "--format", "-f", help="Export format (currently 'jsonl')"),
+    format: str = typer.Option("jsonl", "--format", "-f", help="Export format: jsonl or parquet"),
 ) -> None:
     """Export scraped jobs to an ML-ready dataset file."""
     if days < 1:
         raise typer.BadParameter("--days must be at least 1")
+    if format not in {"jsonl", "parquet"}:
+        raise typer.BadParameter("--format must be jsonl or parquet")
+    if format == "parquet" and find_spec("pyarrow") is None:
+        raise typer.BadParameter("Parquet export requires: uv run --extra export job-scrapper export ...")
+    target = output or f"data/jobs_dataset.{format}"
 
     async def _export() -> None:
         session_manager = DatabaseSessionManager()
         try:
-            console.print(f"[cyan]Exporting jobs (posted within last {days} days) to {output}...[/cyan]")
-            count = await export_jobs_to_jsonl(session_manager, output_path=output, max_days=days)
-            console.print(f"[bold green]Successfully exported {count} jobs to {output}[/bold green]")
+            console.print(f"[cyan]Exporting jobs (posted within last {days} days) to {target}...[/cyan]")
+            exporter = export_jobs_to_parquet if format == "parquet" else export_jobs_to_jsonl
+            count = await exporter(session_manager, output_path=target, max_days=days)
+            console.print(f"[bold green]Successfully exported {count} jobs to {target}[/bold green]")
         finally:
             await session_manager.close()
 

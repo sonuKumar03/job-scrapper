@@ -1,65 +1,25 @@
 # Job Scrapper
 
-A high-volume, anti-bot resilient job scraping engine designed to collect recent job postings (<= 7 days) across popular job boards and export clean, structured datasets for training custom machine learning classification models.
+A job scraping engine for collecting recent postings and exporting datasets for machine learning classification. The default publication window is seven days.
 
 ---
 
 ## Key Features
 
-- **Decoupled Architecture (Ports & Adapters)**:
-  - **Connectors**: Independent, pluggable scrapers for each job board implementing `BaseConnector`.
-  - **Storage Sinks**: Persistence is decoupled from scraping via the `JobSink` protocol (PostgreSQL, SQLite, or flat JSONL/Parquet files).
-- **Anti-Bot Bypass**:
-  - Uses `curl_cffi` to impersonate real browser TLS fingerprints (Chrome 120 / JA3/JA4) for fast scraping without getting blocked by Cloudflare/Akamai.
-  - Headless browser fallback via `playwright` with stealth for dynamic JavaScript challenges.
+- **Decoupled collection**: Connectors pass `JobPosting` records through the `JobSink` protocol. PostgreSQL stores jobs; an in-memory sink supports local checks.
+- **Polite requests**: `curl_cffi` uses Chrome 120 TLS impersonation, request spacing, and a limit of three concurrent requests per domain. Sites can still block requests.
 - **Strict Recency Filtering**:
   - Automatically filters and normalizes publication dates into UTC, dropping postings older than a configurable cutoff (default: 7 days).
 - **Extensible Classification Schema**:
   - Core canonical fields (`title`, `company_name`, `description_text`, `posted_at`) paired with a flexible `attributes` JSON payload (`seniority`, `work_arrangement`, `location`, `salary_min`, `salary_max`, `experience_years_min`, `experience_years_max`, `tech_stack`).
   - Add or modify classification labels without database migrations.
-- **High-Performance ML Dataset Export**:
-  - Export directly from PostgreSQL to `.jsonl` or `.parquet` formatted for tokenization and model fine-tuning.
+- **Dataset export**: Stream PostgreSQL rows in batches to `.jsonl` or `.parquet`. A successful export atomically replaces the destination.
 
 ---
 
 ## Architecture
 
-```
-                       ┌─────────────────────────┐
-                       │  Target Job Boards       │
-                       │  (Himalayas, Jobicy, etc│
-                       └────────────┬────────────┘
-                                    │
-                        curl_cffi / Playwright
-                                    │
-                                    ▼
-                       ┌─────────────────────────┐
-                       │  Pluggable Connectors   │
-                       │  (implements Base)      │
-                       └────────────┬────────────┘
-                                    │
-                         Raw Payloads / HTML
-                                    │
-                                    ▼
-                       ┌─────────────────────────┐
-                       │  Normalization Pipeline │
-                       │  • HTML Cleaner         │
-                       │  • UTC Date Filter (<7d)│
-                       │  • SHA-256 Content Dedup│
-                       └────────────┬────────────┘
-                                    │
-                         Canonical JobPosting
-                                    │
-                                    ▼
-                       ┌─────────────────────────┐
-                       │  JobSink Protocol       │
-                       └──────┬───────────┬──────┘
-                              │           │
-            ┌─────────────────▼───┐   ┌───▼─────────────────┐
-            │ PostgresJobSink     │   │ FileJobSink         │
-            │ (SQLAlchemy 2.0)    │   │ (JSONL / Parquet)   │
-            └─────────────────────┘   └─────────────────────┘
-```
+Job boards → connectors → `JobPosting` → `PostgresJobSink` → PostgreSQL → JSONL or Parquet exporter.
 
 ---
 
@@ -70,8 +30,7 @@ A high-volume, anti-bot resilient job scraping engine designed to collect recent
 | **Language & Tooling** | Python 3.11+, `uv` |
 | **Database & ORM** | PostgreSQL 16, SQLAlchemy 2.0, `psycopg[binary]`, Alembic |
 | **Data Contracts** | Pydantic v2 |
-| **HTTP & TLS Bypass** | `curl_cffi` (Chrome impersonation) |
-| **Browser Fallback** | `playwright` (stealth) |
+| **HTTP & TLS** | `curl_cffi` (Chrome impersonation) |
 | **HTML Parsing & Text**| `selectolax`, `trafilatura` |
 | **CLI Framework** | `typer`, `rich` |
 
@@ -125,9 +84,14 @@ uv run job-scrapper scrape --source all --days 7
 # Export recent jobs to JSONL
 uv run job-scrapper export --days 7 --format jsonl --output data/jobs_dataset.jsonl
 
+# Export a Parquet dataset with the optional dependency
+uv run --extra export job-scrapper export --days 7 --format parquet --output data/jobs_dataset.parquet
+
 # Check database statistics
 uv run job-scrapper status
 ```
+
+Parquet stores `labels` as a UTF-8 JSON string so postings with different attribute keys share one schema. JSONL keeps `labels` as a JSON object. Both exports write 500-row batches and replace the destination only after a successful write.
 
 ---
 
@@ -158,7 +122,8 @@ job-scrapper/
 │       │   ├── himalayas.py    # Himalayas board connector
 │       │   └── jobicy.py       # Jobicy board connector
 │       ├── exporters/
-│       │   └── jsonl.py        # Stream database rows to ML JSONL format
+│       │   ├── jsonl.py        # Stream database rows to JSONL
+│       │   └── parquet.py      # Stream database rows to Parquet
 │       └── cli.py              # Typer CLI application
 └── tests/                      # Minimal contract & normalization tests
 ```

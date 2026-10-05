@@ -1,11 +1,12 @@
-"""ML Dataset Exporter to JSONL and Parquet formats."""
+"""Atomic, streaming JSONL export for ML datasets."""
 
-from datetime import datetime, timedelta, timezone
+from contextlib import aclosing
 import json
+import os
 from pathlib import Path
-from typing import Any
-from sqlalchemy import select
-from job_scrapper.storage.postgres.models import JobModel
+import tempfile
+
+from job_scrapper.exporters._rows import iter_job_batches, record_from_row
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
 
 
@@ -15,37 +16,21 @@ async def export_jobs_to_jsonl(
     max_days: int | None = 7,
     limit: int | None = None,
 ) -> int:
-    """Stream jobs from PostgreSQL into a JSONL dataset file formatted for ML classification."""
+    """Export jobs in 500-row batches, replacing the destination on success."""
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
-
-    stmt = select(JobModel)
-    if max_days:
-        cutoff = datetime.now(timezone.utc) - timedelta(days=max_days)
-        stmt = stmt.where(JobModel.posted_at >= cutoff)
-
-    stmt = stmt.order_by(JobModel.posted_at.desc())
-    if limit:
-        stmt = stmt.limit(limit)
-
+    fd, temp_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
     count = 0
-    async with session_manager.session() as session:
-        result = await session.stream(stmt)
-        with open(path, "w", encoding="utf-8") as f:
-            async for row in result.scalars():
-                job: JobModel = row
-                record = {
-                    "id": str(job.id),
-                    "source": job.source,
-                    "source_url": job.source_url,
-                    "title": job.title,
-                    "company_name": job.company_name,
-                    "description_text": job.description_text,
-                    "posted_at": job.posted_at.isoformat(),
-                    "scraped_at": job.scraped_at.isoformat(),
-                    "labels": job.attributes,
-                }
-                f.write(json.dumps(record, ensure_ascii=False) + "\n")
-                count += 1
-
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as output:
+            async with aclosing(iter_job_batches(session_manager, max_days, limit)) as batches:
+                async for batch in batches:
+                    for row in batch:
+                        output.write(json.dumps(record_from_row(row), ensure_ascii=False) + "\n")
+                        count += 1
+            output.flush()
+            os.fsync(output.fileno())
+        os.replace(temp_name, path)
+    finally:
+        Path(temp_name).unlink(missing_ok=True)
     return count
