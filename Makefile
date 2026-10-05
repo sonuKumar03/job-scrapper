@@ -24,11 +24,11 @@ migrate: ## Apply database migrations
 migration-generate: ## Generate a new migration (usage: make migration-generate msg="your_message")
 	rtk uv run alembic revision --autogenerate -m "$(msg)"
 
-scrape: ## Scrape recent jobs (usage: make scrape source=all days=90)
-	rtk uv run job-scrapper scrape --source $(or $(source),all) --days $(or $(days),90)
+scrape: ## Scrape recent jobs (usage: make scrape source=all days=7)
+	rtk uv run job-scrapper scrape --source $(or $(source),all) --days $(or $(days),7)
 
-export: ## Export dataset for ML training (usage: make export days=90 out=data/jobs_dataset.jsonl)
-	rtk uv run job-scrapper export --days $(or $(days),90) --output $(or $(out),data/jobs_dataset.jsonl)
+export: ## Export dataset for ML training (usage: make export days=7 out=data/jobs_dataset.jsonl)
+	rtk uv run job-scrapper export --days $(or $(days),7) --output $(or $(out),data/jobs_dataset.jsonl)
 
 status: ## Show current database status and job counts
 	rtk uv run job-scrapper status

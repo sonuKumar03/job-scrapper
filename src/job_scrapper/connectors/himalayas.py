@@ -25,12 +25,12 @@ class HimalayasConnector(BaseConnector):
             pass
         return []
 
-    async def scrape(self, sink: JobSink, max_days: int = 90) -> dict[str, int]:
+    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, int]:
         stats = {"found": 0, "inserted": 0, "skipped": 0}
         offset = 0
         concurrency = 3
         chunk_step = self.PAGE_SIZE * concurrency
-        max_total_jobs = 12000  # Cap per scrape execution
+        max_total_jobs = 2000  # Cap per scrape execution for 7-day runs
 
         while offset < max_total_jobs:
             # Fetch a chunk of pages concurrently

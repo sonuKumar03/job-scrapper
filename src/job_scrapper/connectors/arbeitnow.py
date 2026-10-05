@@ -12,7 +12,7 @@ class ArbeitnowConnector(BaseConnector):
     name: str = "arbeitnow"
     API_URL: str = "https://www.arbeitnow.com/api/job-board-api"
 
-    async def scrape(self, sink: JobSink, max_days: int = 90) -> dict[str, int]:
+    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, int]:
         stats = {"found": 0, "inserted": 0, "skipped": 0}
         page = 1
         max_pages = 50  # Up to 50 pages (~5,000+ jobs)

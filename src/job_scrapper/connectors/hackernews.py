@@ -14,7 +14,7 @@ class HackerNewsConnector(BaseConnector):
     name: str = "hackernews"
     SEARCH_URL: str = "https://hn.algolia.com/api/v1/search_by_date"
 
-    async def scrape(self, sink: JobSink, max_days: int = 90) -> dict[str, int]:
+    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, int]:
         stats = {"found": 0, "inserted": 0, "skipped": 0}
 
         # 1. Discover recent "Ask HN: Who is hiring?" thread IDs

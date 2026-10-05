@@ -46,7 +46,7 @@ class GreenhouseConnector(BaseConnector):
         super().__init__(**kwargs)
         self.companies = companies or DEFAULT_GREENHOUSE_COMPANIES
 
-    async def scrape(self, sink: JobSink, max_days: int = 90) -> dict[str, int]:
+    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, int]:
         stats = {"found": 0, "inserted": 0, "skipped": 0}
 
         for company in self.companies:

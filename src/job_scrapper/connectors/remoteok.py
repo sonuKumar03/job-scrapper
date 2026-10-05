@@ -12,7 +12,7 @@ class RemoteOKConnector(BaseConnector):
     name: str = "remoteok"
     API_URL: str = "https://remoteok.com/api"
 
-    async def scrape(self, sink: JobSink, max_days: int = 90) -> dict[str, int]:
+    async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, int]:
         stats = {"found": 0, "inserted": 0, "skipped": 0}
 
         response = await self.http_client.get(self.API_URL)
