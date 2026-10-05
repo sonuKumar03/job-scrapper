@@ -2,6 +2,12 @@
 
 Quick reference and developer commands for `job-scrapper`.
 
+## Priority & Disposable Scraped Data
+
+- The main goal is reliable, complete, and efficient scraping at scale (~10k jobs/day). Prioritize improving the scraping workflow and throughput.
+- Existing scraped data is disposable. Agents may delete or reset this project's scraped jobs, sightings, scrape-run records, and generated dataset exports when required for development, fixes, or validation, without asking for additional confirmation.
+- Backups, historical data recovery, and compatibility with old scraped records are not required. Scope resets to this project's scraped data and preserve unrelated databases, tables, files, and services.
+
 ---
 
 ### 1. Developer Commands (via Makefile)
