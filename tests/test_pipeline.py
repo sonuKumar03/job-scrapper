@@ -28,6 +28,10 @@ def test_date_parser_and_recency_filter() -> None:
 
     assert is_within_days(recent, max_days=7) is True
     assert is_within_days(old, max_days=7) is False
+    assert is_within_days(now + timedelta(seconds=1), max_days=7) is False
+    assert parse_to_utc(float("inf")) is None
+    assert parse_to_utc(10**100) is None
+    assert parse_to_utc("not a date") is None
 
     # Relative date parsing
     parsed_relative = parse_to_utc("2 days ago")

@@ -1,6 +1,7 @@
 """Date parsing and recency filtering utilities."""
 
 from datetime import datetime, timedelta, timezone
+import math
 from typing import Any
 import dateparser
 
@@ -10,29 +11,30 @@ def parse_to_utc(date_input: Any) -> datetime | None:
     if not date_input:
         return None
 
-    if isinstance(date_input, datetime):
-        if date_input.tzinfo is None:
-            return date_input.replace(tzinfo=timezone.utc)
-        return date_input.astimezone(timezone.utc)
-
-    # Handle numeric UNIX timestamps (seconds or milliseconds)
-    if isinstance(date_input, int | float):
-        # If timestamp is likely in milliseconds (greater than year 2100 in seconds)
-        if date_input > 4102444800:
-            date_input = date_input / 1000.0
-        return datetime.fromtimestamp(date_input, tz=timezone.utc)
-
-    # Handle strings
-    str_val = str(date_input).strip()
-    parsed = dateparser.parse(
-        str_val,
-        settings={
-            "TIMEZONE": "UTC",
-            "TO_TIMEZONE": "UTC",
-            "RETURN_AS_TIMEZONE_AWARE": True,
-        },
-    )
-    return parsed
+    try:
+        if isinstance(date_input, datetime):
+            parsed = date_input
+        elif isinstance(date_input, int | float):
+            if not math.isfinite(date_input):
+                return None
+            timestamp = date_input / 1000 if abs(date_input) > 100_000_000_000 else date_input
+            parsed = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+        else:
+            parsed = dateparser.parse(
+                str(date_input).strip(),
+                settings={
+                    "TIMEZONE": "UTC",
+                    "TO_TIMEZONE": "UTC",
+                    "RETURN_AS_TIMEZONE_AWARE": True,
+                },
+            )
+        if parsed is None:
+            return None
+        if parsed.tzinfo is None:
+            parsed = parsed.replace(tzinfo=timezone.utc)
+        return parsed.astimezone(timezone.utc)
+    except (OverflowError, OSError, TypeError, ValueError):
+        return None
 
 
 def is_within_days(dt: datetime, max_days: int = 7) -> bool:
@@ -44,4 +46,4 @@ def is_within_days(dt: datetime, max_days: int = 7) -> bool:
         dt = dt.replace(tzinfo=timezone.utc)
     else:
         dt = dt.astimezone(timezone.utc)
-    return dt >= cutoff
+    return max_days > 0 and cutoff <= dt <= now_utc

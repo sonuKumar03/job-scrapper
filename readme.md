@@ -103,6 +103,14 @@ The CLI and Alembic both load `.env`. Process environment variables take precede
 
 For a fresh scrape, apply schema updates with `uv run alembic upgrade head` before starting the CLI. Existing scraped jobs may be removed when changing collection or deduplication behavior; if clearing them, pause scrapers and truncate only `job_sightings`, `jobs`, and `scrape_runs` in the explicitly configured project database. Preserve Alembic history and unrelated tables. The current migration does not require clearing existing rows. Downgrading to the old unique-content-hash schema requires that no two jobs share a content hash.
 
+## Source coverage limits
+
+The scrape CLI reports errors and incomplete coverage, then exits with status 1.
+
+**Provider limits:** [Jobicy exposes a rolling seven-day feed](https://jobicy.com/jobs-rss-feed), so requests for more than seven days are incomplete. [Hacker News search uses Algolia pagination](https://hn.algolia.com/api); its index exposes at most 1,000 results per query by default. Greenhouse jobs without the API's original [`first_published` date](https://docs.greenhouse.io/job-board.html) are skipped and counted as unknown.
+
+**Scraper safety ceilings:** These are implementation choices to bound one run, not provider limits. The current caps are 500 pages for Himalayas, 500 pages for Lever, 50 pages for Arbeitnow, and 500 pages for Jobicy. If a cap is reached, the CLI marks that source incomplete. Himalayas uses the documented cursor and 20-job page size; [Lever supports `skip` and `limit`](https://github.com/lever/postings-api); [Jobicy supports cursor pagination](https://jobicy.com/jobs-rss-feed).
+
 ### 2. Scraping Jobs
 ```bash
 # Scrape jobs from Himalayas posted in the last 7 days

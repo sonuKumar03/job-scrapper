@@ -32,11 +32,17 @@ class ArbeitnowConnector(BaseConnector):
                 self.record_error(stats, f"page {page}", exc)
                 break
             items = data["data"]
+            links = data.get("links") or {}
+            if not isinstance(links, dict):
+                self.record_error(stats, f"page {page}", ValueError("links must be an object"))
+                break
             if not items:
+                if links.get("next"):
+                    self.record_error(stats, f"page {page}", ValueError("empty page has a next link"))
                 break
 
             batch: list[JobPosting] = []
-            reached_cutoff = False
+            unknown_dates = 0
 
             for item in items:
                 stats["found"] += 1
@@ -48,12 +54,12 @@ class ArbeitnowConnector(BaseConnector):
                 created_at = item.get("created_at")
                 pub_date = parse_to_utc(created_at)
                 if not pub_date:
+                    unknown_dates += 1
                     stats["skipped"] += 1
                     continue
 
                 if not is_within_days(pub_date, max_days=max_days):
                     stats["skipped"] += 1
-                    reached_cutoff = True
                     continue
 
                 if await sink.contains(self.name, slug):
@@ -87,12 +93,9 @@ class ArbeitnowConnector(BaseConnector):
                 inserted = await sink.save_batch(batch)
                 stats["inserted"] += inserted
                 stats["skipped"] += len(batch) - inserted
+            self.record_unknown_dates(stats, f"page {page}", unknown_dates)
 
-            links = data.get("links") or {}
-            if not isinstance(links, dict):
-                self.record_error(stats, f"page {page}", ValueError("links must be an object"))
-                break
-            if reached_cutoff or not links.get("next"):
+            if not links.get("next"):
                 break
 
             page += 1

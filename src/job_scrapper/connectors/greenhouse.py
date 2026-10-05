@@ -50,6 +50,7 @@ class GreenhouseConnector(BaseConnector):
         stats = self.new_stats()
 
         for company in self.companies:
+            unknown_dates = 0
             url = f"{self.BASE_URL}/{company}/jobs?content=true"
             try:
                 response = await self.http_client.get(url)
@@ -69,9 +70,12 @@ class GreenhouseConnector(BaseConnector):
                 stats["found"] += 1
                 source_id = str(item.get("id"))
 
-                raw_date = item.get("updated_at") or item.get("first_published")
-                pub_date = parse_to_utc(raw_date)
-                if not pub_date or not is_within_days(pub_date, max_days=max_days):
+                pub_date = parse_to_utc(item.get("first_published"))
+                if not pub_date:
+                    unknown_dates += 1
+                    stats["skipped"] += 1
+                    continue
+                if not is_within_days(pub_date, max_days=max_days):
                     stats["skipped"] += 1
                     continue
 
@@ -121,5 +125,6 @@ class GreenhouseConnector(BaseConnector):
                 inserted = await sink.save_batch(batch)
                 stats["inserted"] += inserted
                 stats["skipped"] += len(batch) - inserted
+            self.record_unknown_dates(stats, f"company {company}", unknown_dates)
 
         return stats

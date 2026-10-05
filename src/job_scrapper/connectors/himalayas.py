@@ -1,7 +1,7 @@
 """Himalayas remote software jobs connector with high-throughput pagination."""
 
-import asyncio
 from typing import Any
+from urllib.parse import urlencode
 from job_scrapper.connectors.base import BaseConnector
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.cleaner import clean_html_to_text
@@ -12,60 +12,67 @@ from job_scrapper.storage.base import JobSink
 class HimalayasConnector(BaseConnector):
     name: str = "himalayas"
     API_URL: str = "https://himalayas.app/jobs/api"
-    PAGE_SIZE: int = 20  # Himalayas enforces 20 items per page
+    PAGE_SIZE: int = 20
+    MAX_PAGES: int = 500
 
-    async def _fetch_page(self, offset: int, stats: dict[str, Any]) -> list[dict[str, Any]] | None:
-        url = f"{self.API_URL}?limit={self.PAGE_SIZE}&offset={offset}"
+    async def _fetch_page(
+        self, cursor: str | None, page_number: int, stats: dict[str, Any]
+    ) -> tuple[list[dict[str, Any]], str | None, int] | None:
+        params = {"limit": self.PAGE_SIZE}
+        if cursor is not None:
+            params["cursor"] = cursor
+        url = f"{self.API_URL}?{urlencode(params)}"
         try:
             resp = await self.http_client.get(url)
             data = resp.json()
             if (
                 not isinstance(data, dict)
                 or not isinstance(data.get("jobs"), list)
+                or not isinstance(data.get("totalCount"), int)
                 or any(not isinstance(item, dict) for item in data["jobs"])
             ):
                 raise ValueError("response jobs must be a list")
-            return data["jobs"]
+            next_cursor = data.get("nextCursor")
+            if next_cursor is not None and (not isinstance(next_cursor, str) or not next_cursor):
+                raise ValueError("nextCursor must be a non-empty string")
+            return data["jobs"], next_cursor, data["totalCount"]
         except Exception as exc:
-            self.record_error(stats, f"page offset {offset}", exc)
+            self.record_error(stats, f"page {page_number}", exc)
             return None
 
     async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
         stats = self.new_stats()
-        offset = 0
-        concurrency = 3
-        chunk_step = self.PAGE_SIZE * concurrency
-        max_total_jobs = 2000  # Cap per scrape execution for 7-day runs
-
-        while offset < max_total_jobs:
-            # Fetch a chunk of pages concurrently
-            tasks = [self._fetch_page(offset + (i * self.PAGE_SIZE), stats) for i in range(concurrency)]
-            results = await asyncio.gather(*tasks)
-            if any(page is None for page in results):
+        cursor: str | None = None
+        seen_cursors: set[str] = set()
+        unknown_dates = 0
+        total_count: int | None = None
+        scanned_count = 0
+        for page in range(self.MAX_PAGES):
+            if cursor is not None:
+                if cursor in seen_cursors:
+                    self.record_error(stats, f"page {page + 1}", ValueError("repeated cursor"))
+                    break
+                seen_cursors.add(cursor)
+            result = await self._fetch_page(cursor, page + 1, stats)
+            if result is None:
                 break
-
-            chunk_jobs: list[dict[str, Any]] = []
-            for page_jobs in results:
-                chunk_jobs.extend(page_jobs or [])
-
-            if not chunk_jobs:
-                break
-
+            page_jobs, next_cursor, page_total = result
+            if total_count is None:
+                total_count = page_total
+            scanned_count += len(page_jobs)
             batch: list[JobPosting] = []
-            reached_cutoff = False
-
-            for item in chunk_jobs:
+            for item in page_jobs:
                 stats["found"] += 1
                 source_id = str(item.get("guid") or item.get("applicationLink") or "")
 
                 pub_date = parse_to_utc(item.get("pubDate"))
                 if not pub_date:
+                    unknown_dates += 1
                     stats["skipped"] += 1
                     continue
 
                 if not is_within_days(pub_date, max_days=max_days):
                     stats["skipped"] += 1
-                    reached_cutoff = True
                     continue
 
                 if source_id and await sink.contains(self.name, source_id):
@@ -105,13 +112,15 @@ class HimalayasConnector(BaseConnector):
                 stats["inserted"] += inserted
                 stats["skipped"] += len(batch) - inserted
 
-            if reached_cutoff or len(chunk_jobs) < chunk_step:
+            if next_cursor is None:
+                if total_count is not None and scanned_count < total_count:
+                    self.record_error(stats, f"page {page + 1}", ValueError("cursor ended before totalCount"))
                 break
-
-            offset += chunk_step
-
+            cursor = next_cursor
         else:
             stats["truncated"] = True
-            stats["errors"].append(f"page safety limit reached ({max_total_jobs} jobs)")
+            stats["errors"].append(f"page safety limit reached ({self.MAX_PAGES} pages)")
+
+        self.record_unknown_dates(stats, "feed", unknown_dates)
 
         return stats

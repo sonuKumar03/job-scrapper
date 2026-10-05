@@ -36,3 +36,9 @@ class BaseConnector(ABC):
         reason = str(error) if isinstance(error, RequestError) else type(error).__name__
         stats["errors"].append(f"{context}: {reason}")
         stats["truncated"] = True
+
+    @staticmethod
+    def record_unknown_dates(stats: dict[str, Any], context: str, count: int) -> None:
+        if count:
+            stats["errors"].append(f"{context}: {count} listings had unknown or invalid publication dates")
+            stats["truncated"] = True
