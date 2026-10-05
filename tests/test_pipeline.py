@@ -39,3 +39,10 @@ def test_hasher_deterministic() -> None:
     h1 = compute_content_hash("Acme Inc", "Software Engineer", "Building APIs")
     h2 = compute_content_hash("acme inc ", " software engineer", "building apis")
     assert h1 == h2
+
+
+def test_hasher_uses_full_description() -> None:
+    prefix = "x" * 250
+    assert compute_content_hash("Acme", "Engineer", prefix + "Python") != compute_content_hash(
+        "Acme", "Engineer", prefix + "Kotlin"
+    )

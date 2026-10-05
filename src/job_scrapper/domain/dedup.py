@@ -24,6 +24,10 @@ class DeduplicationEngine(Protocol):
         """Compute a 64-bit SimHash over text word 3-grams for near-duplicate matching."""
         ...
 
+    def is_duplicate(self, existing: JobPosting, incoming: JobPosting) -> bool:
+        """Return whether two recent cross-source postings have matching content."""
+        ...
+
     def are_near_duplicates(self, hash1: int, hash2: int, max_distance: int = 3) -> bool:
         """Return True if Hamming distance between two 64-bit SimHashes is <= max_distance."""
         ...

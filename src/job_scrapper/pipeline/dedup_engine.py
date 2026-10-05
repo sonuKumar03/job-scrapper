@@ -2,6 +2,7 @@
 
 import hashlib
 import re
+from datetime import timedelta
 from typing import Any
 from job_scrapper.domain.models import JobPosting
 
@@ -10,7 +11,7 @@ LEGAL_SUFFIXES = re.compile(
     re.IGNORECASE,
 )
 TITLE_NOISE = re.compile(
-    r"(\[.*?\]|\(.*?\)|-\s*remote|-\s*full\s*time|\|\s*remote|\|\s*hybrid|\|\s*onsite)",
+    r"(\[\s*(?:remote|hybrid|on[- ]?site)\s*\]|\(\s*(?:remote|hybrid|on[- ]?site)\s*\)|[-|]\s*(?:remote|hybrid|on[- ]?site)\b)",
     re.IGNORECASE,
 )
 
@@ -34,6 +35,7 @@ class StandardDeduplicationEngine:
             return ""
         # Strip brackets, parentheses, and trailing remote tags
         s = TITLE_NOISE.sub("", title).lower().strip()
+        s = re.sub(r"[()]", " ", s)
         s = re.sub(r"[\.,\-_\/\\\'\"]", " ", s)
         # Expand common job title contractions
         s = re.sub(r"\bsr\b", "senior", s)
@@ -46,10 +48,29 @@ class StandardDeduplicationEngine:
     def compute_canonical_signature(self, job: JobPosting) -> str:
         norm_co = self.normalize_company(job.company_name)
         norm_title = self.normalize_title(job.title)
-        loc = (job.attributes.get("location") or "remote").lower()
-        norm_loc = re.sub(r"[^a-z0-9]", "", loc)[:15]
+        loc = str(job.attributes.get("location") or "remote").lower()
+        norm_loc = re.sub(r"[^a-z0-9]+", " ", loc).strip()
         raw_key = f"{norm_co}|{norm_title}|{norm_loc}"
         return hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
+
+    def is_duplicate(self, existing: JobPosting, incoming: JobPosting) -> bool:
+        if (existing.source, existing.source_job_id) == (incoming.source, incoming.source_job_id):
+            return True
+        if existing.source == incoming.source:
+            return False
+        if self.compute_canonical_signature(existing) != self.compute_canonical_signature(incoming):
+            return False
+        if abs(existing.posted_at - incoming.posted_at) > timedelta(days=7):
+            return False
+        if existing.content_hash == incoming.content_hash:
+            return True
+        if min(len(re.findall(r"\b[a-z0-9]{2,}\b", existing.description_text.lower())),
+               len(re.findall(r"\b[a-z0-9]{2,}\b", incoming.description_text.lower()))) < 50:
+            return False
+        return self.are_near_duplicates(
+            self.compute_simhash(existing.description_text),
+            self.compute_simhash(incoming.description_text),
+        )
 
     def compute_simhash(self, text: str) -> int:
         """Compute a 64-bit SimHash over text word 3-grams."""
@@ -84,8 +105,8 @@ class StandardDeduplicationEngine:
 
         return fingerprint
 
-    def are_near_duplicates(self, hash1: int, hash2: int, max_distance: int = 7) -> bool:
-        """Calculate bitwise Hamming distance between two 64-bit SimHashes (default <=7 bits for ~89%+ similarity)."""
+    def are_near_duplicates(self, hash1: int, hash2: int, max_distance: int = 3) -> bool:
+        """Check whether two 64-bit SimHashes differ by at most three bits."""
         if hash1 == 0 or hash2 == 0:
             return False
         u1 = hash1 & 0xFFFFFFFFFFFFFFFF

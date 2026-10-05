@@ -1,6 +1,7 @@
 """In-memory storage sink for zero-infrastructure testing and dry runs."""
 
 from job_scrapper.domain.models import JobPosting
+from job_scrapper.pipeline.dedup_engine import StandardDeduplicationEngine
 
 
 class InMemoryJobSink:
@@ -8,7 +9,8 @@ class InMemoryJobSink:
 
     def __init__(self) -> None:
         self.jobs_by_id: dict[tuple[str, str], JobPosting] = {}
-        self.jobs_by_hash: dict[str, JobPosting] = {}
+        self.jobs: list[JobPosting] = []
+        self.dedup_engine = StandardDeduplicationEngine()
 
     async def contains(self, source: str, source_job_id: str) -> bool:
         return (source, source_job_id) in self.jobs_by_id
@@ -17,17 +19,27 @@ class InMemoryJobSink:
         new_count = 0
         for job in jobs:
             key = (job.source, job.source_job_id)
-            if key in self.jobs_by_id or job.content_hash in self.jobs_by_hash:
+            if key in self.jobs_by_id:
                 continue
 
-            self.jobs_by_id[key] = job
-            self.jobs_by_hash[job.content_hash] = job
-            new_count += 1
+            canonical = next(
+                (existing for existing in self.jobs if self.dedup_engine.is_duplicate(existing, job)),
+                None,
+            )
+            if canonical:
+                merged, changed = self.dedup_engine.enrich_attributes(canonical.attributes, job.attributes)
+                if changed:
+                    canonical.attributes = merged
+            else:
+                canonical = job
+                self.jobs.append(canonical)
+                new_count += 1
+            self.jobs_by_id[key] = canonical
 
         return new_count
 
     async def count(self) -> int:
-        return len(self.jobs_by_id)
+        return len(self.jobs)
 
     def get_all(self) -> list[JobPosting]:
-        return list(self.jobs_by_id.values())
+        return list(self.jobs)

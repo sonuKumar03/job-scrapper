@@ -1,9 +1,9 @@
 """Domain models for Job Scrapper."""
 
 from datetime import datetime, timezone
-import hashlib
 from typing import Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+from job_scrapper.pipeline.hasher import compute_content_hash
 
 
 class JobPosting(BaseModel):
@@ -20,9 +20,34 @@ class JobPosting(BaseModel):
     content_hash: str = ""
     attributes: dict[str, Any] = Field(default_factory=dict)
 
+    @field_validator("source", "source_job_id", "source_url", "title", "company_name", "description_text")
+    @classmethod
+    def require_nonblank_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("must not be blank")
+        return value
+
+    @field_validator("posted_at")
+    @classmethod
+    def normalize_posted_at(cls, value: datetime) -> datetime:
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+        else:
+            value = value.astimezone(timezone.utc)
+        if value > datetime.now(timezone.utc):
+            raise ValueError("posted_at must not be in the future")
+        return value
+
+    @field_validator("scraped_at")
+    @classmethod
+    def normalize_scraped_at(cls, value: datetime) -> datetime:
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
+
     def model_post_init(self, __context: Any) -> None:
         """Automatically compute content_hash if not provided."""
         if not self.content_hash:
-            # Hash company + title + first 250 characters of description
-            raw_signature = f"{self.company_name.strip().lower()}|{self.title.strip().lower()}|{self.description_text[:250].strip().lower()}"
-            self.content_hash = hashlib.sha256(raw_signature.encode("utf-8")).hexdigest()
+            self.content_hash = compute_content_hash(
+                self.company_name, self.title, self.description_text
+            )
