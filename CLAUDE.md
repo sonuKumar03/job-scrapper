@@ -13,6 +13,8 @@ Quick reference and developer commands for `job-scrapper`.
 ### Developer Commands
 ```bash
 rtk make setup
+rtk make up
+rtk make down
 rtk make scrape
 rtk make export
 rtk make parquet

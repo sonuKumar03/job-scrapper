@@ -1,4 +1,4 @@
-.PHONY: help setup dev-up dev-down migrate scrape export parquet status test clean
+.PHONY: help setup up down migrate scrape export parquet status test clean
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -12,10 +12,10 @@ setup: ## Install dependencies and prepare local environment
 	@rtk uv run alembic upgrade head
 	@echo "Environment setup complete!"
 
-dev-up: ## Start PostgreSQL container
+up: ## Start PostgreSQL container
 	@rtk docker compose up -d
 
-dev-down: ## Stop PostgreSQL container
+down: ## Stop PostgreSQL container
 	@rtk docker compose down
 
 migrate: ## Apply database migrations
