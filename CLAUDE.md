@@ -25,6 +25,8 @@ rtk make test
 
 Defaults: scrape all sources from the last seven days; export the last seven days. Use `rtk make help` for other targets. For a specific source, use `rtk make scrape source=himalayas`.
 
+For live development checks, use `rtk make scrape source=jobicy days=1` (or the source being checked). Keep diagnostic page counts bounded for feeds that still require full traversal.
+
 `rtk make reset` deletes jobs, sightings, and scrape-run records from the configured database. Stop scrapers before resetting. Schema and migration history are preserved.
 
 ---
