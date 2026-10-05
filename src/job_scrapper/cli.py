@@ -53,6 +53,9 @@ def scrape(
     days: int = typer.Option(7, "--days", "-d", help="Number of days cutoff for recent postings"),
 ) -> None:
     """Scrape recent jobs from target job boards into PostgreSQL."""
+    if days < 1:
+        raise typer.BadParameter("--days must be at least 1")
+
     available = list_connectors()
     if source.lower() == "all":
         sources_to_run = available
@@ -73,6 +76,9 @@ def export(
     format: str = typer.Option("jsonl", "--format", "-f", help="Export format (currently 'jsonl')"),
 ) -> None:
     """Export scraped jobs to an ML-ready dataset file."""
+    if days < 1:
+        raise typer.BadParameter("--days must be at least 1")
+
     async def _export() -> None:
         session_manager = DatabaseSessionManager()
         console.print(f"[cyan]Exporting jobs (posted within last {days} days) to {output}...[/cyan]")

@@ -99,6 +99,8 @@ docker compose up -d
 uv run alembic upgrade head
 ```
 
+The CLI and Alembic both load `.env`. Process environment variables take precedence. Scraping settings are `DATABASE_URL`, `MAX_CONCURRENT_REQUESTS` (1–3), `MIN_REQUEST_DELAY_SECONDS` and `MAX_REQUEST_DELAY_SECONDS` (1–3 seconds), `REQUEST_TIMEOUT_SECONDS` (positive seconds), and `HTTP_PROXY`.
+
 ### 2. Scraping Jobs
 ```bash
 # Scrape jobs from Himalayas posted in the last 7 days

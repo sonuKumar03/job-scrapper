@@ -7,23 +7,16 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-import os
-from dotenv import load_dotenv
-
 from job_scrapper.storage.postgres.models import Base
-
-load_dotenv()
+from job_scrapper.config import get_settings, normalize_database_url
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-# Override sqlalchemy.url with environment variable
-database_url = os.getenv("DATABASE_URL")
-if database_url:
-    if database_url.startswith("postgresql://"):
-        database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
-    config.set_main_option("sqlalchemy.url", database_url)
+# Alembic and runtime share the same .env and environment-backed database URL.
+database_url = normalize_database_url(get_settings().database_url)
+config.set_main_option("sqlalchemy.url", database_url.replace("%", "%%"))
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

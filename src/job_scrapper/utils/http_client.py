@@ -1,10 +1,10 @@
 """Resilient HTTP client using curl_cffi for browser TLS impersonation."""
 
 import asyncio
-import os
 import random
 from typing import Any
 from curl_cffi.requests import AsyncSession, Response
+from job_scrapper.config import Settings, get_settings
 
 
 class ResilientHttpClient:
@@ -12,17 +12,32 @@ class ResilientHttpClient:
 
     def __init__(
         self,
-        min_delay: float = 1.0,
-        max_delay: float = 2.5,
-        max_concurrency: int = 3,
+        min_delay: float | None = None,
+        max_delay: float | None = None,
+        max_concurrency: int | None = None,
         proxy: str | None = None,
-        timeout: int = 30,
+        timeout: int | None = None,
     ) -> None:
-        self.min_delay = min_delay
-        self.max_delay = max_delay
-        self.semaphore = asyncio.Semaphore(max_concurrency)
-        self.proxy = proxy or os.getenv("HTTP_PROXY") or None
-        self.timeout = timeout
+        defaults = get_settings()
+        settings = Settings(
+            min_request_delay_seconds=(
+                defaults.min_request_delay_seconds if min_delay is None else min_delay
+            ),
+            max_request_delay_seconds=(
+                defaults.max_request_delay_seconds if max_delay is None else max_delay
+            ),
+            max_concurrent_requests=(
+                defaults.max_concurrent_requests if max_concurrency is None else max_concurrency
+            ),
+            request_timeout_seconds=(
+                defaults.request_timeout_seconds if timeout is None else timeout
+            ),
+        )
+        self.min_delay = settings.min_request_delay_seconds
+        self.max_delay = settings.max_request_delay_seconds
+        self.semaphore = asyncio.Semaphore(settings.max_concurrent_requests)
+        self.proxy = proxy if proxy is not None else defaults.http_proxy
+        self.timeout = settings.request_timeout_seconds
         self._session: AsyncSession | None = None
 
     async def _get_session(self) -> AsyncSession:
