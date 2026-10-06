@@ -27,6 +27,10 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql+psycopg://postgres:postgrespassword@db:5432/job_scrapper
+      - SCRAPE_EXECUTOR=${SCRAPE_EXECUTOR:-memory}
+      - SCRAPE_BROKER_URL=redis://redis:6379/0
+      - SCRAPE_MAX_ACTIVE_RUNS=${SCRAPE_MAX_ACTIVE_RUNS:-3}
+      - SCRAPE_MAX_QUEUED_RUNS=${SCRAPE_MAX_QUEUED_RUNS:-20}
     volumes:
       - ./src:/app/src
       - ./migrations:/app/migrations
@@ -54,5 +58,45 @@ services:
     depends_on:
       - api
 
+  redis:
+    image: redis:7-alpine
+    profiles: [broker]
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:6379:6379'
+    command: ['redis-server', '--appendonly', 'yes', '--appendfsync', 'always', '--maxmemory-policy', 'noeviction']
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    profiles: [broker]
+    restart: unless-stopped
+    stop_grace_period: 75s
+    environment:
+      - DATABASE_URL=postgresql+psycopg://postgres:postgrespassword@db:5432/job_scrapper
+      - SCRAPE_EXECUTOR=broker
+      - SCRAPE_BROKER_URL=redis://redis:6379/0
+      - SCRAPE_MAX_ACTIVE_RUNS=${SCRAPE_MAX_ACTIVE_RUNS:-3}
+      - SCRAPE_MAX_QUEUED_RUNS=${SCRAPE_MAX_QUEUED_RUNS:-20}
+    volumes:
+      - ./src:/app/src
+      - ./migrations:/app/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head && job-scrapper worker"
+
 volumes:
   pgdata:
+  redisdata:

@@ -20,3 +20,11 @@ export function useRuns(page = 1, poll = true) {
     refetchInterval: poll ? 5000 : false,
   });
 }
+
+export function useActiveRuns() {
+  return useQuery({
+    queryKey: ['runs', 'active'],
+    queryFn: ({ signal }) => fetchApi('runs/active', { signal }),
+    refetchInterval: 2000,
+  });
+}

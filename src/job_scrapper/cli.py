@@ -16,13 +16,16 @@ from job_scrapper.exporters.parquet import export_jobs_to_parquet
 from job_scrapper.storage.postgres.models import JobModel
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
 from job_scrapper.storage.postgres.sink import PostgresJobSink
-from job_scrapper.runner import run_scrape, scrape_lock, request_scrape_stop, ScrapeBusyError
+from job_scrapper.execution.bootstrap import execution_runtime, stop_run
+from job_scrapper.execution.contracts import RunConflict, StartScrapeCommand, TERMINAL_STATUSES
+from job_scrapper.storage.postgres.runs import reset_guard
 
 app = typer.Typer(help="High-volume job scraper and ML dataset generator.")
 console = Console()
 
 
-async def _run_scrape(sources: list[str], days: int, include_catalog_status: bool = False) -> bool:
+async def _run_scrape(sources: list[str], days: int, include_catalog_status: bool = False,
+                      separate_runs: bool = False) -> bool:
     session_manager = DatabaseSessionManager()
     table = Table(title=f"Scrape Results (general-board cutoff: Last {days} Days)")
     table.add_column("Source", style="cyan")
@@ -31,13 +34,6 @@ async def _run_scrape(sources: list[str], days: int, include_catalog_status: boo
     table.add_column("Skipped / Duplicate", justify="right", style="dim")
     table.add_column("Errors", style="red")
     table.add_column("Truncated", style="yellow")
-    async def show_started(snapshot: dict) -> None:
-        for name, result in snapshot["results"].items():
-            if result["status"] == "running" and name not in started:
-                started.add(name)
-                console.print(f"[bold blue]Scraping {name}...[/bold blue]")
-
-    started: set[str] = set()
     stop_event = asyncio.Event()
     loop = asyncio.get_running_loop()
     previous_handlers = {sig: signal.getsignal(sig) for sig in (signal.SIGINT, signal.SIGTERM)}
@@ -51,11 +47,33 @@ async def _run_scrape(sources: list[str], days: int, include_catalog_status: boo
         loop.add_signal_handler(sig, stop_after_batch)
 
     try:
-        execution = await run_scrape(session_manager, sources, days, on_update=show_started, stop_event=stop_event)
-        if execution["status"] == "stopped":
+        async with execution_runtime(session_manager) as control:
+            submissions = [(source,) for source in sources] if separate_runs else [tuple(sources)]
+            owned = []
+            for selected in submissions:
+                run = await control.submit(StartScrapeCommand(sources=selected, days=days))
+                owned.append(run.id)
+                console.print(f'Run {run.id}: {run.status} ({", ".join(run.sources)})')
+            previous_status = {}
+            while True:
+                control.check_health()
+                executions = [await control.get(run_id) for run_id in owned]
+                if any(run is None for run in executions):
+                    raise RunConflict('A submitted run was removed by a database reset.')
+                for run in executions:
+                    if previous_status.get(run.id) != run.status:
+                        console.print(f'Run {run.id}: {run.status} (attempt {run.attempts})')
+                        previous_status[run.id] = run.status
+                    if stop_event.is_set() and run.status not in TERMINAL_STATUSES:
+                        await control.request_stop(run.id)
+                if all(run.status in TERMINAL_STATUSES for run in executions):
+                    break
+                await asyncio.sleep(0.5)
+        if any(run.status == 'stopped' for run in executions):
             console.print("[yellow]Scrape stopped gracefully. Saved jobs were preserved.[/yellow]")
-        results = execution["results"].items()
-        failed = execution["status"] == "stopped"
+        results = [(f'{source_name}/{str(run.id)[:8]}' if separate_runs else source_name, stats)
+                   for run in executions for source_name, stats in run.results.items()]
+        failed = any(run.status != 'completed' for run in executions)
         for source_name, stats in results:
             if "found" not in stats:
                 failed = True
@@ -87,7 +105,7 @@ async def _run_scrape(sources: list[str], days: int, include_catalog_status: boo
             ))
         total_jobs = await PostgresJobSink(session_manager).count()
         console.print(f"\n[bold green]Total jobs stored in database: {total_jobs}[/bold green]")
-    except ScrapeBusyError as error:
+    except (RunConflict, ValueError) as error:
         console.print(f"[red]{error}[/red]")
         return True
     finally:
@@ -104,10 +122,11 @@ def scrape(
         "all", "--source", "-s", help="Job board source name ('all' or comma-separated, e.g. 'himalayas,jobicy')"
     ),
     days: int = typer.Option(7, "--days", "-d", help="Number of days cutoff for recent postings"),
+    separate_runs: bool = typer.Option(False, '--separate-runs', help='Submit one independent run per selected source.'),
 ) -> None:
     """Scrape recent jobs from target job boards into PostgreSQL."""
-    if days < 1:
-        raise typer.BadParameter("--days must be at least 1")
+    if days < 1 or days > 365:
+        raise typer.BadParameter("--days must be from 1 to 365")
 
     available = list_connectors()
     if source.lower() == "all":
@@ -119,7 +138,7 @@ def scrape(
             raise typer.BadParameter(f"unknown source(s): {', '.join(unknown)}. Available: {', '.join(available)}")
         sources_to_run = requested
 
-    if asyncio.run(_run_scrape(sources_to_run, days, include_catalog_status=source.lower() == "all")):
+    if asyncio.run(_run_scrape(sources_to_run, days, include_catalog_status=source.lower() == "all", separate_runs=separate_runs)):
         raise typer.Exit(1)
 
 
@@ -131,11 +150,14 @@ def stop(
     async def request() -> None:
         manager = DatabaseSessionManager()
         try:
-            stopped_id = await request_scrape_stop(manager, run_id)
-            if stopped_id is None:
+            run = await stop_run(manager, run_id)
+            if run is None:
                 console.print("[yellow]No active scrape found.[/yellow]")
                 raise typer.Exit(1)
-            console.print(f"[yellow]Stop requested for {stopped_id}. Waiting for the current batch to finish.[/yellow]")
+            console.print(f"[yellow]Run {run.id}: {run.status}. Saved jobs are preserved.[/yellow]")
+        except RunConflict as error:
+            console.print(f'[red]{error}[/red]')
+            raise typer.Exit(1)
         finally:
             await manager.close()
     asyncio.run(request())
@@ -203,11 +225,11 @@ def reset() -> None:
     async def _reset() -> None:
         session_manager = DatabaseSessionManager()
         try:
-            async with scrape_lock(session_manager), session_manager.session() as session:
-                await session.execute(text("TRUNCATE TABLE job_sightings, jobs, scrape_runs, scrape_executions"))
+            async with reset_guard(session_manager), session_manager.session() as session:
+                await session.execute(text("TRUNCATE TABLE job_sightings, jobs, scrape_runs, scrape_dispatches, scrape_executions"))
                 await session.commit()
             console.print("[green]Cleared jobs, sightings, and scrape runs.[/green]")
-        except ScrapeBusyError as error:
+        except RunConflict as error:
             console.print(f"[red]{error}[/red]")
             raise typer.Exit(1)
         finally:
@@ -232,6 +254,34 @@ def serve_api(
     else:
         from job_scrapper.web import create_app
         uvicorn.run(create_app(), host=host, port=port, workers=1)
+
+
+@app.command()
+def worker() -> None:
+    """Run the sole external Redis worker host (broker mode only)."""
+    async def serve() -> None:
+        manager = DatabaseSessionManager()
+        shutdown = asyncio.Event()
+        loop = asyncio.get_running_loop()
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            loop.add_signal_handler(sig, shutdown.set)
+        try:
+            async with execution_runtime(manager, worker_host=True) as control:
+                console.print(f'Worker ready: {control.capacity.active} concurrent runs.')
+                while not shutdown.is_set():
+                    control.check_health()
+                    try:
+                        await asyncio.wait_for(shutdown.wait(), timeout=0.5)
+                    except TimeoutError:
+                        pass
+        except (RunConflict, ValueError) as error:
+            console.print(f'[red]{error}[/red]')
+            raise typer.Exit(1)
+        finally:
+            for sig in (signal.SIGINT, signal.SIGTERM):
+                loop.remove_signal_handler(sig)
+            await manager.close()
+    asyncio.run(serve())
 
 
 if __name__ == "__main__":

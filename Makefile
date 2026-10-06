@@ -1,4 +1,7 @@
-.PHONY: help setup up down migrate migration-generate cli-scrape cli-export cli-status cli-stop cli-reset api web web-build test clean
+.PHONY: help setup up down migrate migration-generate cli-scrape cli-export cli-status cli-stop cli-reset cli-worker api web web-build test clean
+
+executor ?= memory
+broker_url ?= redis://localhost:6379/0
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -11,12 +14,12 @@ setup: ## Install Python dependencies and prepare the local database
 	@$(MAKE) migrate
 	@echo "Environment setup complete!"
 
-up: ## Start all services in Docker Compose (db, api, web)
-	@rtk docker compose up --build -d
+up: ## Start the app (executor=memory|broker; broker adds Redis and worker)
+	@SCRAPE_EXECUTOR=$(executor) rtk docker compose $(if $(filter broker,$(executor)),--profile broker) up --build -d
 	@echo "App: http://localhost:3000 | API docs: http://localhost:8000/docs"
 
 down: ## Stop all docker containers
-	@rtk docker compose down
+	@rtk docker compose --profile broker down
 
 api: ## Start FastAPI REST API server at http://127.0.0.1:8000
 	@rtk uv run --extra web job-scrapper api
@@ -36,11 +39,14 @@ migrate: ## Apply database migrations
 migration-generate: ## Generate a new migration (usage: make migration-generate msg="your_message")
 	@rtk uv run alembic revision --autogenerate -m "$(msg)"
 
-cli-scrape: ## Scrape all sources from the last 7 days
-	@rtk uv run --extra browser job-scrapper scrape --source $(or $(source),all) --days $(or $(days),7)
+cli-scrape: ## Scrape sources (source=all days=7 separate=1 executor=memory|broker)
+	@SCRAPE_EXECUTOR=$(executor) SCRAPE_BROKER_URL=$(broker_url) rtk uv run --extra browser $(if $(filter broker,$(executor)),--extra broker) job-scrapper scrape --source $(or $(source),all) --days $(or $(days),7) $(if $(filter 1,$(separate)),--separate-runs)
 
-cli-stop: ## Gracefully stop the active CLI or web scrape after its current batch
-	@rtk uv run job-scrapper stop
+cli-stop: ## Stop one scrape (run_id=...; required when several runs are active)
+	@rtk uv run job-scrapper stop $(if $(run_id),--run-id $(run_id))
+
+cli-worker: ## Start the external Redis worker (broker_url=redis://localhost:6379/0)
+	@SCRAPE_EXECUTOR=broker SCRAPE_BROKER_URL=$(broker_url) rtk uv run --extra broker job-scrapper worker
 
 cli-export: ## Export jobs (format=jsonl|parquet, days=7, out=data/jobs_dataset.<format>)
 	@rtk uv run $(if $(filter parquet,$(format)),--extra export) job-scrapper export --format $(or $(format),jsonl) --days $(or $(days),7) --output $(or $(out),data/jobs_dataset.$(or $(format),jsonl))

@@ -7,7 +7,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSession, useRuns } from "../../services/queries";
+import { useSession, useRuns, useActiveRuns } from "../../services/queries";
 import { fetchApi } from "../../services/api";
 import { formatDate, formatRelativeTime } from "../../utils/date";
 import Card from "../../components/ui/Card";
@@ -23,7 +23,11 @@ export default function ScrapeRuns() {
 
   const [page, setPage] = useState(1);
 
-  const runsQuery = useRuns(page, page !== 1);
+  const runsQuery = useRuns(page);
+  const activeQuery = useActiveRuns();
+  const activeRuns = activeQuery.data?.items || [];
+  const capacity = activeQuery.data?.capacity;
+  const queueFull = capacity && activeRuns.length >= capacity.queued;
   const runs = runsQuery.data?.items || [];
   const loadingRuns = runsQuery.isFetching;
   const [selectedRunId, setSelectedRunId] = useState(null);
@@ -31,7 +35,7 @@ export default function ScrapeRuns() {
     queryKey: ["runs", "detail", selectedRunId],
     queryFn: ({ signal }) => fetchApi(`runs/${selectedRunId}`, { signal }),
     enabled: Boolean(selectedRunId),
-    refetchInterval: (query) => ["running", "stopping"].includes(query.state.data?.status) ? 3000 : false,
+    refetchInterval: (query) => ["queued", "running", "stopping"].includes(query.state.data?.status) ? 2000 : false,
   });
   const selectedRun = selectedRunId ? detailQuery.data : null;
   const invalidateScrapeData = () => Promise.all([
@@ -48,7 +52,6 @@ export default function ScrapeRuns() {
     onSuccess: invalidateScrapeData,
   });
   const isSubmitting = startMutation.isPending;
-  const isStopping = stopMutation.isPending;
   const [statusMessage, setStatusMessage] = useState("");
   const [statusError, setStatusError] = useState(false);
   const [reviewing, setReviewing] = useState(false);
@@ -65,11 +68,11 @@ export default function ScrapeRuns() {
     if (sessionQuery.data?.sources.length) setSelectedSources([sessionQuery.data.sources[0]]);
   }, [sessionQuery.data]);
   useEffect(() => {
-    if (runsQuery.isError || detailQuery.isError || sessionQuery.isError) {
+    if (runsQuery.isError || detailQuery.isError || sessionQuery.isError || activeQuery.isError) {
       setStatusMessage("Could not load scraper data. Refresh to try again.");
       setStatusError(true);
     }
-  }, [runsQuery.isError, detailQuery.isError, sessionQuery.isError]);
+  }, [runsQuery.isError, detailQuery.isError, sessionQuery.isError, activeQuery.isError]);
 
   const startScrape = async () => {
     if (selectedSources.length === 0) {
@@ -88,7 +91,7 @@ export default function ScrapeRuns() {
     try {
       const res = await startMutation.mutateAsync({ sources: selectedSources, days: Number(days) });
 
-      setStatusMessage("Scrape started successfully!");
+      setStatusMessage("Scrape queued. It will start when a slot is available.");
       setStatusError(false);
 
       await loadRuns(1);
@@ -96,7 +99,7 @@ export default function ScrapeRuns() {
         await refreshSelectedRun(res.id);
       }
     } catch (err) {
-      setStatusMessage("Could not start scraping. Check the local API, refresh run history, and try again.");
+      setStatusMessage(err.message || "Could not start scraping. Check the local API and try again.");
       setStatusError(true);
     }
   };
@@ -107,18 +110,13 @@ export default function ScrapeRuns() {
     );
   };
 
-  const activeRun = runs.find((run) => ["running", "stopping"].includes(run.status))
-    || (["running", "stopping"].includes(selectedRun?.status) ? selectedRun : null);
-  const isAnyRunning = Boolean(activeRun);
-
-  const stopScrape = async () => {
-    if (!activeRun || isStopping) return;
+  const stopScrape = async (runId) => {
     try {
-      await stopMutation.mutateAsync(activeRun.id);
-      setStatusMessage("Stop requested. The current batch will finish saving before the scrape stops.");
+      const res = await stopMutation.mutateAsync(runId);
+      setStatusMessage(res.status === 'stopped' ? 'Queued scrape stopped.' : "Stop requested. The current batch will finish saving before the scrape stops.");
       setStatusError(false);
-    } catch {
-      setStatusMessage("Could not request a stop. Refresh run history and try again.");
+    } catch (err) {
+      setStatusMessage(err.message || "Could not request a stop. Try again.");
       setStatusError(true);
     }
   };
@@ -126,18 +124,34 @@ export default function ScrapeRuns() {
   const getStatusBadgeVariant = (status) => {
     if (status === "completed") return "success";
     if (status === "running") return "running";
-    if (["stopping", "stopped", "partial", "interrupted"].includes(status)) return "warning";
+    if (["queued", "pending", "stopping", "stopped", "partial", "interrupted"].includes(status)) return "warning";
     return "error";
   };
 
   return (
     <div className="space-y-8">
-      {activeRun && <Card className="p-5 flex flex-wrap items-center justify-between gap-3" role="region" aria-label="Active scrape">
-        <div><p className="font-semibold">{activeRun.status === "stopping" ? "Finishing the current batch…" : "Scrape in progress"}</p>
-          <p className="text-sm text-text-muted">{activeRun.sources?.join(", ")} · Saved jobs are kept when stopping.</p></div>
-        <Button variant="danger" loading={isStopping} disabled={activeRun.status === "stopping"} onClick={stopScrape}>
-          {activeRun.status === "stopping" ? "Stopping…" : "Stop scrape"}
-        </Button>
+      {activeRuns.length > 0 && <Card className="p-5 space-y-4" role="region" aria-label="Active scrapes">
+        <h2 className="font-semibold">Active scrapes{capacity ? ` · ${capacity.active} execution slots` : ''}</h2>
+        <div className="divide-y divide-border-subtle">
+          {activeRuns.map((run) => <div key={run.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+            <div className="min-w-0 space-y-1">
+              <div className="flex flex-wrap items-center gap-2"><span className="font-semibold">{run.sources.join(', ')}</span><Badge variant={getStatusBadgeVariant(run.status)}>{run.status}</Badge></div>
+              <p className="text-sm text-text-muted">{run.days}-day window · {run.started_at ? `Started ${formatRelativeTime(run.started_at)}` : `Queued ${formatRelativeTime(run.queued_at)}`}</p>
+              <p className="text-xs text-text-dim font-mono break-all">{run.id}</p>
+              {run.dispatch_error && <p className="text-sm text-text-muted">Waiting for task delivery. The dispatcher will retry automatically.</p>}
+              {stopMutation.isError && stopMutation.variables === run.id && <p role="alert" className="text-sm text-status-danger">{stopMutation.error.message}</p>}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="secondary" onClick={() => refreshSelectedRun(run.id)}>Details</Button>
+              <Button variant="danger" loading={stopMutation.isPending && stopMutation.variables === run.id}
+                disabled={run.status === 'stopping' || (stopMutation.isPending && stopMutation.variables === run.id)}
+                aria-label={`Stop scrape ${run.id}`} onClick={() => stopScrape(run.id)}>
+                {run.status === 'stopping' ? 'Stopping…' : run.status === 'queued' ? 'Stop queued run' : 'Stop scrape'}
+              </Button>
+            </div>
+          </div>)}
+        </div>
+        <p className="text-sm text-text-muted">Stopping keeps saved jobs. Each run can be stopped independently.</p>
       </Card>}
       {/* Trigger Scrape Card */}
       <Card className="p-6 space-y-6">
@@ -241,11 +255,11 @@ export default function ScrapeRuns() {
               variant="primary"
               size="lg"
               loading={isSubmitting}
-              disabled={!sessionQuery.data || isSubmitting || isAnyRunning || selectedSources.length === 0}
+              disabled={!sessionQuery.data || isSubmitting || queueFull || selectedSources.length === 0}
               onClick={() => setReviewing(true)}
             >
               <Play className="w-4 h-4 fill-current" />
-              <span>{isAnyRunning ? "Scraping Active..." : "Start Scrape"}</span>
+              <span>{queueFull ? "Queue full" : "Start Scrape"}</span>
             </Button>
           </div>
         </div>
@@ -254,11 +268,11 @@ export default function ScrapeRuns() {
       {reviewing && <Card className="p-5 space-y-3" role="region" aria-label="Review scrape run">
         <h3 className="font-semibold">Review scrape run</h3>
         <p className="text-sm text-text-muted">Sources: {selectedSources.join(", ")}. General boards use a {days}-day window; company ATS feeds collect all open jobs. Requests use the existing pacing limits.</p>
-        <div className="flex flex-wrap gap-3"><Button variant="primary" disabled={isAnyRunning || isSubmitting || !selectedSources.length} onClick={startScrape}>Confirm and start</Button><Button onClick={() => setReviewing(false)}>Cancel</Button></div>
+        <div className="flex flex-wrap gap-3"><Button variant="primary" disabled={queueFull || isSubmitting || !selectedSources.length} onClick={startScrape}>Confirm and start</Button><Button onClick={() => setReviewing(false)}>Cancel</Button></div>
       </Card>}
       {/* Selected Run Details */}
       {selectedRun && (
-        <Card className="p-6 space-y-6 animate-in fade-in duration-150">
+        <Card className="p-6 space-y-6">
           <div className="flex items-start justify-between pb-4 border-b border-border-subtle">
             <div>
               <div className="flex items-center gap-2.5">
@@ -280,6 +294,7 @@ export default function ScrapeRuns() {
           </div>
 
           {selectedRun.error_message && <p role="status" className="text-sm text-text-muted">{selectedRun.error_message}</p>}
+          {selectedRun.dispatch_error && <p role="status" className="text-sm text-text-muted">Task delivery is delayed. This run remains queued and will retry automatically.</p>}
           {/* Stats Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-3 bg-bg-surface-elevated rounded-xl border border-border-subtle">
@@ -441,8 +456,8 @@ export default function ScrapeRuns() {
                     }}
                   >
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="font-medium text-text-main">{formatRelativeTime(run.started_at)}</div>
-                      <div className="text-[11px] text-text-dim">{formatDate(run.started_at)}</div>
+                      <div className="font-medium text-text-main">{formatRelativeTime(run.started_at || run.queued_at)}</div>
+                      <div className="text-[11px] text-text-dim">{run.started_at ? 'Started' : 'Queued'} {formatDate(run.started_at || run.queued_at)}</div>
                     </td>
                     <td className="py-4 px-4 whitespace-nowrap">
                       <Badge variant={getStatusBadgeVariant(run.status)}>

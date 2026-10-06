@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Briefcase, Play, Database, Sun, Moon } from "lucide-react";
 import { fetchApi } from "./services/api";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSession, useRuns } from "./services/queries";
+import { useSession, useActiveRuns } from "./services/queries";
 import JobsExplorer from "./features/jobs/JobsExplorer";
 import ScrapeRuns from "./features/scraper/ScrapeRuns";
 
@@ -18,7 +18,7 @@ export default function App() {
     observer.observe(header);
     return () => observer.disconnect();
   }, []);
-  const [currentTab, setCurrentTab] = useState("jobs");
+  const [currentTab, setCurrentTab] = useState(() => window.location.hash.replace(/^#\/?/, "").split("?")[0] === "runs" ? "runs" : "jobs");
   useSession();
   const countQuery = useQuery({
     queryKey: ["jobs", "count"],
@@ -64,9 +64,10 @@ export default function App() {
     return () => window.removeEventListener("hashchange", updateRoute);
   }, []);
 
-  const runsQuery = useRuns();
-  const activeRun = runsQuery.data?.items.find((run) => ["running", "stopping"].includes(run.status));
-  const now = runsQuery.dataUpdatedAt || Date.now();
+  const activeQuery = useActiveRuns();
+  const activeRuns = activeQuery.data?.items || [];
+  const runningCount = activeRuns.filter((run) => ['running', 'stopping'].includes(run.status)).length;
+  const queuedCount = activeRuns.filter((run) => run.status === 'queued').length;
 
   const setTab = (tab) => {
     if (currentTab === "jobs") sessionStorage.setItem("jobs-route", window.location.hash);
@@ -89,15 +90,15 @@ export default function App() {
           </div>
 
           {/* Ambient Ingestion Status (Visible anywhere in app) */}
-          {activeRun && (
+          {activeRuns.length > 0 && (
             <button
               type="button"
               onClick={() => setTab("runs")}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-running-bg border border-status-running-border text-status-running text-xs font-semibold cursor-pointer shrink-0"
-              title="Scrape run in progress. Click to view."
+              title="View active and queued scrape runs"
             >
-              <span className="w-2 h-2 rounded-full bg-status-running animate-ping" />
-              <span>{activeRun.status === "stopping" ? "Stopping" : "Scraping"} · {Math.max(0, Math.floor((now - new Date(activeRun.started_at).getTime()) / 60000))}m</span>
+              <span className="w-2 h-2 rounded-full bg-status-running" />
+              <span>{runningCount} active{queuedCount > 0 ? ` · ${queuedCount} queued` : ''}</span>
             </button>
           )}
 

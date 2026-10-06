@@ -4,6 +4,10 @@ from typing import Protocol, runtime_checkable
 from job_scrapper.domain.models import JobPosting
 
 
+class StorageUnavailable(RuntimeError):
+    """A transient storage failure that must escape connector error handling."""
+
+
 @runtime_checkable
 class JobSink(Protocol):
     """Abstract sink interface to decouple connectors from databases."""

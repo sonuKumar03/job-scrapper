@@ -4,7 +4,8 @@ import asyncio
 from abc import ABC, abstractmethod
 from typing import Any
 from job_scrapper.domain.models import JobPosting
-from job_scrapper.storage.base import JobSink
+from job_scrapper.execution.contracts import HttpClient
+from job_scrapper.storage.base import JobSink, StorageUnavailable
 from job_scrapper.utils.http_client import RequestError, ResilientHttpClient
 
 
@@ -13,7 +14,7 @@ class BaseConnector(ABC):
 
     name: str = "base"
 
-    def __init__(self, http_client: ResilientHttpClient | None = None) -> None:
+    def __init__(self, http_client: HttpClient | None = None) -> None:
         self.stop_event: asyncio.Event | None = None
         self._owns_http_client = http_client is None
         self.http_client = http_client if http_client is not None else ResilientHttpClient()
@@ -47,6 +48,8 @@ class BaseConnector(ABC):
 
     @staticmethod
     def record_error(stats: dict[str, Any], context: str, error: Exception) -> None:
+        if isinstance(error, StorageUnavailable):
+            raise error
         reason = str(error) if isinstance(error, RequestError) else type(error).__name__
         stats["errors"].append(f"{context}: {reason}")
         stats["truncated"] = True

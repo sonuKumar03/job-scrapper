@@ -87,7 +87,25 @@ class ScrapeExecutionModel(Base):
     sources: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
     days: Mapped[int] = mapped_column(Integer, nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
-    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    queued_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    executor_mode: Mapped[str] = mapped_column(String(16), nullable=False, default='memory')
+    attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    attempt_token: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     results: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class ScrapeDispatchModel(Base):
+    """One transactional dispatch intent per execution; retries advance generation."""
+
+    __tablename__ = 'scrape_dispatches'
+
+    run_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey('scrape_executions.id', ondelete='CASCADE'), primary_key=True
+    )
+    generation: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    dispatched_generation: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    available_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)

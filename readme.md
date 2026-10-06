@@ -66,6 +66,42 @@ rtk make web       # Start React frontend development server (http://localhost:5
 
 On **Scraper Controller**, select sources and a day window to start a background scrape. The interface reports real source/account results with explicit errors and incomplete coverage.
 
+## Concurrent execution
+
+Both runtimes use the same `RunControl`, `RunStore`, `TaskTransport`, `JobSink`, and `HttpClient` ports and the same scraping worker. Runs have independent IDs and stop controls. Overlapping sources are allowed; storage still deduplicates jobs and sightings. The default is three concurrent runs and a backlog of at most 20 unfinished runs, controlled by `SCRAPE_MAX_ACTIVE_RUNS` and `SCRAPE_MAX_QUEUED_RUNS`. Running and retrying runs retain their backlog reservation, so retries cannot exceed the limit or discard accepted work.
+
+All runs in the worker host share three source slots and one HTTP client. Per-domain concurrency stays at three, with existing 1–3 second request pacing. One worker host is supported; a database ownership lock rejects a second host. More hosts require shared domain-rate coordination first.
+
+### Memory mode (default)
+
+```bash
+rtk make up
+# Or, with the API stopped, own an embedded worker from the CLI:
+rtk make cli-scrape source=jobicy,remoteok days=1 separate=1
+```
+
+The CLI or API embeds the queue and workers. The API and a scraping CLI cannot both own this runtime against the same database. Memory mode imports no Redis client and needs no broker. If the host crashes, its unfinished runs become interrupted at the next startup; already committed jobs remain saved.
+
+### Redis broker mode
+
+```bash
+rtk make up executor=broker
+rtk make cli-scrape executor=broker source=jobicy,remoteok days=1 separate=1
+rtk make cli-stop run_id=<execution-uuid>
+```
+
+The optional Compose profile starts Redis and one external worker. CLI/API submit durable database dispatch intents and observe runs; they do not own scraping tasks. Local CLI connections use `redis://localhost:6379/0`; containers use `redis://redis:6379/0`. For a local worker instead of the container worker, use `rtk make cli-worker broker_url=redis://localhost:6379/0`. Never run both workers against the same database.
+
+Direct CLI usage is `rtk uv run --extra broker job-scrapper scrape ...` with `SCRAPE_EXECUTOR=broker` and `SCRAPE_BROKER_URL` in the environment or `.env`. Each distinct database must use a distinct Redis database number or `SCRAPE_BROKER_STREAM`; sharing a stream across project databases is unsupported.
+
+Redis uses a persistent volume, AOF with `appendfsync always`, and `noeviction`. Tasks contain only a version, run ID, and dispatch generation. Consumer acknowledgements follow committed completion or retry state; stale deliveries are skipped. The sole worker reclaims pending entries on startup. Malformed messages go to `<stream>.dead`, bounded to approximately 1,000 entries. A single Redis instance does not provide machine/disk-loss availability.
+
+Infrastructure interruptions retry up to three attempts, waiting 5 then 30 seconds. Normal connector errors produce terminal failed/partial results rather than automatically refetching entire boards. Retried results describe the latest attempt; database counts remain authoritative. Delivery outages leave accepted work queued, with a visible dispatch delay. Stop queued work immediately; stop running work after the current batch. Ctrl+C stops only the CLI's submitted run IDs; it never shuts down an external worker.
+
+`rtk make cli-stop` without an ID works only when exactly one run is unfinished. Reset refuses while runs are writing; idle/queued reset removes execution and dispatch records. Redis messages for deleted IDs are skipped without purging other queues. Runtime shutdown allows up to 60 seconds for cooperative cleanup; unfinished batches beyond that ceiling are interrupted. Stop/finish all unfinished runs before changing modes, then stop the old host and start the new topology. To return from broker to memory, use `rtk make down` before `rtk make up` so an old broker worker cannot retain host ownership.
+
+The API accepts runs with HTTP 202 and status `queued`. `/api/runs/active` returns all queued/running/stopping runs plus configured capacity, independently of history pagination. The dashboard polls that endpoint every two seconds and displays per-run controls.
+
 ## Source coverage limits
 
 The scrape CLI reports errors and incomplete coverage, then exits with status 1.

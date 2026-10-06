@@ -16,7 +16,7 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
 
 # Copy project specification and install Python dependencies
 COPY pyproject.toml uv.lock ./
-RUN uv pip install --system -r pyproject.toml --extra web
+RUN uv pip install --system -r pyproject.toml --extra web --extra broker
 
 # Copy source code, migrations, and readme
 COPY readme.md alembic.ini ./

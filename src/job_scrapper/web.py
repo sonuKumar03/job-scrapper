@@ -17,7 +17,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
 
 from job_scrapper.connectors.registry import list_connectors
-from job_scrapper.runner import ScrapeBusyError, execution_snapshot, reconcile_executions, request_scrape_stop, run_scrape
+from job_scrapper.execution.bootstrap import execution_runtime
+from job_scrapper.execution.contracts import RunConflict, StartScrapeCommand
 from job_scrapper.storage.postgres.models import JobModel, ScrapeExecutionModel
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
 
@@ -49,16 +50,12 @@ def create_app() -> FastAPI:
     async def lifespan(app: FastAPI):
         manager = DatabaseSessionManager()
         app.state.manager = manager
-        app.state.task = None
         app.state.token = secrets.token_urlsafe(32)
         try:
-            await reconcile_executions(manager)
-            yield
+            async with execution_runtime(manager) as control:
+                app.state.control = control
+                yield
         finally:
-            task = app.state.task
-            if task and not task.done():
-                task.cancel()
-                await asyncio.gather(task, return_exceptions=True)
             await manager.close()
 
     app = FastAPI(
@@ -98,6 +95,10 @@ def create_app() -> FastAPI:
     async def database_error(request: Request, error: SQLAlchemyError):
         logger.error("Dashboard database request failed: %s", type(error).__name__)
         return JSONResponse({"detail": "Database unavailable. Check PostgreSQL and run make migrate."}, status_code=503)
+
+    @app.exception_handler(RunConflict)
+    async def execution_conflict(request: Request, error: RunConflict):
+        return JSONResponse({'detail': str(error)}, status_code=409)
 
     @app.get("/health")
     async def health():
@@ -185,61 +186,42 @@ def create_app() -> FastAPI:
             rows = (
                 await session.scalars(
                     select(ScrapeExecutionModel)
-                    .order_by(ScrapeExecutionModel.started_at.desc(), ScrapeExecutionModel.id.desc())
+                    .order_by(ScrapeExecutionModel.queued_at.desc(), ScrapeExecutionModel.id.desc())
                     .offset((page - 1) * page_size)
                     .limit(page_size)
                 )
             ).all()
-            items = [
-                {key: value for key, value in execution_snapshot(row).items() if key != "results"}
-                for row in rows
-            ]
+            run_ids = [row.id for row in rows]
+        items = []
+        for run_id in run_ids:
+            run = await app.state.control.get(run_id)
+            if run is not None:
+                items.append(run.model_dump(mode='json', exclude={'results'}))
         return {"items": items, "total": total, "page": page, "page_size": page_size}
+
+    @app.get('/api/runs/active')
+    async def active_runs():
+        control = app.state.control
+        return {'items': [run.model_dump(mode='json') for run in await control.list_active()],
+                'capacity': control.capacity.model_dump()}
 
     @app.get("/api/runs/{run_id}")
     async def run_detail(run_id: UUID):
-        async with app.state.manager.session() as session:
-            row = await session.get(ScrapeExecutionModel, run_id)
-            if row is None:
-                raise HTTPException(404, "Scrape run not found.")
-            return execution_snapshot(row)
+        run = await app.state.control.get(run_id)
+        if run is None:
+            raise HTTPException(404, 'Scrape run not found.')
+        return run.model_dump(mode='json')
 
     @app.post("/api/runs/{run_id}/stop", status_code=202)
     async def stop_run(run_id: UUID):
-        stopped_id = await request_scrape_stop(app.state.manager, run_id)
-        if stopped_id is None:
+        run = await app.state.control.request_stop(run_id)
+        if run is None:
             raise HTTPException(409, "This scrape is no longer active. Refresh run history.")
-        return {"id": stopped_id, "status": "stopping"}
+        return {'id': str(run.id), 'status': run.status}
 
     @app.post("/api/runs", status_code=202)
     async def start_run(body: StartScrape):
-        if app.state.task and not app.state.task.done():
-            raise HTTPException(409, "A scrape is already running. View its status below.")
-        started = asyncio.get_running_loop().create_future()
-
-        async def receive(snapshot: dict[str, Any]) -> None:
-            if not started.done():
-                started.set_result(snapshot)
-
-        async def background() -> None:
-            try:
-                await run_scrape(app.state.manager, body.sources, body.days, on_update=receive)
-            except Exception as error:
-                if not started.done():
-                    started.set_exception(error)
-                else:
-                    logger.error("Background scrape stopped: %s", type(error).__name__)
-            except asyncio.CancelledError:
-                if not started.done():
-                    started.cancel()
-                raise
-
-        started.add_done_callback(lambda future: future.exception() if not future.cancelled() else None)
-        app.state.task = asyncio.create_task(background())
-        try:
-            snapshot = await asyncio.shield(started)
-        except ScrapeBusyError as error:
-            raise HTTPException(409, str(error)) from error
-        return {"id": snapshot["id"], "status": "running"}
+        run = await app.state.control.submit(StartScrapeCommand(sources=tuple(body.sources), days=body.days))
+        return {'id': str(run.id), 'status': run.status}
 
     return app

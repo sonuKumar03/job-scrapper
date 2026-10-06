@@ -1,10 +1,15 @@
 """PostgreSQL storage sink with 3-layer deduplication and sightings ledger."""
 
 import uuid
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import timedelta
 from hashlib import sha256
 from sqlalchemy import func, select, text, tuple_
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.exc import DisconnectionError, InterfaceError, OperationalError, TimeoutError
+from sqlalchemy.ext.asyncio import AsyncSession
+from job_scrapper.storage.base import StorageUnavailable
 from job_scrapper.domain.dedup import DeduplicationEngine
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.dedup_engine import StandardDeduplicationEngine
@@ -23,6 +28,14 @@ class PostgresJobSink:
         self.session_manager = session_manager
         self.dedup_engine = dedup_engine or StandardDeduplicationEngine()
 
+    @asynccontextmanager
+    async def _session(self) -> AsyncIterator[AsyncSession]:
+        try:
+            async with self.session_manager.session() as session:
+                yield session
+        except (DisconnectionError, InterfaceError, OperationalError, TimeoutError) as error:
+            raise StorageUnavailable(type(error).__name__) from error
+
     async def contains(self, source: str, source_job_id: str) -> bool:
         return source_job_id in await self.contains_many(source, [source_job_id])
 
@@ -30,7 +43,7 @@ class PostgresJobSink:
         if not source_job_ids:
             return set()
         found: set[str] = set()
-        async with self.session_manager.session() as session:
+        async with self._session() as session:
             for start in range(0, len(source_job_ids), 500):
                 ids = source_job_ids[start:start + 500]
                 stmt = select(JobModel.source_job_id).where(
@@ -59,7 +72,7 @@ class PostgresJobSink:
             }
         )
 
-        async with self.session_manager.session() as session:
+        async with self._session() as session:
             await session.execute(
                 text(
                     "SELECT pg_advisory_xact_lock(lock_key) "
@@ -243,13 +256,13 @@ class PostgresJobSink:
         )
 
     async def count(self) -> int:
-        async with self.session_manager.session() as session:
+        async with self._session() as session:
             stmt = select(func.count(JobModel.id))
             result = await session.execute(stmt)
             return result.scalar() or 0
 
     async def count_sightings(self) -> int:
-        async with self.session_manager.session() as session:
+        async with self._session() as session:
             stmt = select(func.count(JobSightingModel.id))
             result = await session.execute(stmt)
             return result.scalar() or 0
