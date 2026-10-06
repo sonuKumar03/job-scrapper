@@ -2,6 +2,8 @@ import React from "react";
 
 const variants = {
   default: "bg-bg-surface-elevated text-text-muted border-border-subtle",
+  neutral: "bg-bg-surface text-text-main border-border-muted font-medium",
+  info: "bg-status-running-bg text-status-running border-status-running-border",
   success: "bg-status-success-bg text-status-success border-status-success-border",
   running: "bg-status-running-bg text-status-running border-status-running-border animate-pulse",
   warning: "bg-status-warning-bg text-status-warning border-status-warning-border",

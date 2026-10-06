@@ -26,6 +26,7 @@ export default function ScrapeRuns() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusError, setStatusError] = useState(false);
+  const [reviewing, setReviewing] = useState(false);
 
   const loadSession = async () => {
     try {
@@ -47,7 +48,7 @@ export default function ScrapeRuns() {
       setRuns(data.items || []);
       setPage(data.page || targetPage);
     } catch (err) {
-      console.error("Failed to load runs:", err);
+      setStatusMessage("Could not load run history. Use Refresh to try again."); setStatusError(true);
     } finally {
       setLoadingRuns(false);
     }
@@ -58,7 +59,7 @@ export default function ScrapeRuns() {
       const detail = await fetchApi(`runs/${runId}`);
       setSelectedRun(detail);
     } catch (err) {
-      console.error("Failed to refresh run details:", err);
+      setStatusMessage("Could not load run details. Select the run to try again."); setStatusError(true);
     }
   };
 
@@ -69,6 +70,10 @@ export default function ScrapeRuns() {
       return;
     }
 
+    if (!Number.isInteger(Number(days)) || Number(days) < 1 || Number(days) > 365) {
+      setStatusMessage("Enter a whole day window from 1 to 365."); setStatusError(true); return;
+    }
+    setReviewing(false);
     setIsSubmitting(true);
     setStatusMessage("Dispatching scrape task...");
     setStatusError(false);
@@ -90,7 +95,7 @@ export default function ScrapeRuns() {
         await refreshSelectedRun(res.id);
       }
     } catch (err) {
-      setStatusMessage(err.message || "Failed to start scrape run");
+      setStatusMessage("Could not start scraping. Check the local API, refresh run history, and try again.");
       setStatusError(true);
     } finally {
       setIsSubmitting(false);
@@ -134,13 +139,13 @@ export default function ScrapeRuns() {
     <div className="space-y-8">
       {/* Trigger Scrape Card */}
       <Card className="p-6 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border-subtle">
           <div>
-            <h2 className="text-lg font-bold text-white flex items-center gap-2">
-              <Play className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-lg font-bold text-text-main flex items-center gap-2">
+              <Play className="w-5 h-5 text-accent" />
               Trigger Scrape Run
             </h2>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-text-muted mt-1">
               Select target platforms and cutoff days. Note: ATS connectors fetch all active openings.
             </p>
           </div>
@@ -165,7 +170,7 @@ export default function ScrapeRuns() {
 
         {/* Source Grid */}
         <div className="space-y-3">
-          <div className="text-xs font-semibold uppercase tracking-wider text-slate-400 block">
+          <div className="text-xs font-semibold uppercase tracking-wider text-text-muted block">
             Available Connectors ({selectedSources.length}/{availableSources.length} selected)
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
@@ -175,16 +180,18 @@ export default function ScrapeRuns() {
                 <button
                   key={source}
                   type="button"
-                  onClick={() => toggleSource(source)}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-medium border transition-all text-left cursor-pointer ${
+                  role="button"
+                  aria-pressed={isSelected}
+                  onClick={() => { setReviewing(false); toggleSource(source); }}
+                  className={`flex items-center justify-between px-3 py-2.5 min-h-[44px] rounded-xl text-xs font-medium border transition-all text-left cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-1 ${
                     isSelected
-                      ? "bg-emerald-950/70 border-emerald-600/80 text-emerald-300 shadow-sm shadow-emerald-950"
-                      : "bg-slate-950/60 border-slate-800 text-slate-400 hover:bg-slate-800/60 hover:text-slate-200"
+                      ? "bg-accent-subtle border-accent text-accent font-semibold shadow-xs"
+                      : "bg-bg-surface-elevated border-border-subtle text-text-muted hover:bg-bg-surface hover:text-text-main"
                   }`}
                 >
-                  <span className="truncate">{source}</span>
+                  <span className="min-w-0">{source}<span className="block text-text-muted font-normal mt-1">{["greenhouse", "lever", "ashby", "workday", "workable"].includes(source) ? "ATS · all open jobs" : "Board · date window"}</span></span>
                   {isSelected && (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-1.5" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-accent shrink-0 ml-1.5" />
                   )}
                 </button>
               );
@@ -198,7 +205,7 @@ export default function ScrapeRuns() {
             <div>
               <label
                 htmlFor="days-input"
-                className="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-1.5"
+                className="text-xs font-semibold uppercase tracking-wider text-text-muted block mb-1.5"
               >
                 Days Window
               </label>
@@ -209,10 +216,10 @@ export default function ScrapeRuns() {
                 max="365"
                 value={days}
                 onChange={(e) => setDays(e.target.value)}
-                className="w-28 px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500 font-mono"
+                className="w-28 px-3 py-2 bg-bg-surface border border-border-subtle rounded-xl text-sm text-text-main focus:outline-none focus:border-border-focus focus:ring-1 focus:ring-border-focus font-mono"
               />
             </div>
-            <div className="text-[11px] text-slate-500 max-w-xs pt-4">
+            <div className="text-[11px] text-text-dim max-w-xs pt-4">
               General job boards filter postings created in the last {days} {days == 1 ? "day" : "days"}.
             </div>
           </div>
@@ -220,8 +227,9 @@ export default function ScrapeRuns() {
           <div className="flex items-center gap-3">
             {statusMessage && (
               <span
+                role="status"
                 className={`text-xs font-medium ${
-                  statusError ? "text-rose-400" : "text-emerald-400"
+                  statusError ? "text-status-danger" : "text-status-success"
                 }`}
               >
                 {statusMessage}
@@ -232,27 +240,32 @@ export default function ScrapeRuns() {
               size="lg"
               loading={isSubmitting}
               disabled={isSubmitting || isAnyRunning || selectedSources.length === 0}
-              onClick={startScrape}
+              onClick={() => setReviewing(true)}
             >
-              <Play className="w-4 h-4 fill-white" />
+              <Play className="w-4 h-4 fill-current" />
               <span>{isAnyRunning ? "Scraping Active..." : "Start Scrape"}</span>
             </Button>
           </div>
         </div>
       </Card>
 
+      {reviewing && <Card className="p-5 space-y-3" role="region" aria-label="Review scrape run">
+        <h3 className="font-semibold">Review scrape run</h3>
+        <p className="text-sm text-text-muted">Sources: {selectedSources.join(", ")}. General boards use a {days}-day window; company ATS feeds collect all open jobs. Requests use the existing pacing limits.</p>
+        <div className="flex flex-wrap gap-3"><Button variant="primary" disabled={isAnyRunning || isSubmitting || !selectedSources.length} onClick={startScrape}>Confirm and start</Button><Button onClick={() => setReviewing(false)}>Cancel</Button></div>
+      </Card>}
       {/* Selected Run Details */}
       {selectedRun && (
         <Card className="p-6 space-y-6 animate-in fade-in duration-150">
-          <div className="flex items-start justify-between pb-4 border-b border-slate-800">
+          <div className="flex items-start justify-between pb-4 border-b border-border-subtle">
             <div>
               <div className="flex items-center gap-2.5">
-                <h3 className="text-base font-bold text-white">Execution Inspector</h3>
+                <h3 className="text-base font-bold text-text-main">Execution Inspector</h3>
                 <Badge variant={getStatusBadgeVariant(selectedRun.status)}>
                   {selectedRun.status}
                 </Badge>
               </div>
-              <p className="text-xs text-slate-400 font-mono mt-1">ID: {selectedRun.id}</p>
+              <p className="text-xs text-text-dim font-mono mt-1">ID: {selectedRun.id}</p>
             </div>
 
             <Button
@@ -266,27 +279,27 @@ export default function ScrapeRuns() {
 
           {/* Stats Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80">
-              <span className="text-[11px] text-slate-500 uppercase font-semibold">Started</span>
-              <div className="text-xs font-medium text-slate-200 mt-0.5">
+            <div className="p-3 bg-bg-surface-elevated rounded-xl border border-border-subtle">
+              <span className="text-[11px] text-text-dim uppercase font-semibold">Started</span>
+              <div className="text-xs font-medium text-text-main mt-0.5">
                 {formatDate(selectedRun.started_at)}
               </div>
             </div>
-            <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80">
-              <span className="text-[11px] text-slate-500 uppercase font-semibold">Finished</span>
-              <div className="text-xs font-medium text-slate-200 mt-0.5">
+            <div className="p-3 bg-bg-surface-elevated rounded-xl border border-border-subtle">
+              <span className="text-[11px] text-text-dim uppercase font-semibold">Finished</span>
+              <div className="text-xs font-medium text-text-main mt-0.5">
                 {formatDate(selectedRun.finished_at)}
               </div>
             </div>
-            <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80">
-              <span className="text-[11px] text-slate-500 uppercase font-semibold">Days Cutoff</span>
-              <div className="text-xs font-medium text-slate-200 mt-0.5">
+            <div className="p-3 bg-bg-surface-elevated rounded-xl border border-border-subtle">
+              <span className="text-[11px] text-text-dim uppercase font-semibold">Days Cutoff</span>
+              <div className="text-xs font-medium text-text-main mt-0.5">
                 {selectedRun.days} days
               </div>
             </div>
-            <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80">
-              <span className="text-[11px] text-slate-500 uppercase font-semibold">Sources</span>
-              <div className="text-xs font-medium text-slate-200 mt-0.5 truncate">
+            <div className="p-3 bg-bg-surface-elevated rounded-xl border border-border-subtle">
+              <span className="text-[11px] text-text-dim uppercase font-semibold">Sources</span>
+              <div className="text-xs font-medium text-text-main mt-0.5 truncate">
                 {selectedRun.sources?.join(", ")}
               </div>
             </div>
@@ -295,18 +308,18 @@ export default function ScrapeRuns() {
           {/* Connectors breakdown */}
           {selectedRun.results && Object.keys(selectedRun.results).length > 0 && (
             <div className="space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+              <h4 className="text-xs font-semibold uppercase tracking-wider text-text-muted">
                 Connector Execution Results
               </h4>
               <div className="space-y-3">
                 {Object.entries(selectedRun.results).map(([sourceName, stats]) => (
                   <div
                     key={sourceName}
-                    className="p-4 rounded-xl bg-slate-950/70 border border-slate-800 space-y-3"
+                    className="p-4 rounded-xl bg-bg-surface-elevated border border-border-subtle space-y-3"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-white">{sourceName}</span>
+                        <span className="text-sm font-bold text-text-main">{sourceName}</span>
                         <Badge variant={getStatusBadgeVariant(stats.status || "completed")}>
                           {stats.status || "done"}
                         </Badge>
@@ -319,22 +332,22 @@ export default function ScrapeRuns() {
                       </div>
 
                       {stats.found !== undefined && (
-                        <div className="text-xs text-slate-400 flex items-center gap-3">
-                          <span className="text-slate-300 font-semibold">
+                        <div className="text-xs text-text-muted flex items-center gap-3">
+                          <span className="text-text-main font-semibold">
                             {stats.found.toLocaleString()} found
                           </span>
-                          <span className="text-emerald-400 font-semibold">
-                            {stats.inserted.toLocaleString()} inserted
+                          <span className="text-accent font-semibold">
+                            {(stats.inserted ?? 0).toLocaleString()} inserted
                           </span>
-                          <span className="text-slate-500">
-                            {stats.skipped.toLocaleString()} skipped
+                          <span className="text-text-dim">
+                            {(stats.skipped ?? 0).toLocaleString()} skipped
                           </span>
                         </div>
                       )}
                     </div>
 
                     {stats.errors && stats.errors.length > 0 && (
-                      <div className="p-2.5 rounded bg-rose-950/40 border border-rose-900/60 text-xs text-rose-300 space-y-1">
+                      <div className="p-2.5 rounded bg-status-danger-bg border border-status-danger-border text-xs text-status-danger space-y-1">
                         {stats.errors.map((err, i) => (
                           <div key={i} className="flex items-start gap-1.5">
                             <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
@@ -345,18 +358,18 @@ export default function ScrapeRuns() {
                     )}
 
                     {stats.accounts && Object.keys(stats.accounts).length > 0 && (
-                      <div className="pl-3 border-l-2 border-slate-800 mt-2 space-y-2">
-                        <span className="text-[11px] font-semibold text-slate-500 uppercase">
+                      <div className="pl-3 border-l-2 border-border-subtle mt-2 space-y-2">
+                        <span className="text-[11px] font-semibold text-text-dim uppercase">
                           Sub-account breakdown
                         </span>
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                           {Object.entries(stats.accounts).map(([accName, accStats]) => (
                             <div
                               key={accName}
-                              className="p-2 rounded bg-slate-900 border border-slate-800/80 text-xs"
+                              className="p-2 rounded bg-bg-surface border border-border-subtle text-xs"
                             >
-                              <div className="font-semibold text-slate-300 truncate">{accName}</div>
-                              <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-400">
+                              <div className="font-semibold text-text-main truncate">{accName}</div>
+                              <div className="flex items-center gap-2 mt-1 text-[11px] text-text-muted">
                                 <span>{accStats.inserted} inserted</span>
                                 <span>•</span>
                                 <span>{accStats.skipped} skip</span>
@@ -375,11 +388,11 @@ export default function ScrapeRuns() {
       )}
 
       {/* History Table */}
-      <Card>
-        <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-950/40">
+      <Card className="overflow-hidden">
+        <div className="flex items-center justify-between p-5 border-b border-border-subtle bg-bg-surface-elevated/40">
           <div>
-            <h3 className="text-base font-bold text-white">Execution History</h3>
-            <p className="text-xs text-slate-400 mt-0.5">Recorded scrape sessions and execution outcomes</p>
+            <h3 className="text-base font-bold text-text-main">Execution History</h3>
+            <p className="text-xs text-text-muted mt-0.5">Recorded scrape sessions and execution outcomes</p>
           </div>
 
           <Button
@@ -387,20 +400,20 @@ export default function ScrapeRuns() {
             size="sm"
             onClick={() => loadRuns(page)}
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loadingRuns ? "animate-spin text-emerald-400" : ""}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${loadingRuns ? "animate-spin text-accent" : ""}`} />
             <span>Refresh</span>
           </Button>
         </div>
 
         {runs.length === 0 ? (
-          <div className="p-12 text-center text-slate-400 text-sm">
+          <div className="p-12 text-center text-text-dim text-sm">
             No recorded scrape runs found. Start one above!
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
-                <tr className="bg-slate-950/50 border-b border-slate-800 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                <tr className="bg-bg-surface-elevated border-b border-border-subtle text-xs font-semibold uppercase tracking-wider text-text-muted">
                   <th className="py-3 px-6">Started</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Day Window</th>
@@ -408,26 +421,35 @@ export default function ScrapeRuns() {
                   <th className="py-3 px-6 text-right">Inspect</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-border-subtle">
                 {runs.map((run) => (
                   <tr
                     key={run.id}
-                    className="hover:bg-slate-800/40 transition-colors group cursor-pointer"
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Inspect run ${run.id}`}
+                    className="hover:bg-bg-surface-elevated/80 transition-colors group cursor-pointer focus-visible:outline-none focus-visible:bg-bg-surface-elevated focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-inset"
                     onClick={() => refreshSelectedRun(run.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        refreshSelectedRun(run.id);
+                      }
+                    }}
                   >
                     <td className="py-4 px-6 whitespace-nowrap">
-                      <div className="font-medium text-slate-200">{formatRelativeTime(run.started_at)}</div>
-                      <div className="text-[11px] text-slate-500">{formatDate(run.started_at)}</div>
+                      <div className="font-medium text-text-main">{formatRelativeTime(run.started_at)}</div>
+                      <div className="text-[11px] text-text-dim">{formatDate(run.started_at)}</div>
                     </td>
                     <td className="py-4 px-4 whitespace-nowrap">
                       <Badge variant={getStatusBadgeVariant(run.status)}>
                         {run.status}
                       </Badge>
                     </td>
-                    <td className="py-4 px-4 whitespace-nowrap text-xs text-slate-300">
+                    <td className="py-4 px-4 whitespace-nowrap text-xs text-text-muted">
                       {run.days} days
                     </td>
-                    <td className="py-4 px-6 text-xs text-slate-400 max-w-xs truncate">
+                    <td className="py-4 px-6 text-xs text-text-muted max-w-xs truncate">
                       {run.sources?.join(", ") || "—"}
                     </td>
                     <td className="py-4 px-6 text-right whitespace-nowrap">
@@ -438,7 +460,6 @@ export default function ScrapeRuns() {
                           e.stopPropagation();
                           refreshSelectedRun(run.id);
                         }}
-                        className="hover:bg-emerald-600 hover:text-white hover:border-emerald-500"
                       >
                         View Details
                       </Button>

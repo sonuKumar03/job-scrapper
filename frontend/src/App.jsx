@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Briefcase, Play, Database } from "lucide-react";
+import { Briefcase, Play, Database, Sun, Moon } from "lucide-react";
 import { fetchApi, setSessionToken } from "./services/api";
 import JobsExplorer from "./features/jobs/JobsExplorer";
 import ScrapeRuns from "./features/scraper/ScrapeRuns";
@@ -7,6 +7,18 @@ import ScrapeRuns from "./features/scraper/ScrapeRuns";
 export default function App() {
   const [currentTab, setCurrentTab] = useState("jobs");
   const [totalJobsCount, setTotalJobsCount] = useState(null);
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem("app-theme") || "light";
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("app-theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "dark" ? "light" : "dark"));
+  };
 
   const init = async () => {
     try {
@@ -22,7 +34,7 @@ export default function App() {
   };
 
   const updateRoute = () => {
-    const hash = window.location.hash.replace("#", "").split("?")[0];
+    const hash = window.location.hash.replace(/^#\/?/, "").split("?")[0];
     if (hash === "runs") {
       setCurrentTab("runs");
     } else {
@@ -37,77 +49,132 @@ export default function App() {
     return () => window.removeEventListener("hashchange", updateRoute);
   }, []);
 
+  const [activeRun, setActiveRun] = useState(null);
+  const [now, setNow] = useState(Date.now());
+
+  // Poll active run status for ambient visibility in header
+  useEffect(() => {
+    let timer = null;
+    const checkActiveRuns = async () => {
+      try {
+        const data = await fetchApi("runs?page=1&page_size=25");
+        setActiveRun((data.items || []).find((r) => r.status === "running") || null);
+        setNow(Date.now());
+      } catch {
+        // quiet fallback
+      }
+    };
+    checkActiveRuns();
+    timer = setInterval(checkActiveRuns, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
   const setTab = (tab) => {
-    setCurrentTab(tab);
-    window.location.hash = tab;
+    if (currentTab === "jobs") sessionStorage.setItem("jobs-route", window.location.hash);
+    window.location.hash = tab === "jobs" ? (sessionStorage.getItem("jobs-route") || "jobs") : "runs";
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col font-sans text-slate-100 selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen bg-bg-base flex flex-col font-sans text-text-main selection:bg-accent selection:text-accent-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
-        <div className="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center text-white shadow-md shadow-emerald-950 font-bold">
+      <header className="sticky top-0 z-40 bg-bg-surface/95 backdrop-blur-md border-b border-border-subtle shadow-xs">
+        <div className="w-full max-w-[1200px] mx-auto px-4 lg:px-8 min-h-16 py-2 flex flex-wrap items-center justify-between gap-2">
+          {/* Brand */}
+          <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center text-accent-foreground shadow-xs font-bold">
               <Database className="w-4 h-4" />
             </div>
-            <span className="font-semibold text-base tracking-tight text-white">
+            <span className="font-semibold text-sm sm:text-base tracking-tight text-text-main hidden md:inline">
               Job Scrapper
             </span>
           </div>
 
-          {/* Navigation Tabs */}
-          <nav className="flex items-center gap-1.5 bg-slate-950/70 p-1 rounded-xl border border-slate-800">
-            <button
-              type="button"
-              onClick={() => setTab("jobs")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                currentTab === "jobs"
-                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-950"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-              }`}
-            >
-              <Briefcase className="w-4 h-4" />
-              <span>Postings</span>
-              {totalJobsCount !== null && (
-                <span
-                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
-                    currentTab === "jobs"
-                      ? "bg-emerald-700/80 text-emerald-100"
-                      : "bg-slate-800 text-slate-400"
-                  }`}
-                >
-                  {totalJobsCount.toLocaleString()}
-                </span>
-              )}
-            </button>
-
+          {/* Ambient Ingestion Status (Visible anywhere in app) */}
+          {activeRun && (
             <button
               type="button"
               onClick={() => setTab("runs")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
-                currentTab === "runs"
-                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-950"
-                  : "text-slate-400 hover:text-slate-200 hover:bg-slate-900"
-              }`}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-running-bg border border-status-running-border text-status-running text-xs font-semibold cursor-pointer shrink-0"
+              title="Scrape run in progress. Click to view."
             >
-              <Play className="w-4 h-4" />
-              <span>Scraper Controller</span>
+              <span className="w-2 h-2 rounded-full bg-status-running animate-ping" />
+              <span>Scraping · {Math.max(0, Math.floor((now - new Date(activeRun.started_at).getTime()) / 60000))}m</span>
             </button>
-          </nav>
+          )}
+
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Navigation Tabs */}
+            <nav className="flex items-center gap-1 bg-bg-surface-elevated p-1 rounded-xl border border-border-subtle">
+              <button
+                type="button"
+                aria-label="Job postings"
+                aria-current={currentTab === "jobs" ? "page" : undefined}
+                onClick={() => setTab("jobs")}
+                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus ${
+                  currentTab === "jobs"
+                    ? "bg-accent text-accent-foreground shadow-xs"
+                    : "text-text-muted hover:text-text-main hover:bg-bg-surface"
+                }`}
+              >
+                <Briefcase className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Postings</span>
+                {totalJobsCount !== null && (
+                  <span
+                    className={`px-1.5 py-0.2 rounded-full text-[10px] font-mono ${
+                      currentTab === "jobs"
+                        ? "bg-black/20 text-accent-foreground"
+                        : "bg-border-subtle text-text-muted"
+                    }`}
+                  >
+                    {totalJobsCount.toLocaleString()}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                aria-current={currentTab === "runs" ? "page" : undefined}
+                onClick={() => setTab("runs")}
+                className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus ${
+                  currentTab === "runs"
+                    ? "bg-accent text-accent-foreground shadow-xs"
+                    : "text-text-muted hover:text-text-main hover:bg-bg-surface"
+                }`}
+              >
+                <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>Runs</span>
+                <span className="hidden md:inline">Controller</span>
+              </button>
+            </nav>
+
+            {/* Theme Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+              title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+              className="p-2 min-h-[44px] min-w-[44px] rounded-xl border border-border-subtle bg-bg-surface hover:bg-bg-surface-elevated text-text-muted hover:text-text-main transition-all cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+            >
+              {theme === "dark" ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-text-muted" />
+              )}
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 w-full px-4 sm:px-6 lg:px-8 py-6">
+      <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 lg:px-8 py-6">
         {currentTab === "jobs" ? <JobsExplorer /> : <ScrapeRuns />}
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 py-6 text-center text-xs text-slate-500">
-        <div className="w-full px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <footer className="border-t border-border-subtle py-6 text-center text-xs text-text-dim">
+        <div className="w-full max-w-[1200px] mx-auto px-4 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3">
           <span>Job Scrapper · Machine Learning Training Dataset Pipeline</span>
-          <span className="font-mono text-[11px] text-slate-600">
+          <span className="font-mono text-[11px] text-text-dim">
             Local Engine · Fast In-Memory & PostgreSQL Sink
           </span>
         </div>
