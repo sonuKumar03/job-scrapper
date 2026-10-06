@@ -2,6 +2,7 @@
 
 from typing import Type
 from job_scrapper.connectors.arbeitnow import ArbeitnowConnector
+from job_scrapper.connectors.ashby import AshbyConnector
 from job_scrapper.connectors.base import BaseConnector
 from job_scrapper.connectors.greenhouse import GreenhouseConnector
 from job_scrapper.connectors.hackernews import HackerNewsConnector
@@ -20,6 +21,7 @@ CONNECTORS: dict[str, Type[BaseConnector]] = {
     WeWorkRemotelyConnector.name: WeWorkRemotelyConnector,
     GreenhouseConnector.name: GreenhouseConnector,
     LeverConnector.name: LeverConnector,
+    AshbyConnector.name: AshbyConnector,
     HackerNewsConnector.name: HackerNewsConnector,
 }
 
