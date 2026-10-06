@@ -25,7 +25,7 @@ migration-generate: ## Generate a new migration (usage: make migration-generate 
 	@rtk uv run alembic revision --autogenerate -m "$(msg)"
 
 scrape: ## Scrape all sources from the last 7 days
-	@rtk uv run job-scrapper scrape --source $(or $(source),all) --days $(or $(days),7)
+	@rtk uv run --extra browser job-scrapper scrape --source $(or $(source),all) --days $(or $(days),7)
 
 export: ## Export recent jobs to JSONL
 	@rtk uv run job-scrapper export --days $(or $(days),7) --output $(or $(out),data/jobs_dataset.jsonl)

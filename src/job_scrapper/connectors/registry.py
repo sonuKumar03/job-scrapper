@@ -14,6 +14,7 @@ from job_scrapper.connectors.instahyre import InstahyreConnector
 from job_scrapper.connectors.jobicy import JobicyConnector
 from job_scrapper.connectors.lever import LeverConnector
 from job_scrapper.connectors.linkedin import LinkedInConnector
+from job_scrapper.connectors.naukri import NaukriConnector
 from job_scrapper.connectors.remoteok import RemoteOKConnector
 from job_scrapper.connectors.weworkremotely import WeWorkRemotelyConnector
 from job_scrapper.utils.http_client import ResilientHttpClient
@@ -29,6 +30,7 @@ CONNECTORS: dict[str, Type[BaseConnector]] = {
     GreenhouseConnector.name: GreenhouseConnector,
     LeverConnector.name: LeverConnector,
     LinkedInConnector.name: LinkedInConnector,
+    NaukriConnector.name: NaukriConnector,
     AshbyConnector.name: AshbyConnector,
     BuiltInConnector.name: BuiltInConnector,
     HackerNewsConnector.name: HackerNewsConnector,
