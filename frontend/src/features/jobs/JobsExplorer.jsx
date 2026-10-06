@@ -176,7 +176,7 @@ export default function JobsExplorer() {
       <h1 className="text-[32px] font-semibold">Job postings</h1>
       <p role="status" className="text-sm text-text-muted">{loading ? "Updating postings…" : `${total.toLocaleString()} postings available`}</p>
       {/* Top Filter & Toolbar */}
-      <Card className="p-5 space-y-4">
+      <Card className="jobs-toolbar sticky top-[var(--app-header-height,72px)] z-30 p-5 space-y-4">
         <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
           {/* Search Input */}
           <div className="relative flex-1">

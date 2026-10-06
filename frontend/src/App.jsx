@@ -1,10 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Briefcase, Play, Database, Sun, Moon } from "lucide-react";
 import { fetchApi, setSessionToken } from "./services/api";
 import JobsExplorer from "./features/jobs/JobsExplorer";
 import ScrapeRuns from "./features/scraper/ScrapeRuns";
 
 export default function App() {
+  const headerRef = useRef(null);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    const measure = () => header.parentElement.style.setProperty("--app-header-height", `${header.getBoundingClientRect().height}px`);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, []);
   const [currentTab, setCurrentTab] = useState("jobs");
   const [totalJobsCount, setTotalJobsCount] = useState(null);
   const [theme, setTheme] = useState(() => {
@@ -77,7 +87,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-bg-base flex flex-col font-sans text-text-main selection:bg-accent selection:text-accent-foreground">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-bg-surface/95 backdrop-blur-md border-b border-border-subtle shadow-xs">
+      <header ref={headerRef} className="sticky top-0 z-40 bg-bg-surface/95 backdrop-blur-md border-b border-border-subtle shadow-xs">
         <div className="w-full max-w-[1200px] mx-auto px-4 lg:px-8 min-h-16 py-2 flex flex-wrap items-center justify-between gap-2">
           {/* Brand */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">

@@ -113,6 +113,8 @@
 }
 
 @layer base {
+  html { scrollbar-gutter: stable; }
+
   body {
     background-color: var(--bg-base);
     color: var(--text-main);
@@ -171,4 +173,14 @@
 @media (max-width: 720px) {
   .jobs-table td:nth-child(3)::before { content: "Posted"; display: block; color: var(--text-muted); font-size: 14px; }
   .jobs-table td:nth-child(4)::before { content: "Collected: "; }
+}
+
+/* One restrained focus indicator instead of overlapping outline and utility rings. */
+:is(button, a, input, select, summary, [tabindex]):focus {
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
+}
+:is(button, a, input, select, summary, [tabindex]):focus-visible {
+  outline: 1px solid var(--border-focus);
+  outline-offset: 1px;
 }
