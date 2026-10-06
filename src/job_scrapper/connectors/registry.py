@@ -7,6 +7,7 @@ from job_scrapper.connectors.base import BaseConnector
 from job_scrapper.connectors.builtin import BuiltInConnector
 from job_scrapper.connectors.greenhouse import GreenhouseConnector
 from job_scrapper.connectors.hackernews import HackerNewsConnector
+from job_scrapper.connectors.hirist import HiristConnector
 from job_scrapper.connectors.himalayas import HimalayasConnector
 from job_scrapper.connectors.indeed import IndeedConnector
 from job_scrapper.connectors.instahyre import InstahyreConnector
@@ -31,6 +32,7 @@ CONNECTORS: dict[str, Type[BaseConnector]] = {
     AshbyConnector.name: AshbyConnector,
     BuiltInConnector.name: BuiltInConnector,
     HackerNewsConnector.name: HackerNewsConnector,
+    HiristConnector.name: HiristConnector,
 }
 
 
