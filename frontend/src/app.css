@@ -155,12 +155,14 @@
   button { min-width: 44px; }
   input, select { font-size: 16px; }
 }
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .jobs-table, .jobs-table tbody, .jobs-table tr, .jobs-table td { display: block; width: 100%; }
   .jobs-table thead { display: none; }
   .jobs-table td { padding: 6px 16px; white-space: normal; overflow-wrap: anywhere; }
   .jobs-table td:first-child { padding-top: 16px; }
   .jobs-table td:last-child { padding-bottom: 16px; text-align: left; }
+}
+@media (max-width: 720px) {
   .jobs-pagination { flex-direction: column; gap: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -168,7 +170,7 @@
 }
 
 .text-xs, .text-\[11px\], .text-\[10px\] { font-size: 14px; }
-@media (max-width: 720px) {
+@media (max-width: 900px) {
   .jobs-table td:nth-child(3)::before { content: "Posted"; display: block; color: var(--text-muted); font-size: 14px; }
   .jobs-table td:nth-child(4)::before { content: "Collected: "; }
 }
