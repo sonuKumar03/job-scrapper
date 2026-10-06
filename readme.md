@@ -62,7 +62,7 @@ rtk make web       # Start React frontend development server (http://localhost:5
 ```
 
 - **React Dashboard**: Open `http://localhost:5173`. Browse jobs with debounced search, company/source filters, server-side pagination (25, 50, or 100 rows), and slide-over job details showing full descriptions, stored attributes, multi-source sightings, and cryptographic dedup metadata.
-- **REST API & Swagger Docs**: Open `http://127.0.0.1:8000/docs`. The backend provides clean OpenAPI-documented endpoints (`/api/jobs`, `/api/jobs/{id}`, `/api/runs`, `/api/session`, `/api/filters`, `/health`) with CORS support.
+- **REST API & Swagger Docs**: Open `http://127.0.0.1:8000/docs`. The backend provides clean OpenAPI-documented endpoints (`/api/jobs`, `/api/jobs/count`, `/api/jobs/{id}`, `/api/runs`, `/api/session`, `/api/filters`, `/health`) with CORS support. The count endpoint returns only `{"total": <job count>}`. The dashboard uses TanStack Query for shared caching, refreshes, and five-second polling of the total and run history.
 
 On **Scraper Controller**, select sources and a day window to start a background scrape. The interface reports real source/account results with explicit errors and incomplete coverage.
 

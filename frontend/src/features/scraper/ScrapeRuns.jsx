@@ -6,6 +6,8 @@ import {
   RefreshCw,
   AlertTriangle,
 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSession, useRuns } from "../../services/queries";
 import { fetchApi } from "../../services/api";
 import { formatDate, formatRelativeTime } from "../../utils/date";
 import Card from "../../components/ui/Card";
@@ -13,56 +15,61 @@ import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
 
 export default function ScrapeRuns() {
-  const [availableSources, setAvailableSources] = useState([]);
+  const queryClient = useQueryClient();
+  const sessionQuery = useSession();
+  const availableSources = sessionQuery.data?.sources || [];
   const [selectedSources, setSelectedSources] = useState([]);
   const [days, setDays] = useState(1);
 
-  const [runs, setRuns] = useState([]);
   const [page, setPage] = useState(1);
-  const pageSize = 25;
 
-  const [selectedRun, setSelectedRun] = useState(null);
-  const [loadingRuns, setLoadingRuns] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isStopping, setIsStopping] = useState(false);
+  const runsQuery = useRuns(page, page !== 1);
+  const runs = runsQuery.data?.items || [];
+  const loadingRuns = runsQuery.isFetching;
+  const [selectedRunId, setSelectedRunId] = useState(null);
+  const detailQuery = useQuery({
+    queryKey: ["runs", "detail", selectedRunId],
+    queryFn: ({ signal }) => fetchApi(`runs/${selectedRunId}`, { signal }),
+    enabled: Boolean(selectedRunId),
+    refetchInterval: (query) => ["running", "stopping"].includes(query.state.data?.status) ? 3000 : false,
+  });
+  const selectedRun = selectedRunId ? detailQuery.data : null;
+  const invalidateScrapeData = () => Promise.all([
+    queryClient.invalidateQueries({ queryKey: ["runs"] }),
+    queryClient.invalidateQueries({ queryKey: ["jobs"] }),
+    queryClient.invalidateQueries({ queryKey: ["filters"] }),
+  ]);
+  const startMutation = useMutation({
+    mutationFn: (data) => fetchApi("runs", { method: "POST", body: JSON.stringify(data) }),
+    onSuccess: invalidateScrapeData,
+  });
+  const stopMutation = useMutation({
+    mutationFn: (id) => fetchApi(`runs/${id}/stop`, { method: "POST", body: "{}" }),
+    onSuccess: invalidateScrapeData,
+  });
+  const isSubmitting = startMutation.isPending;
+  const isStopping = stopMutation.isPending;
   const [statusMessage, setStatusMessage] = useState("");
   const [statusError, setStatusError] = useState(false);
   const [reviewing, setReviewing] = useState(false);
 
-  const loadSession = async () => {
-    try {
-      const data = await fetchApi("session");
-      const srcs = data.sources || [];
-      setAvailableSources(srcs);
-      if (srcs.length > 0) {
-        setSelectedSources([srcs[0]]);
-      }
-    } catch (err) {
-      console.error("Failed to load session/sources:", err);
-    }
-  };
-
   const loadRuns = async (targetPage = page) => {
-    setLoadingRuns(true);
-    try {
-      const data = await fetchApi(`runs?page=${targetPage}&page_size=${pageSize}`);
-      setRuns(data.items || []);
-      setPage(data.page || targetPage);
-    } catch (err) {
-      setStatusMessage("Could not load run history. Use Refresh to try again."); setStatusError(true);
-    } finally {
-      setLoadingRuns(false);
-    }
+    setPage(targetPage);
+    await queryClient.invalidateQueries({ queryKey: ["runs", targetPage] });
   };
-
-  const refreshSelectedRun = async (runId) => {
-    try {
-      const detail = await fetchApi(`runs/${runId}`);
-      setSelectedRun(detail);
-    } catch (err) {
-      setStatusMessage("Could not load run details. Select the run to try again."); setStatusError(true);
-    }
+  const refreshSelectedRun = (runId) => {
+    setSelectedRunId(runId);
+    return queryClient.invalidateQueries({ queryKey: ["runs", "detail", runId] });
   };
+  useEffect(() => {
+    if (sessionQuery.data?.sources.length) setSelectedSources([sessionQuery.data.sources[0]]);
+  }, [sessionQuery.data]);
+  useEffect(() => {
+    if (runsQuery.isError || detailQuery.isError || sessionQuery.isError) {
+      setStatusMessage("Could not load scraper data. Refresh to try again.");
+      setStatusError(true);
+    }
+  }, [runsQuery.isError, detailQuery.isError, sessionQuery.isError]);
 
   const startScrape = async () => {
     if (selectedSources.length === 0) {
@@ -75,18 +82,11 @@ export default function ScrapeRuns() {
       setStatusMessage("Enter a whole day window from 1 to 365."); setStatusError(true); return;
     }
     setReviewing(false);
-    setIsSubmitting(true);
     setStatusMessage("Dispatching scrape task...");
     setStatusError(false);
 
     try {
-      const res = await fetchApi("runs", {
-        method: "POST",
-        body: JSON.stringify({
-          sources: selectedSources,
-          days: Number(days),
-        }),
-      });
+      const res = await startMutation.mutateAsync({ sources: selectedSources, days: Number(days) });
 
       setStatusMessage("Scrape started successfully!");
       setStatusError(false);
@@ -98,8 +98,6 @@ export default function ScrapeRuns() {
     } catch (err) {
       setStatusMessage("Could not start scraping. Check the local API, refresh run history, and try again.");
       setStatusError(true);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -115,38 +113,15 @@ export default function ScrapeRuns() {
 
   const stopScrape = async () => {
     if (!activeRun || isStopping) return;
-    setIsStopping(true);
     try {
-      await fetchApi(`runs/${activeRun.id}/stop`, { method: "POST", body: "{}" });
+      await stopMutation.mutateAsync(activeRun.id);
       setStatusMessage("Stop requested. The current batch will finish saving before the scrape stops.");
       setStatusError(false);
-      await loadRuns(page);
-      if (selectedRun?.id === activeRun.id) await refreshSelectedRun(activeRun.id);
     } catch {
       setStatusMessage("Could not request a stop. Refresh run history and try again.");
       setStatusError(true);
-    } finally {
-      setIsStopping(false);
     }
   };
-
-  useEffect(() => {
-    loadSession();
-    loadRuns(1);
-  }, []);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (isAnyRunning) {
-        loadRuns(page);
-        if (selectedRun?.id) {
-          refreshSelectedRun(selectedRun.id);
-        }
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [isAnyRunning, page, selectedRun?.id]);
 
   const getStatusBadgeVariant = (status) => {
     if (status === "completed") return "success";
@@ -266,7 +241,7 @@ export default function ScrapeRuns() {
               variant="primary"
               size="lg"
               loading={isSubmitting}
-              disabled={isSubmitting || isAnyRunning || selectedSources.length === 0}
+              disabled={!sessionQuery.data || isSubmitting || isAnyRunning || selectedSources.length === 0}
               onClick={() => setReviewing(true)}
             >
               <Play className="w-4 h-4 fill-current" />
@@ -298,7 +273,7 @@ export default function ScrapeRuns() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => setSelectedRun(null)}
+              onClick={() => setSelectedRunId(null)}
             >
               Close Detail
             </Button>

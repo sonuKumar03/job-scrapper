@@ -167,9 +167,7 @@
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
-@layer base {
-  .text-xs, .text-\[11px\], .text-\[10px\] { font-size: 14px; }
-}
+.text-xs, .text-\[11px\], .text-\[10px\] { font-size: 14px; }
 @media (max-width: 720px) {
   .jobs-table td:nth-child(3)::before { content: "Posted"; display: block; color: var(--text-muted); font-size: 14px; }
   .jobs-table td:nth-child(4)::before { content: "Collected: "; }

@@ -144,6 +144,7 @@ def create_app() -> FastAPI:
             JobModel.source,
             JobModel.posted_at,
             JobModel.scraped_at,
+            JobModel.attributes,
         ).where(*predicates)
         async with app.state.manager.session() as session:
             total = await session.scalar(select(func.count()).select_from(JobModel).where(*predicates))
@@ -154,6 +155,12 @@ def create_app() -> FastAPI:
             )
             items = [dict(row) for row in result.mappings()]
         return jsonable_encoder({"items": items, "total": total, "page": page, "page_size": page_size})
+
+    @app.get("/api/jobs/count")
+    async def job_count():
+        async with app.state.manager.session() as session:
+            total = await session.scalar(select(func.count()).select_from(JobModel))
+        return {"total": total or 0}
 
     @app.get("/api/jobs/{job_id}")
     async def job_detail(job_id: UUID):

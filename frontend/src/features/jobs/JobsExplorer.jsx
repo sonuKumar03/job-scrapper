@@ -8,6 +8,7 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { fetchApi } from "../../services/api";
 import { formatDate, formatRelativeTime } from "../../utils/date";
 import Card from "../../components/ui/Card";
@@ -16,7 +17,18 @@ import Badge from "../../components/ui/Badge";
 import CustomSelect from "../../components/ui/Select";
 import JobDetailModal from "./JobDetailModal";
 
+function jobContext(attributes = {}) {
+  const { location, work_arrangement, experience_years_min: min, experience_years_max: max } = attributes || {};
+  const experience = min != null && max != null
+    ? `${min === max ? min : `${min}–${max}`} years experience`
+    : min != null ? `${min}+ years experience` : max != null ? `Up to ${max} years experience` : null;
+  return [typeof location === "string" ? location : Array.isArray(location) ? location.join(", ") : null,
+    typeof work_arrangement === "string" && work_arrangement !== "unknown" ? work_arrangement.replaceAll("_", " ") : null,
+    experience].filter(Boolean).join(" · ");
+}
+
 export default function JobsExplorer() {
+  const queryClient = useQueryClient();
   // Parse initial query params from hash: e.g. #jobs?q=...&source=...&page=...
   const getUrlParams = () => {
     const hash = window.location.hash || "";
@@ -26,26 +38,43 @@ export default function JobsExplorer() {
 
   const initialParams = getUrlParams();
 
-  const [jobs, setJobs] = useState([]);
-  const [total, setTotal] = useState(0);
   const [page, setPage] = useState(() => Math.max(1, Number(initialParams.get("page")) || 1));
   const [pageSize, setPageSize] = useState(() => [25, 50, 100].includes(Number(initialParams.get("page_size"))) ? Number(initialParams.get("page_size")) : 25);
   const [search, setSearch] = useState(() => initialParams.get("q") || "");
   const [selectedSource, setSelectedSource] = useState(() => initialParams.get("source") || "");
   const [selectedCompany, setSelectedCompany] = useState(() => initialParams.get("company") || "");
 
-  const [availableSources, setAvailableSources] = useState([]);
-  const [availableCompanies, setAvailableCompanies] = useState([]);
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [detailError, setDetailError] = useState(null);
+  const [querySearch, setQuerySearch] = useState(search);
+  const [selectedJobId, setSelectedJobId] = useState(null);
+  const [dismissedDetailError, setDismissedDetailError] = useState(false);
+  const filtersQuery = useQuery({ queryKey: ["filters"], queryFn: ({ signal }) => fetchApi("filters", { signal }) });
+  const availableSources = filtersQuery.data?.sources || [];
+  const availableCompanies = filtersQuery.data?.companies || [];
+  const jobsQuery = useQuery({
+    queryKey: ["jobs", "list", page, pageSize, querySearch.trim(), selectedSource, selectedCompany],
+    queryFn: ({ signal }) => {
+      const params = new URLSearchParams({ page, page_size: pageSize });
+      if (querySearch.trim()) params.set("q", querySearch.trim());
+      if (selectedSource) params.set("source", selectedSource);
+      if (selectedCompany) params.set("company", selectedCompany);
+      return fetchApi(`jobs?${params}`, { signal });
+    },
+    placeholderData: keepPreviousData,
+  });
+  const detailQuery = useQuery({
+    queryKey: ["jobs", "detail", selectedJobId],
+    queryFn: ({ signal }) => fetchApi(`jobs/${encodeURIComponent(selectedJobId)}`, { signal }),
+    enabled: Boolean(selectedJobId),
+  });
+  const jobs = jobsQuery.data?.items || [];
+  const total = jobsQuery.data?.total || 0;
+  const loading = jobsQuery.isFetching;
+  const error = jobsQuery.isError ? "Could not load postings. Check the local API and try again." : null;
+  const selectedJob = selectedJobId ? detailQuery.data : null;
+  const detailError = detailQuery.isError && !dismissedDetailError ? "Could not load this posting. Return to the list and try again." : null;
 
   const searchTimerRef = useRef(null);
   const searchRef = useRef(null);
-  const requestRef = useRef(0);
-  const detailRequestRef = useRef(0);
   const openedDetailRef = useRef(false);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -68,49 +97,14 @@ export default function JobsExplorer() {
     }
   }, []);
 
-  const loadFilters = async () => {
-    try {
-      const data = await fetchApi("filters");
-      setAvailableSources(data.sources || []);
-      setAvailableCompanies(data.companies || []);
-    } catch (err) {
-      console.error("Failed to load filters:", err);
-    }
-  };
-
-  const loadJobs = useCallback(
-    async (targetPage = page, querySearch = search, src = selectedSource, comp = selectedCompany, size = pageSize) => {
-      const request = ++requestRef.current;
-      setLoading(true);
-      setError(null);
-      updateUrlState(targetPage, querySearch, src, comp, size);
-      try {
-        const params = new URLSearchParams();
-        params.set("page", String(targetPage));
-        params.set("page_size", String(size));
-        if (querySearch.trim()) params.set("q", querySearch.trim());
-        if (src) params.set("source", src);
-        if (comp) params.set("company", comp);
-
-        const res = await fetchApi(`jobs?${params.toString()}`);
-        if (request !== requestRef.current) return;
-        setJobs(res.items || []);
-        setTotal(res.total || 0);
-        setPage(res.page || targetPage);
-      } catch (err) {
-        if (request !== requestRef.current) return;
-        setError("Could not load postings. Check the local API and try again.");
-        setJobs([]);
-        setTotal(0);
-      } finally {
-        if (request === requestRef.current) setLoading(false);
-      }
-    },
-    [page, search, selectedSource, selectedCompany, pageSize, updateUrlState]
-  );
+  const loadJobs = useCallback((targetPage = page, text = search, src = selectedSource, comp = selectedCompany, size = pageSize) => {
+    clearTimeout(searchTimerRef.current);
+    setPage(targetPage); setQuerySearch(text); setSelectedSource(src); setSelectedCompany(comp); setPageSize(size);
+    updateUrlState(targetPage, text, src, comp, size);
+    queryClient.invalidateQueries({ queryKey: ["jobs", "list", targetPage, size, text.trim(), src, comp] });
+  }, [page, search, selectedSource, selectedCompany, pageSize, updateUrlState, queryClient]);
 
   useEffect(() => {
-    loadFilters();
     const restoreRoute = () => {
       if (window.location.hash && !/^#\/?jobs(?:[/?]|$)/.test(window.location.hash)) return;
       clearTimeout(searchTimerRef.current);
@@ -121,13 +115,7 @@ export default function JobsExplorer() {
       setSearch(q); setSelectedSource(source); setSelectedCompany(company); setPage(routePage); setPageSize(routeSize);
       const path = window.location.hash.split("?")[0];
       const jobId = path.startsWith("#/jobs/") ? decodeURIComponent(path.slice(7)) : params.get("job");
-      const request = ++detailRequestRef.current;
-      setSelectedJob(null); setDetailError(null);
-      if (jobId) fetchApi(`jobs/${encodeURIComponent(jobId)}`).then((job) => {
-        if (request === detailRequestRef.current) setSelectedJob(job);
-      }).catch(() => {
-        if (request === detailRequestRef.current) setDetailError("Could not load this posting. Return to the list and try again.");
-      });
+      setSelectedJobId(jobId); setDismissedDetailError(false);
       loadJobs(routePage, q, source, company, routeSize);
     };
     restoreRoute();
@@ -139,7 +127,7 @@ export default function JobsExplorer() {
     };
     window.addEventListener("keydown", shortcuts);
     return () => {
-      clearTimeout(searchTimerRef.current); ++requestRef.current; ++detailRequestRef.current;
+      clearTimeout(searchTimerRef.current);
       window.removeEventListener("hashchange", restoreRoute);
       window.removeEventListener("keydown", shortcuts);
     };
@@ -173,8 +161,7 @@ export default function JobsExplorer() {
 
   return (
     <div className="space-y-6" aria-busy={loading}>
-      <h1 className="text-[32px] font-semibold">Job postings</h1>
-      <p role="status" className="text-sm text-text-muted">{loading ? "Updating postings…" : `${total.toLocaleString()} postings available`}</p>
+      <h1 className="sr-only">Job postings</h1>
       {/* Top Filter & Toolbar */}
       <Card className="jobs-toolbar sticky top-[var(--app-header-height,72px)] z-30 p-5 space-y-4">
         <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
@@ -263,7 +250,7 @@ export default function JobsExplorer() {
             <span>{detailError}</span>
             <button
               type="button"
-              onClick={() => setDetailError(null)}
+              onClick={() => setDismissedDetailError(true)}
               className="text-xs font-semibold cursor-pointer underline ml-2"
             >
               Dismiss
@@ -326,7 +313,7 @@ export default function JobsExplorer() {
                       key={job.id}
                       tabIndex={0}
                       aria-label={`View details for ${job.title} at ${job.company_name}`}
-                      className="hover:bg-bg-surface-elevated/80 transition-colors group cursor-pointer focus-visible:outline-none focus-visible:bg-bg-surface-elevated focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-inset"
+                      className="hover:bg-bg-surface-elevated transition-colors group cursor-pointer focus-visible:outline-none focus-visible:bg-bg-surface-elevated focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-inset"
                       onClick={() => openJobDetail(job)}
                       onKeyDown={(e) => {
                         if (e.target !== e.currentTarget) return;
@@ -344,9 +331,12 @@ export default function JobsExplorer() {
                         <div className="font-semibold text-text-main group-hover:text-accent transition-colors leading-snug">
                           {job.title}
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs text-text-muted mt-1">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted mt-1">
+                          <span className="inline-flex items-center gap-1.5">
                           <Building2 className="w-3.5 h-3.5 text-text-dim" />
                           <span>{job.company_name}</span>
+                          </span>
+                          {jobContext(job.attributes) && <span>{jobContext(job.attributes)}</span>}
                         </div>
                       </td>
                       <td className="py-4 px-4 whitespace-nowrap">
