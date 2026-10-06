@@ -11,13 +11,7 @@ from job_scrapper.storage.base import JobSink
 
 class WeWorkRemotelyConnector(BaseConnector):
     name: str = "weworkremotely"
-    CATEGORY_FEEDS: list[str] = [
-        "https://weworkremotely.com/categories/remote-programming-jobs.rss",
-        "https://weworkremotely.com/categories/remote-devops-sysadmin-jobs.rss",
-        "https://weworkremotely.com/categories/remote-product-management-jobs.rss",
-        "https://weworkremotely.com/categories/remote-data-science-jobs.rss",
-        "https://weworkremotely.com/categories/remote-management-and-finance-jobs.rss",
-    ]
+    CATEGORY_FEEDS: list[str] = ["https://weworkremotely.com/remote-jobs.rss"]
 
     async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
         stats = self.new_stats()
