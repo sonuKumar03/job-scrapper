@@ -57,9 +57,11 @@ For a fresh scrape, apply schema updates with `make migrate` before starting the
 
 The scrape CLI reports errors and incomplete coverage, then exits with status 1.
 
+Current collection uses public JSON APIs (Himalayas, Jobicy, Arbeitnow, RemoteOK, Greenhouse, Lever, Hacker News search, and Ashby), We Work Remotely RSS, and Built In HTML pages. The Built In connector checks known IDs before fetching job pages and reads their published dates and descriptions from JobPosting metadata. Its detail requests make it slower than feed-based sources.
+
 **Provider limits:** [Jobicy exposes a rolling seven-day feed](https://jobicy.com/jobs-rss-feed), so requests for more than seven days are incomplete. [Hacker News search uses Algolia pagination](https://hn.algolia.com/api); its index exposes at most 1,000 results per query by default. Greenhouse jobs without the API's original [`first_published` date](https://docs.greenhouse.io/job-board.html) are skipped and counted as unknown.
 
-**Scraper safety ceilings:** These are implementation choices to bound one run, not provider limits. The current caps are 500 pages for Himalayas, 500 pages for Lever, 50 pages for Arbeitnow, and 500 pages for Jobicy. If a cap is reached, the CLI marks that source incomplete. Himalayas uses the documented cursor and 20-job page size; [Lever supports `skip` and `limit`](https://github.com/lever/postings-api); [Jobicy supports cursor pagination](https://jobicy.com/jobs-rss-feed).
+**Scraper safety ceilings:** These are implementation choices to bound one run, not provider limits. The current caps are 500 pages for Himalayas, 500 pages for Lever, 50 pages for Arbeitnow, 500 pages for Jobicy, and 500 listing pages for Built In. If a cap is reached, the CLI marks that source incomplete. Himalayas uses the documented cursor and 20-job page size; [Lever supports `skip` and `limit`](https://github.com/lever/postings-api); [Jobicy supports cursor pagination](https://jobicy.com/jobs-rss-feed). Ashby uses its [public job-posting API](https://developers.ashbyhq.com/docs/public-job-posting-api).
 
 ### 2. Scraping Jobs
 ```bash
@@ -101,8 +103,10 @@ job-scrapper/
 │       │   └── http_client.py  # Resilient curl_cffi client (jitter, rate limits)
 │       ├── connectors/
 │       │   ├── base.py         # Abstract BaseConnector
-│       │   ├── himalayas.py    # Himalayas board connector
-│       │   └── jobicy.py       # Jobicy board connector
+│       │   ├── registry.py     # Source selection
+│       │   ├── ashby.py        # Public employer boards
+│       │   ├── builtin.py      # Public HTML listings and detail pages
+│       │   └── ...             # Other API and RSS sources
 │       ├── exporters/
 │       │   ├── jsonl.py        # Stream database rows to JSONL
 │       │   └── parquet.py      # Stream database rows to Parquet

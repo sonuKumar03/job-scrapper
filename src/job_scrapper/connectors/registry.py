@@ -4,6 +4,7 @@ from typing import Type
 from job_scrapper.connectors.arbeitnow import ArbeitnowConnector
 from job_scrapper.connectors.ashby import AshbyConnector
 from job_scrapper.connectors.base import BaseConnector
+from job_scrapper.connectors.builtin import BuiltInConnector
 from job_scrapper.connectors.greenhouse import GreenhouseConnector
 from job_scrapper.connectors.hackernews import HackerNewsConnector
 from job_scrapper.connectors.himalayas import HimalayasConnector
@@ -22,6 +23,7 @@ CONNECTORS: dict[str, Type[BaseConnector]] = {
     GreenhouseConnector.name: GreenhouseConnector,
     LeverConnector.name: LeverConnector,
     AshbyConnector.name: AshbyConnector,
+    BuiltInConnector.name: BuiltInConnector,
     HackerNewsConnector.name: HackerNewsConnector,
 }
 
