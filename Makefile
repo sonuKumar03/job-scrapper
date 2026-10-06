@@ -1,25 +1,36 @@
-.PHONY: help setup up down migrate scrape export parquet status reset web test clean
+.PHONY: help setup up down migrate migration-generate scrape export parquet status reset api web web-build test clean
 
 help: ## Show this help message
 	@echo "Available commands:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 setup: ## Install dependencies and prepare local environment
-	@rtk uv sync --extra dev
+	@rtk uv sync --extra dev --extra web
 	@if [ ! -f .env ]; then cp .env.example .env; echo "Created .env"; fi
-	@rtk docker compose up -d
+	@rtk npm --prefix frontend install
+	@rtk docker compose up -d db
 	@sleep 2
 	@rtk uv run alembic upgrade head
 	@echo "Environment setup complete!"
 
-up: ## Start PostgreSQL container
-	@rtk docker compose up -d
+up: ## Start all services in Docker Compose (db, api, web)
+	@rtk docker compose up --build -d
+	@echo "\n\033[32m✔ All services are running!\033[0m"
+	@echo "  \033[36mReact Web App:\033[0m   http://localhost:3000"
+	@echo "  \033[36mFastAPI Docs:\033[0m    http://localhost:8000/docs"
+	@echo "  \033[36mPostgreSQL DB:\033[0m   localhost:5432\n"
 
-down: ## Stop PostgreSQL container
+down: ## Stop all docker containers
 	@rtk docker compose down
 
-web: ## Start local dashboard at http://127.0.0.1:8000
-	@rtk uv run --extra web job-scrapper web
+api: ## Start FastAPI REST API server at http://127.0.0.1:8000
+	@rtk uv run --extra web job-scrapper api
+
+web: ## Start React frontend development server at http://localhost:5173
+	@rtk npm --prefix frontend run dev
+
+web-build: ## Build React frontend production bundle
+	@rtk npm --prefix frontend run build
 
 migrate: ## Apply database migrations
 	@rtk uv run alembic upgrade head
@@ -45,6 +56,7 @@ reset: ## Delete all collected jobs, sightings, and scrape runs
 test: ## Run unit tests
 	@rtk uv run pytest tests/
 
-clean: ## Clean Python cache and temporary files
+clean: ## Clean build artifacts, Python cache and temporary files
 	@find . -type d -name "__pycache__" -exec rm -rf {} +
 	@find . -type d -name ".pytest_cache" -exec rm -rf {} +
+	@rm -rf frontend/dist

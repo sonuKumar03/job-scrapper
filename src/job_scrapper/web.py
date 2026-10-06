@@ -1,22 +1,20 @@
-"""Loopback dashboard API. Optional web dependencies are imported only here."""
+"""FastAPI REST API for Job Scrapper."""
 
 import asyncio
 import logging
 import secrets
 from contextlib import asynccontextmanager
-from pathlib import Path
 from typing import Annotated, Any
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import FileResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
-from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from job_scrapper.connectors.registry import list_connectors
 from job_scrapper.runner import ScrapeBusyError, execution_snapshot, reconcile_executions, run_scrape
@@ -24,7 +22,7 @@ from job_scrapper.storage.postgres.models import JobModel, ScrapeExecutionModel
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
 
 logger = logging.getLogger(__name__)
-STATIC = Path(__file__).parent / "static"
+
 Page = Annotated[int, Query(ge=1, le=1_000_000)]
 PageSize = Annotated[int, Query(ge=1, le=100)]
 
@@ -63,27 +61,35 @@ def create_app() -> FastAPI:
                 await asyncio.gather(task, return_exceptions=True)
             await manager.close()
 
-    app = FastAPI(title="Job Scrapper", lifespan=lifespan, docs_url=None, redoc_url=None)
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "[::1]"])
+    app = FastAPI(
+        title="Job Scrapper API",
+        description="Clean REST API for browsing scraped job postings, deduplication metadata, and triggering background scrape runs.",
+        version="0.1.0",
+        lifespan=lifespan,
+        docs_url="/docs",
+        redoc_url="/redoc",
+    )
+
+    # Enable CORS for decoupled frontends (Vite dev server, standalone react app, etc.)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://127.0.0.1:3000", "*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     @app.middleware("http")
-    async def local_boundary(request: Request, call_next):
+    async def security_and_token_boundary(request: Request, call_next):
         if request.method not in {"GET", "HEAD", "OPTIONS"}:
-            origin = request.headers.get("origin")
-            expected = str(request.base_url).rstrip("/")
-            if origin is not None and origin != expected:
-                return JSONResponse({"detail": "Requests must come from this dashboard."}, status_code=403)
-            if request.headers.get("sec-fetch-site") == "cross-site":
-                return JSONResponse({"detail": "Cross-site requests are not allowed."}, status_code=403)
-            if request.headers.get("content-type", "").split(";")[0].strip().lower() != "application/json":
+            content_type = request.headers.get("content-type", "").split(";")[0].strip().lower()
+            if content_type != "application/json":
                 return JSONResponse({"detail": "Send application/json."}, status_code=415)
             token = request.headers.get("x-scrape-token", "")
-            if not secrets.compare_digest(token.encode(), app.state.token.encode()):
-                return JSONResponse({"detail": "Refresh this page before starting a scrape."}, status_code=403)
+            if not token or not secrets.compare_digest(token.encode(), app.state.token.encode()):
+                return JSONResponse({"detail": "Valid X-Scrape-Token header required. Fetch from /api/session first."}, status_code=403)
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
-        response.headers["Referrer-Policy"] = "no-referrer"
         if request.url.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
         return response
@@ -92,6 +98,10 @@ def create_app() -> FastAPI:
     async def database_error(request: Request, error: SQLAlchemyError):
         logger.error("Dashboard database request failed: %s", type(error).__name__)
         return JSONResponse({"detail": "Database unavailable. Check PostgreSQL and run make migrate."}, status_code=503)
+
+    @app.get("/health")
+    async def health():
+        return {"status": "ok"}
 
     @app.get("/api/session")
     async def session_info():
@@ -106,7 +116,8 @@ def create_app() -> FastAPI:
 
     @app.get("/api/jobs")
     async def jobs(
-        page: Page = 1, page_size: PageSize = 25,
+        page: Page = 1,
+        page_size: PageSize = 25,
         q: Annotated[str, Query(max_length=200)] = "",
         source: Annotated[str, Query(max_length=64)] = "",
         company: Annotated[str, Query(max_length=500)] = "",
@@ -116,30 +127,46 @@ def create_app() -> FastAPI:
         predicates = []
         if q.strip():
             literal = q.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-            predicates.append(or_(JobModel.title.ilike(f"%{literal}%", escape="\\"),
-                                  JobModel.company_name.ilike(f"%{literal}%", escape="\\")))
+            predicates.append(
+                or_(
+                    JobModel.title.ilike(f"%{literal}%", escape="\\"),
+                    JobModel.company_name.ilike(f"%{literal}%", escape="\\"),
+                )
+            )
         if source:
             predicates.append(JobModel.source == source)
         if company:
             predicates.append(JobModel.company_name == company)
-        statement = select(JobModel.id, JobModel.title, JobModel.company_name,
-                           JobModel.source, JobModel.posted_at, JobModel.scraped_at).where(*predicates)
+        statement = select(
+            JobModel.id,
+            JobModel.title,
+            JobModel.company_name,
+            JobModel.source,
+            JobModel.posted_at,
+            JobModel.scraped_at,
+        ).where(*predicates)
         async with app.state.manager.session() as session:
             total = await session.scalar(select(func.count()).select_from(JobModel).where(*predicates))
-            result = await session.execute(statement.order_by(JobModel.scraped_at.desc(), JobModel.id.desc())
-                                           .offset((page - 1) * page_size).limit(page_size))
+            result = await session.execute(
+                statement.order_by(JobModel.scraped_at.desc(), JobModel.id.desc())
+                .offset((page - 1) * page_size)
+                .limit(page_size)
+            )
             items = [dict(row) for row in result.mappings()]
         return jsonable_encoder({"items": items, "total": total, "page": page, "page_size": page_size})
 
     @app.get("/api/jobs/{job_id}")
     async def job_detail(job_id: UUID):
         async with app.state.manager.session() as session:
-            job = await session.scalar(select(JobModel).where(JobModel.id == job_id)
-                                       .options(selectinload(JobModel.sightings)))
+            job = await session.scalar(
+                select(JobModel).where(JobModel.id == job_id).options(selectinload(JobModel.sightings))
+            )
             if job is None:
                 raise HTTPException(404, "Job not found. It may have been removed by a reset.")
             data = columns(job)
-            data["sightings"] = [columns(sighting) for sighting in sorted(job.sightings, key=lambda s: (s.source, s.source_job_id))]
+            data["sightings"] = [
+                columns(sighting) for sighting in sorted(job.sightings, key=lambda s: (s.source, s.source_job_id))
+            ]
         return jsonable_encoder(data)
 
     @app.get("/api/runs")
@@ -148,11 +175,18 @@ def create_app() -> FastAPI:
             raise HTTPException(422, "Rows per page must be 25, 50, or 100.")
         async with app.state.manager.session() as session:
             total = await session.scalar(select(func.count()).select_from(ScrapeExecutionModel))
-            rows = (await session.scalars(select(ScrapeExecutionModel)
+            rows = (
+                await session.scalars(
+                    select(ScrapeExecutionModel)
                     .order_by(ScrapeExecutionModel.started_at.desc(), ScrapeExecutionModel.id.desc())
-                    .offset((page - 1) * page_size).limit(page_size))).all()
-            # Account results are omitted from summary responses.
-            items = [{key: value for key, value in execution_snapshot(row).items() if key != "results"} for row in rows]
+                    .offset((page - 1) * page_size)
+                    .limit(page_size)
+                )
+            ).all()
+            items = [
+                {key: value for key, value in execution_snapshot(row).items() if key != "results"}
+                for row in rows
+            ]
         return {"items": items, "total": total, "page": page, "page_size": page_size}
 
     @app.get("/api/runs/{run_id}")
@@ -186,7 +220,6 @@ def create_app() -> FastAPI:
                     started.cancel()
                 raise
 
-        # Consume startup exceptions even if the HTTP client disconnects.
         started.add_done_callback(lambda future: future.exception() if not future.cancelled() else None)
         app.state.task = asyncio.create_task(background())
         try:
@@ -195,9 +228,4 @@ def create_app() -> FastAPI:
             raise HTTPException(409, str(error)) from error
         return {"id": snapshot["id"], "status": "running"}
 
-    @app.get("/")
-    async def index():
-        return FileResponse(STATIC / "index.html")
-
-    app.mount("/static", StaticFiles(directory=STATIC), name="static")
     return app

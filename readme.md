@@ -52,21 +52,19 @@ The CLI and Alembic both load `.env`. Process environment variables take precede
 
 For a fresh scrape, apply schema updates with `make migrate` before starting the CLI. Existing scraped jobs may be removed when changing collection or deduplication behavior; use `make reset` after stopping scrapers to clear only this project's collection and execution history. Preserve Alembic history and unrelated tables. Dashboard migrations do not require clearing existing jobs. Downgrading to the old unique-content-hash schema requires that no two jobs share a content hash.
 
-## Local dashboard
+## Local dashboard & REST API
 
 ```bash
-rtk make up
-rtk make migrate
-rtk make web
+rtk make up        # Start PostgreSQL database (or full stack in Docker)
+rtk make migrate   # Apply latest database migrations
+rtk make api       # Start FastAPI REST API backend (http://127.0.0.1:8000)
+rtk make web       # Start React frontend development server (http://localhost:5173)
 ```
 
-Open `http://127.0.0.1:8000`. The dashboard serves HTML/CSS/JavaScript from the Python service; no frontend build is required. Browse jobs with search, company/source filters, and server-side pagination (25, 50, or 100 rows). Open a job to see the full description, every stored attribute, source sightings, and raw identifiers.
+- **React Dashboard**: Open `http://localhost:5173`. Browse jobs with debounced search, company/source filters, server-side pagination (25, 50, or 100 rows), and slide-over job details showing full descriptions, stored attributes, multi-source sightings, and cryptographic dedup metadata.
+- **REST API & Swagger Docs**: Open `http://127.0.0.1:8000/docs`. The backend provides clean OpenAPI-documented endpoints (`/api/jobs`, `/api/jobs/{id}`, `/api/runs`, `/api/session`, `/api/filters`, `/health`) with CORS support.
 
-On **Scrape runs**, select sources and a day window, then start a background scrape. Company ATS sources include all open jobs regardless of days. The interface reports real source/account results when each source finishes, with explicit errors and incomplete coverage. Execution history persists across restarts; the previous collector's runs are not retroactively added.
-
-The CLI and dashboard share an execution lock; overlapping scrapes and resets are rejected. Older processes launched before this change do not participate in that lock: finish them before starting a new scrape or reset. Keep the dashboard on loopback with one process; do not enable reload during a scrape. Shutdown interrupts active dashboard work. Remote access, scheduled scraping, and a cancel button are outside this version.
-
-`make web` installs the optional `web` dependencies with `uv`. Browser-backed sources also require `rtk uv run --extra web --extra browser job-scrapper web`.
+On **Scraper Controller**, select sources and a day window to start a background scrape. The interface reports real source/account results with explicit errors and incomplete coverage.
 
 ## Source coverage limits
 

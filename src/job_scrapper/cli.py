@@ -179,14 +179,22 @@ def reset() -> None:
     asyncio.run(_reset())
 
 
-@app.command()
-def web() -> None:
-    """Open the local dashboard at http://127.0.0.1:8000."""
+@app.command("api")
+@app.command("web")
+def serve_api(
+    host: str = typer.Option("127.0.0.1", "--host", "-h", help="Bind host address."),
+    port: int = typer.Option(8000, "--port", "-p", help="Bind port number."),
+    reload: bool = typer.Option(False, "--reload", "-r", help="Enable auto-reload on code changes."),
+) -> None:
+    """Start the FastAPI backend service at http://127.0.0.1:8000."""
     if find_spec("fastapi") is None or find_spec("uvicorn") is None:
-        raise typer.BadParameter("Dashboard requires: uv run --extra web job-scrapper web")
+        raise typer.BadParameter("API server requires: uv run --extra web job-scrapper api")
     import uvicorn
-    from job_scrapper.web import create_app
-    uvicorn.run(create_app(), host="127.0.0.1", port=8000, workers=1)
+    if reload:
+        uvicorn.run("job_scrapper.web:create_app", factory=True, host=host, port=port, reload=True)
+    else:
+        from job_scrapper.web import create_app
+        uvicorn.run(create_app(), host=host, port=port, workers=1)
 
 
 if __name__ == "__main__":

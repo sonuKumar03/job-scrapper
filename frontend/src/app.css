@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+@theme {
+  --color-bg-base: #020617;
+  --color-bg-surface: #0f172a;
+  --color-bg-surface-elevated: #1e293b;
+  --color-bg-surface-overlay: #0b1120;
+  --color-border-subtle: #1e293b;
+  --color-border-muted: #334155;
+  --color-border-focus: #10b981;
+
+  --color-accent: #10b981;
+  --color-accent-hover: #059669;
+  --color-accent-subtle: rgba(16, 185, 129, 0.12);
+  --color-accent-glow: rgba(16, 185, 129, 0.25);
+
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-text-dim: #64748b;
+
+  --color-status-success: #10b981;
+  --color-status-success-bg: rgba(6, 78, 59, 0.45);
+  --color-status-success-border: rgba(16, 185, 129, 0.3);
+
+  --color-status-running: #38bdf8;
+  --color-status-running-bg: rgba(12, 74, 110, 0.45);
+  --color-status-running-border: rgba(56, 189, 248, 0.3);
+
+  --color-status-warning: #f59e0b;
+  --color-status-warning-bg: rgba(120, 53, 15, 0.45);
+  --color-status-warning-border: rgba(245, 158, 11, 0.3);
+
+  --color-status-danger: #f43f5e;
+  --color-status-danger-bg: rgba(136, 19, 55, 0.45);
+  --color-status-danger-border: rgba(244, 63, 94, 0.3);
+}
+
+:root {
+  --bg-base: #020617;
+  --bg-surface: #0f172a;
+  --bg-surface-elevated: #1e293b;
+  --bg-surface-overlay: #0b1120;
+  
+  --border-subtle: #1e293b;
+  --border-muted: #334155;
+  --border-focus: #10b981;
+
+  --accent: #10b981;
+  --accent-hover: #059669;
+  --accent-subtle: rgba(16, 185, 129, 0.12);
+
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  --status-success: #10b981;
+  --status-running: #38bdf8;
+  --status-warning: #f59e0b;
+  --status-danger: #f43f5e;
+}
+
+@layer base {
+  body {
+    background-color: var(--bg-base);
+    color: var(--text-main);
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  /* Sleek, subtle scrollbars across webkit browsers */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.2);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-accent);
+  }
+
+  /* Firefox scrollbar styling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
+  }
+}
