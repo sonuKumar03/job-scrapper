@@ -4,9 +4,10 @@ import asyncio
 import html
 from typing import Any
 from job_scrapper.connectors.base import BaseConnector
+from job_scrapper.connectors.company_sources import load_company_sources
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.cleaner import clean_html_to_text
-from job_scrapper.pipeline.date_parser import is_within_days, parse_to_utc
+from job_scrapper.pipeline.date_parser import parse_to_utc
 from job_scrapper.storage.base import JobSink
 
 # Curated list of prominent companies using Greenhouse
@@ -45,12 +46,19 @@ class GreenhouseConnector(BaseConnector):
 
     def __init__(self, companies: list[str] | None = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
-        self.companies = companies or DEFAULT_GREENHOUSE_COMPANIES
+        sources = [
+            source for source in load_company_sources(self.name)
+            if source.status == "supported" and source.account_key
+        ]
+        self.company_names = {source.account_key: source.company_name for source in sources}
+        defaults = list(dict.fromkeys([*DEFAULT_GREENHOUSE_COMPANIES, *self.company_names]))
+        self.companies = companies if companies is not None else defaults
 
     async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
         stats = self.new_stats()
 
         async def scrape_company(company: str) -> None:
+            account_stats = self.new_stats()
             unknown_dates = 0
             url = f"{self.BASE_URL}/{company}/jobs?content=true"
             try:
@@ -62,71 +70,75 @@ class GreenhouseConnector(BaseConnector):
                 if not isinstance(raw_jobs, list) or any(not isinstance(item, dict) for item in raw_jobs):
                     raise ValueError("response jobs must be a list of objects")
             except Exception as exc:
-                self.record_error(stats, f"company {company}", exc)
+                self.record_error(account_stats, "listing", exc)
+                self.record_account_stats(stats, company, account_stats)
                 return
 
-            batch: list[JobPosting] = []
-            known_ids = await sink.contains_many(
-                self.name, [str(item["id"]) for item in raw_jobs if item.get("id") is not None]
-            )
+            try:
+                batch: list[JobPosting] = []
+                ids = [str(item["id"]) for item in raw_jobs if item.get("id") is not None]
+                stored_ids = await sink.contains_many(self.name, [f"{company}:{source_id}" for source_id in ids])
 
-            for item in raw_jobs:
-                stats["found"] += 1
-                source_id = str(item.get("id"))
+                for item in raw_jobs:
+                    account_stats["found"] += 1
+                    raw_id = item.get("id")
+                    if raw_id is None:
+                        account_stats["skipped"] += 1
+                        account_stats["errors"].append("listing missing id")
+                        account_stats["truncated"] = True
+                        continue
+                    raw_id = str(raw_id)
+                    source_id = f"{company}:{raw_id}"
 
-                pub_date = parse_to_utc(item.get("first_published"))
-                if not pub_date:
-                    unknown_dates += 1
-                    stats["skipped"] += 1
-                    continue
-                if not is_within_days(pub_date, max_days=max_days):
-                    stats["skipped"] += 1
-                    continue
+                    pub_date = parse_to_utc(item.get("first_published"))
+                    if not pub_date:
+                        unknown_dates += 1
+                        account_stats["skipped"] += 1
+                        continue
+                    if source_id in stored_ids:
+                        account_stats["skipped"] += 1
+                        continue
 
-                if source_id in known_ids:
-                    stats["skipped"] += 1
-                    continue
+                    try:
+                        clean_desc = clean_html_to_text(html.unescape(item.get("content") or ""))
+                        if not clean_desc:
+                            raise ValueError("listing missing description")
+                        location_dict = item.get("location") or {}
+                        location_str = location_dict.get("name") if isinstance(location_dict, dict) else str(location_dict)
+                        loc_lower = (location_str or "").lower()
+                        work_arrangement = (
+                            "remote" if "remote" in loc_lower else
+                            "hybrid" if "hybrid" in loc_lower else
+                            "in-office" if loc_lower else "unknown"
+                        )
+                        departments = item.get("departments") or []
+                        depts = [d.get("name") for d in departments if isinstance(d, dict) and d.get("name")]
+                        job = JobPosting(
+                            source=self.name,
+                            source_job_id=source_id,
+                            source_url=item.get("absolute_url") or f"https://boards.greenhouse.io/{company}/jobs/{raw_id}",
+                            title=item.get("title") or "Untitled",
+                            company_name=item.get("company_name") or self.company_names.get(company) or company.capitalize(),
+                            description_text=clean_desc,
+                            posted_at=pub_date,
+                            attributes={
+                                "work_arrangement": work_arrangement,
+                                "location": location_str,
+                                "departments": depts,
+                                "company_slug": company,
+                            },
+                        )
+                        batch.append(job)
+                    except Exception as exc:
+                        account_stats["skipped"] += 1
+                        self.record_error(account_stats, f"job {raw_id}", exc)
 
-                raw_content = html.unescape(item.get("content") or "")
-                clean_desc = clean_html_to_text(raw_content)
-
-                location_dict = item.get("location") or {}
-                location_str = location_dict.get("name") if isinstance(location_dict, dict) else str(location_dict)
-
-                work_arrangement = "unknown"
-                loc_lower = (location_str or "").lower()
-                if "remote" in loc_lower:
-                    work_arrangement = "remote"
-                elif "hybrid" in loc_lower:
-                    work_arrangement = "hybrid"
-                elif loc_lower:
-                    work_arrangement = "in-office"
-
-                depts = [d.get("name") for d in item.get("departments", []) if d.get("name")]
-
-                attributes: dict[str, Any] = {
-                    "work_arrangement": work_arrangement,
-                    "location": location_str,
-                    "departments": depts,
-                    "company_slug": company,
-                }
-
-                company_name = item.get("company_name") or company.capitalize()
-
-                job = JobPosting(
-                    source=self.name,
-                    source_job_id=source_id,
-                    source_url=item.get("absolute_url") or f"https://boards.greenhouse.io/{company}/jobs/{source_id}",
-                    title=item.get("title") or "Untitled",
-                    company_name=company_name,
-                    description_text=clean_desc,
-                    posted_at=pub_date,
-                    attributes=attributes,
-                )
-                batch.append(job)
-
-            await self.save_jobs(sink, batch, stats)
-            self.record_unknown_dates(stats, f"company {company}", unknown_dates)
+                await self.save_jobs(sink, batch, account_stats)
+                self.record_unknown_dates(account_stats, "listing", unknown_dates)
+            except Exception as exc:
+                self.record_error(account_stats, "processing", exc)
+            finally:
+                self.record_account_stats(stats, company, account_stats)
 
         for start in range(0, len(self.companies), 3):
             companies = self.companies[start:start + 3]

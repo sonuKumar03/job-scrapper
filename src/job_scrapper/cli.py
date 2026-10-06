@@ -1,12 +1,14 @@
 """Typer CLI interface for Job Scrapper."""
 
 import asyncio
+from collections import Counter
 from importlib.util import find_spec
 from rich.console import Console
 from rich.table import Table
 from sqlalchemy import func, select, text
 import typer
 from job_scrapper.connectors.registry import get_connector, list_connectors
+from job_scrapper.connectors.company_sources import load_company_sources
 from job_scrapper.exporters.jsonl import export_jobs_to_jsonl
 from job_scrapper.exporters.parquet import export_jobs_to_parquet
 from job_scrapper.storage.postgres.models import JobModel
@@ -18,12 +20,12 @@ app = typer.Typer(help="High-volume job scraper and ML dataset generator.")
 console = Console()
 
 
-async def _run_scrape(sources: list[str], days: int) -> bool:
+async def _run_scrape(sources: list[str], days: int, include_catalog_status: bool = False) -> bool:
     session_manager = DatabaseSessionManager()
     sink = PostgresJobSink(session_manager)
     http_client = ResilientHttpClient()
 
-    table = Table(title=f"Scrape Results (Cutoff: Last {days} Days)")
+    table = Table(title=f"Scrape Results (general-board cutoff: Last {days} Days)")
     table.add_column("Source", style="cyan")
     table.add_column("Found", justify="right")
     table.add_column("New Inserted", justify="right", style="green")
@@ -53,17 +55,30 @@ async def _run_scrape(sources: list[str], days: int) -> bool:
             if stats is None:
                 failed = True
                 continue
-            table.add_row(
-                source_name,
-                str(stats["found"]),
-                str(stats["inserted"]),
-                str(stats["skipped"]),
-                "; ".join(stats["errors"]),
-                "yes" if stats["truncated"] else "no",
-            )
+            rows = stats.get("accounts")
+            if rows:
+                for account, account_stats in rows.items():
+                    errors = "; ".join(account_stats["errors"])
+                    table.add_row(
+                        f"{source_name}/{account}", str(account_stats["found"]),
+                        str(account_stats["inserted"]), str(account_stats["skipped"]),
+                        errors, "yes" if account_stats["truncated"] else "no",
+                    )
+            else:
+                table.add_row(
+                    source_name, str(stats["found"]), str(stats["inserted"]),
+                    str(stats["skipped"]), "; ".join(stats["errors"]),
+                    "yes" if stats["truncated"] else "no",
+                )
             failed |= bool(stats["errors"] or stats["truncated"])
 
         console.print(table)
+        if include_catalog_status:
+            totals = Counter(source.status for source in load_company_sources())
+            console.print("Company catalog: " + ", ".join(
+                f"{status}={totals[status]}" for status in
+                ("supported", "needs_review", "unavailable", "blocked", "unsupported")
+            ))
         total_jobs = await sink.count()
         console.print(f"\n[bold green]Total jobs stored in database: {total_jobs}[/bold green]")
     finally:
@@ -95,7 +110,7 @@ def scrape(
             raise typer.BadParameter(f"unknown source(s): {', '.join(unknown)}. Available: {', '.join(available)}")
         sources_to_run = requested
 
-    if asyncio.run(_run_scrape(sources_to_run, days)):
+    if asyncio.run(_run_scrape(sources_to_run, days, include_catalog_status=source.lower() == "all")):
         raise typer.Exit(1)
 
 

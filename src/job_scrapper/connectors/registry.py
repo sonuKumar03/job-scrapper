@@ -17,6 +17,8 @@ from job_scrapper.connectors.linkedin import LinkedInConnector
 from job_scrapper.connectors.naukri import NaukriConnector
 from job_scrapper.connectors.remoteok import RemoteOKConnector
 from job_scrapper.connectors.weworkremotely import WeWorkRemotelyConnector
+from job_scrapper.connectors.workable import WorkableConnector
+from job_scrapper.connectors.workday import WorkdayConnector
 from job_scrapper.utils.http_client import ResilientHttpClient
 
 CONNECTORS: dict[str, Type[BaseConnector]] = {
@@ -35,6 +37,8 @@ CONNECTORS: dict[str, Type[BaseConnector]] = {
     BuiltInConnector.name: BuiltInConnector,
     HackerNewsConnector.name: HackerNewsConnector,
     HiristConnector.name: HiristConnector,
+    WorkableConnector.name: WorkableConnector,
+    WorkdayConnector.name: WorkdayConnector,
 }
 
 

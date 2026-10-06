@@ -51,6 +51,27 @@ class BaseConnector(ABC):
             stats["truncated"] = True
 
     @staticmethod
+    def record_account_stats(
+        aggregate: dict[str, Any], account_key: str, account_stats: dict[str, Any]
+    ) -> None:
+        """Merge one account's counts and errors into provider-level statistics."""
+        account_row = {
+            "found": account_stats["found"],
+            "inserted": account_stats["inserted"],
+            "skipped": account_stats["skipped"],
+            "errors": list(account_stats["errors"]),
+            "truncated": account_stats["truncated"],
+        }
+        aggregate.setdefault("accounts", {})[account_key] = account_row
+        aggregate["found"] += account_row["found"]
+        aggregate["inserted"] += account_row["inserted"]
+        aggregate["skipped"] += account_row["skipped"]
+        aggregate["errors"].extend(
+            f"company {account_key}: {error}" for error in account_row["errors"]
+        )
+        aggregate["truncated"] |= account_row["truncated"]
+
+    @staticmethod
     async def save_jobs(sink: JobSink, jobs: list[JobPosting], stats: dict[str, Any]) -> None:
         for start in range(0, len(jobs), 500):
             batch = jobs[start:start + 500]

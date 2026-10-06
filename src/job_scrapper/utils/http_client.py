@@ -68,8 +68,8 @@ class ResilientHttpClient:
             self._session = AsyncSession(impersonate="chrome120")
         return self._session
 
-    async def get(self, url: str, **kwargs: Any) -> Response:
-        """Issue an async GET request with polite jitter and browser TLS impersonation."""
+    async def _request(self, method: str, url: str, **kwargs: Any) -> Response:
+        """Issue a paced request with browser TLS impersonation and transient retries."""
         session = await self._get_session()
         kwargs.setdefault("timeout", self.timeout)
         if self.proxy:
@@ -94,7 +94,7 @@ class ResilientHttpClient:
                         loop = asyncio.get_running_loop()
                         await asyncio.sleep(max(0.0, domain.next_start - loop.time()))
                         domain.next_start = loop.time() + random.uniform(self.min_delay, self.max_delay)
-                    response = await session.get(url, **kwargs)
+                    response = await session.request(method, url, **kwargs)
                 if response.status_code not in {429, 500, 502, 503, 504}:
                     if response.status_code >= 400:
                         raise RequestError(url, "permanent HTTP failure", response.status_code)
@@ -117,6 +117,14 @@ class ResilientHttpClient:
                 raise RequestError(url, "transient HTTP failure after 3 attempts", response.status_code)
             await asyncio.sleep(retry_after)
         raise AssertionError("unreachable")
+
+    async def get(self, url: str, **kwargs: Any) -> Response:
+        """Issue an async GET request with polite jitter and browser TLS impersonation."""
+        return await self._request("GET", url, **kwargs)
+
+    async def post(self, url: str, **kwargs: Any) -> Response:
+        """Issue an async POST request with the same pacing and retries as GET."""
+        return await self._request("POST", url, **kwargs)
 
     @staticmethod
     def _retry_after(value: str | None) -> float | None:
