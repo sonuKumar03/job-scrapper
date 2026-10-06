@@ -45,6 +45,8 @@ class HackerNewsConnector(BaseConnector):
         story_pages = 0
 
         for page in range(self.MAX_PAGES):
+            if self.stop_requested:
+                break
             data = await self._fetch_page(
                 {
                     "tags": "ask_hn",
@@ -79,10 +81,14 @@ class HackerNewsConnector(BaseConnector):
 
         unknown_dates = 0
         for story in stories:
+            if self.stop_requested:
+                break
             story_id = str(story["objectID"])
             comment_ids: set[str] = set()
             comment_pages = 0
             for page in range(self.MAX_PAGES):
+                if self.stop_requested:
+                    break
                 data = await self._fetch_page(
                     {
                         "tags": f"comment,story_{story_id}",

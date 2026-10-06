@@ -68,6 +68,8 @@ class InstahyreConnector(BaseConnector):
         stats = self.new_stats()
         seen_ids: set[str] = set()
         for page_number in range(self.MAX_PAGES):
+            if self.stop_requested:
+                break
             try:
                 response = await self.http_client.get(
                     f"{self.SEARCH_URL}?company_size=0&isLandingPage=true&job_type=0&offset={page_number * 20}"

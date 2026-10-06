@@ -18,6 +18,8 @@ class ArbeitnowConnector(BaseConnector):
         max_pages = 50  # Up to 50 pages (~5,000+ jobs)
 
         while page <= max_pages:
+            if self.stop_requested:
+                break
             url = f"{self.API_URL}?page={page}"
             try:
                 response = await self.http_client.get(url)

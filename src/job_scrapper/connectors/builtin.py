@@ -96,6 +96,8 @@ class BuiltInConnector(BaseConnector):
         seen_ids: set[str] = set()
 
         for page_number in range(1, self.MAX_PAGES + 1):
+            if self.stop_requested:
+                break
             url = f"{self.BASE_URL}/jobs?daysSinceUpdated={max_days}&page={page_number}"
             try:
                 response = await self.http_client.get(url)

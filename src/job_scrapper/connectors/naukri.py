@@ -87,6 +87,8 @@ class NaukriConnector(BaseConnector):
                     search_page = await context.new_page()
                     detail_page = await context.new_page()
                     for page_number in range(self.MAX_PAGES):
+                        if self.stop_requested:
+                            break
                         url = (f"{self.BASE_URL}/software-engineer-jobs"
                                f"{'-' + str(page_number + 1) if page_number else ''}"
                                f"?k=software%20engineer&jobAge={max_days}")

@@ -1,4 +1,4 @@
-.PHONY: help setup up down migrate migration-generate scrape export parquet status reset api web web-build test clean
+.PHONY: help setup up down migrate migration-generate scrape export parquet status stop reset api web web-build test clean
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -40,6 +40,9 @@ migration-generate: ## Generate a new migration (usage: make migration-generate 
 
 scrape: ## Scrape all sources from the last 7 days
 	@rtk uv run --extra browser job-scrapper scrape --source $(or $(source),all) --days $(or $(days),7)
+
+stop: ## Gracefully stop the active CLI or web scrape after its current batch
+	@rtk uv run job-scrapper stop
 
 export: ## Export recent jobs to JSONL
 	@rtk uv run job-scrapper export --days $(or $(days),7) --output $(or $(out),data/jobs_dataset.jsonl)

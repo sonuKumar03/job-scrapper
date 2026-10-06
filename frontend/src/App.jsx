@@ -68,7 +68,7 @@ export default function App() {
     const checkActiveRuns = async () => {
       try {
         const data = await fetchApi("runs?page=1&page_size=25");
-        setActiveRun((data.items || []).find((r) => r.status === "running") || null);
+        setActiveRun((data.items || []).find((r) => ["running", "stopping"].includes(r.status)) || null);
         setNow(Date.now());
       } catch {
         // quiet fallback
@@ -108,7 +108,7 @@ export default function App() {
               title="Scrape run in progress. Click to view."
             >
               <span className="w-2 h-2 rounded-full bg-status-running animate-ping" />
-              <span>Scraping · {Math.max(0, Math.floor((now - new Date(activeRun.started_at).getTime()) / 60000))}m</span>
+              <span>{activeRun.status === "stopping" ? "Stopping" : "Scraping"} · {Math.max(0, Math.floor((now - new Date(activeRun.started_at).getTime()) / 60000))}m</span>
             </button>
           )}
 

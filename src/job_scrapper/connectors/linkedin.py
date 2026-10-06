@@ -73,6 +73,8 @@ class LinkedInConnector(BaseConnector):
         stats = self.new_stats()
         seen_ids: set[str] = set()
         for page_number in range(self.MAX_PAGES):
+            if self.stop_requested:
+                break
             query = urlencode({"keywords": "software engineer", "location": "India",
                                "f_TPR": f"r{max_days * 86400}", "start": page_number * 25})
             try:

@@ -50,6 +50,8 @@ class IndeedConnector(BaseConnector):
         stats = self.new_stats()
         seen_ids: set[str] = set()
         for page_number in range(self.MAX_PAGES):
+            if self.stop_requested:
+                break
             query = urlencode({"q": "software engineer", "fromage": max_days,
                                "start": page_number * 10})
             search_url = f"{self.SEARCH_URL}?{query}"

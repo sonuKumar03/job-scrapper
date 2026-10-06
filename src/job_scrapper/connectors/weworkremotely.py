@@ -17,6 +17,8 @@ class WeWorkRemotelyConnector(BaseConnector):
         stats = self.new_stats()
 
         for feed_url in self.CATEGORY_FEEDS:
+            if self.stop_requested:
+                break
             try:
                 response = await self.http_client.get(feed_url)
                 tree = ET.fromstring(response.content)

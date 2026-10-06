@@ -48,6 +48,8 @@ class HimalayasConnector(BaseConnector):
         total_count: int | None = None
         scanned_count = 0
         for page in range(self.MAX_PAGES):
+            if self.stop_requested:
+                break
             if cursor is not None:
                 if cursor in seen_cursors:
                     self.record_error(stats, f"page {page + 1}", ValueError("repeated cursor"))

@@ -1,5 +1,6 @@
 """Base connector abstraction for all job board scrapers."""
 
+import asyncio
 from abc import ABC, abstractmethod
 from typing import Any
 from job_scrapper.domain.models import JobPosting
@@ -13,8 +14,14 @@ class BaseConnector(ABC):
     name: str = "base"
 
     def __init__(self, http_client: ResilientHttpClient | None = None) -> None:
+        self.stop_event: asyncio.Event | None = None
         self._owns_http_client = http_client is None
         self.http_client = http_client if http_client is not None else ResilientHttpClient()
+
+    @property
+    def stop_requested(self) -> bool:
+        """Cooperative stop checked between pages or company batches."""
+        return self.stop_event is not None and self.stop_event.is_set()
 
     async def close(self) -> None:
         """Close an owned client; injected shared clients belong to their creator."""

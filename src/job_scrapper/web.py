@@ -17,7 +17,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
 
 from job_scrapper.connectors.registry import list_connectors
-from job_scrapper.runner import ScrapeBusyError, execution_snapshot, reconcile_executions, run_scrape
+from job_scrapper.runner import ScrapeBusyError, execution_snapshot, reconcile_executions, request_scrape_stop, run_scrape
 from job_scrapper.storage.postgres.models import JobModel, ScrapeExecutionModel
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
 
@@ -196,6 +196,13 @@ def create_app() -> FastAPI:
             if row is None:
                 raise HTTPException(404, "Scrape run not found.")
             return execution_snapshot(row)
+
+    @app.post("/api/runs/{run_id}/stop", status_code=202)
+    async def stop_run(run_id: UUID):
+        stopped_id = await request_scrape_stop(app.state.manager, run_id)
+        if stopped_id is None:
+            raise HTTPException(409, "This scrape is no longer active. Refresh run history.")
+        return {"id": stopped_id, "status": "stopping"}
 
     @app.post("/api/runs", status_code=202)
     async def start_run(body: StartScrape):

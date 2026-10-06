@@ -38,6 +38,8 @@ class WorkdayConnector(BaseConnector):
                 base_url = f"https://{host}/wday/cxs/{tenant}/{site}"
                 offset = 0
                 for page in range(self.MAX_PAGES):
+                    if self.stop_requested:
+                        break
                     response = await self.http_client.post(
                         f"{base_url}/jobs",
                         json={"appliedFacets": {}, "limit": self.PAGE_SIZE,
@@ -141,5 +143,7 @@ class WorkdayConnector(BaseConnector):
 
         companies = list(self.companies.items())
         for start in range(0, len(companies), 3):
+            if self.stop_requested:
+                break
             await asyncio.gather(*(scrape_company(*entry) for entry in companies[start:start + 3]))
         return stats

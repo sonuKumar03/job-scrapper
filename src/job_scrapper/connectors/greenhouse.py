@@ -141,6 +141,8 @@ class GreenhouseConnector(BaseConnector):
                 self.record_account_stats(stats, company, account_stats)
 
         for start in range(0, len(self.companies), 3):
+            if self.stop_requested:
+                break
             companies = self.companies[start:start + 3]
             results = await asyncio.gather(
                 *(scrape_company(company) for company in companies), return_exceptions=True

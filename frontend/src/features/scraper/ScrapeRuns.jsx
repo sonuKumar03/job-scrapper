@@ -24,6 +24,7 @@ export default function ScrapeRuns() {
   const [selectedRun, setSelectedRun] = useState(null);
   const [loadingRuns, setLoadingRuns] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isStopping, setIsStopping] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusError, setStatusError] = useState(false);
   const [reviewing, setReviewing] = useState(false);
@@ -108,8 +109,26 @@ export default function ScrapeRuns() {
     );
   };
 
-  const isAnyRunning =
-    selectedRun?.status === "running" || runs.some((r) => r.status === "running");
+  const activeRun = runs.find((run) => ["running", "stopping"].includes(run.status))
+    || (["running", "stopping"].includes(selectedRun?.status) ? selectedRun : null);
+  const isAnyRunning = Boolean(activeRun);
+
+  const stopScrape = async () => {
+    if (!activeRun || isStopping) return;
+    setIsStopping(true);
+    try {
+      await fetchApi(`runs/${activeRun.id}/stop`, { method: "POST", body: "{}" });
+      setStatusMessage("Stop requested. The current batch will finish saving before the scrape stops.");
+      setStatusError(false);
+      await loadRuns(page);
+      if (selectedRun?.id === activeRun.id) await refreshSelectedRun(activeRun.id);
+    } catch {
+      setStatusMessage("Could not request a stop. Refresh run history and try again.");
+      setStatusError(true);
+    } finally {
+      setIsStopping(false);
+    }
+  };
 
   useEffect(() => {
     loadSession();
@@ -132,11 +151,19 @@ export default function ScrapeRuns() {
   const getStatusBadgeVariant = (status) => {
     if (status === "completed") return "success";
     if (status === "running") return "running";
+    if (["stopping", "stopped", "partial", "interrupted"].includes(status)) return "warning";
     return "error";
   };
 
   return (
     <div className="space-y-8">
+      {activeRun && <Card className="p-5 flex flex-wrap items-center justify-between gap-3" role="region" aria-label="Active scrape">
+        <div><p className="font-semibold">{activeRun.status === "stopping" ? "Finishing the current batch…" : "Scrape in progress"}</p>
+          <p className="text-sm text-text-muted">{activeRun.sources?.join(", ")} · Saved jobs are kept when stopping.</p></div>
+        <Button variant="danger" loading={isStopping} disabled={activeRun.status === "stopping"} onClick={stopScrape}>
+          {activeRun.status === "stopping" ? "Stopping…" : "Stop scrape"}
+        </Button>
+      </Card>}
       {/* Trigger Scrape Card */}
       <Card className="p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border-subtle">
@@ -277,6 +304,7 @@ export default function ScrapeRuns() {
             </Button>
           </div>
 
+          {selectedRun.error_message && <p role="status" className="text-sm text-text-muted">{selectedRun.error_message}</p>}
           {/* Stats Bar */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="p-3 bg-bg-surface-elevated rounded-xl border border-border-subtle">

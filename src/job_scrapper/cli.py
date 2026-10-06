@@ -1,6 +1,8 @@
 """Typer CLI interface for Job Scrapper."""
 
 import asyncio
+import signal
+from uuid import UUID
 from collections import Counter
 from importlib.util import find_spec
 from rich.console import Console
@@ -14,7 +16,7 @@ from job_scrapper.exporters.parquet import export_jobs_to_parquet
 from job_scrapper.storage.postgres.models import JobModel
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
 from job_scrapper.storage.postgres.sink import PostgresJobSink
-from job_scrapper.runner import run_scrape, scrape_lock, ScrapeBusyError
+from job_scrapper.runner import run_scrape, scrape_lock, request_scrape_stop, ScrapeBusyError
 
 app = typer.Typer(help="High-volume job scraper and ML dataset generator.")
 console = Console()
@@ -36,10 +38,24 @@ async def _run_scrape(sources: list[str], days: int, include_catalog_status: boo
                 console.print(f"[bold blue]Scraping {name}...[/bold blue]")
 
     started: set[str] = set()
+    stop_event = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    previous_handlers = {sig: signal.getsignal(sig) for sig in (signal.SIGINT, signal.SIGTERM)}
+
+    def stop_after_batch() -> None:
+        if not stop_event.is_set():
+            console.print("[yellow]Stopping after the current batch is saved...[/yellow]")
+            stop_event.set()
+
+    for sig in previous_handlers:
+        loop.add_signal_handler(sig, stop_after_batch)
+
     try:
-        execution = await run_scrape(session_manager, sources, days, on_update=show_started)
+        execution = await run_scrape(session_manager, sources, days, on_update=show_started, stop_event=stop_event)
+        if execution["status"] == "stopped":
+            console.print("[yellow]Scrape stopped gracefully. Saved jobs were preserved.[/yellow]")
         results = execution["results"].items()
-        failed = False
+        failed = execution["status"] == "stopped"
         for source_name, stats in results:
             if "found" not in stats:
                 failed = True
@@ -75,6 +91,9 @@ async def _run_scrape(sources: list[str], days: int, include_catalog_status: boo
         console.print(f"[red]{error}[/red]")
         return True
     finally:
+        for sig, previous in previous_handlers.items():
+            loop.remove_signal_handler(sig)
+            signal.signal(sig, previous)
         await session_manager.close()
     return failed
 
@@ -102,6 +121,24 @@ def scrape(
 
     if asyncio.run(_run_scrape(sources_to_run, days, include_catalog_status=source.lower() == "all")):
         raise typer.Exit(1)
+
+
+@app.command()
+def stop(
+    run_id: UUID | None = typer.Option(None, "--run-id", help="Execution ID; omit to stop the active CLI or web scrape."),
+) -> None:
+    """Finish the current batch, save collected jobs, then stop the active scrape."""
+    async def request() -> None:
+        manager = DatabaseSessionManager()
+        try:
+            stopped_id = await request_scrape_stop(manager, run_id)
+            if stopped_id is None:
+                console.print("[yellow]No active scrape found.[/yellow]")
+                raise typer.Exit(1)
+            console.print(f"[yellow]Stop requested for {stopped_id}. Waiting for the current batch to finish.[/yellow]")
+        finally:
+            await manager.close()
+    asyncio.run(request())
 
 
 @app.command()

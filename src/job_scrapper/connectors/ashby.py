@@ -111,5 +111,7 @@ class AshbyConnector(BaseConnector):
 
         companies = list(self.companies.items())
         for start in range(0, len(companies), 3):
+            if self.stop_requested:
+                break
             await asyncio.gather(*(scrape_company(slug, name) for slug, name in companies[start:start + 3]))
         return stats

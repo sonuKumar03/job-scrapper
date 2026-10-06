@@ -59,7 +59,11 @@ class HiristConnector(BaseConnector):
         stats = self.new_stats()
         seen_ids: set[str] = set()
         for category_id in self.CATEGORY_IDS:
+            if self.stop_requested:
+                break
             for page_number in range(self.MAX_PAGES):
+                if self.stop_requested:
+                    break
                 try:
                     response = await self.http_client.get(
                         f"{self.BASE_URL}/category/?page={page_number}&industry=&categoryId={category_id}&size={self.PAGE_SIZE}"

@@ -51,6 +51,8 @@ class LeverConnector(BaseConnector):
             skip = 0
             try:
                 for page in range(self.MAX_PAGES):
+                    if self.stop_requested:
+                        break
                     url = f"{self.BASE_URL}/{company}?mode=json&skip={skip}&limit={self.PAGE_SIZE}"
                     try:
                         response = await self.http_client.get(url)
@@ -148,6 +150,8 @@ class LeverConnector(BaseConnector):
                 self.record_account_stats(stats, company, account_stats)
 
         for start in range(0, len(self.companies), 3):
+            if self.stop_requested:
+                break
             companies = self.companies[start:start + 3]
             results = await asyncio.gather(
                 *(scrape_company(company) for company in companies), return_exceptions=True
