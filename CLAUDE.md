@@ -20,6 +20,7 @@ rtk make export
 rtk make parquet
 rtk make status
 rtk make reset
+rtk make web
 rtk make test
 ```
 
@@ -30,6 +31,14 @@ For live development checks, use `rtk make scrape source=jobicy days=1` (or the 
 Company ATS connectors (`greenhouse`, `lever`, `ashby`, `workable`, `workday`) collect all currently listed jobs regardless of `days`. Their results are reported per company account. Use a specific source for a bounded check, for example `rtk make scrape source=workable days=1`; `days=1` does not limit the number of active jobs on that company board.
 
 `rtk make reset` deletes jobs, sightings, and scrape-run records from the configured database. Stop scrapers before resetting. Schema and migration history are preserved.
+
+### Local dashboard
+
+Run `rtk make up`, `rtk make migrate`, then `rtk make web`. Open `http://127.0.0.1:8000`. The `web` extra installs FastAPI and Uvicorn; no Node build is needed. Browsing uses server-side pagination and exposes full descriptions, attributes, sightings, and raw metadata.
+
+Scrapes started by the dashboard run in the background and persist source/account results. Counts appear when a source finishes; while collecting, the UI shows its state and elapsed time. CLI scraping shares this runner. A PostgreSQL advisory lock prevents overlapping managed scrapes and blocks `reset` during collection. Reset also clears execution history. Processes launched before this runner was introduced do not hold its lock; let them finish before starting another scrape or resetting.
+
+The dashboard is local-only and runs one process. Keep loopback binding and do not use reload or multiple workers while scraping. Shutdown interrupts its active scrape; startup reconciles stale execution records when the execution lock is free. This version has no remote login, scheduler, or cancel button. Browser-backed sources additionally require the existing `browser` extra (`rtk uv run --extra web --extra browser job-scrapper web`).
 
 ---
 

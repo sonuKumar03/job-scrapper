@@ -1,4 +1,4 @@
-.PHONY: help setup up down migrate scrape export parquet status reset test clean
+.PHONY: help setup up down migrate scrape export parquet status reset web test clean
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -17,6 +17,9 @@ up: ## Start PostgreSQL container
 
 down: ## Stop PostgreSQL container
 	@rtk docker compose down
+
+web: ## Start local dashboard at http://127.0.0.1:8000
+	@rtk uv run --extra web job-scrapper web
 
 migrate: ## Apply database migrations
 	@rtk uv run alembic upgrade head

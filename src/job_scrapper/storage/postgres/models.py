@@ -76,3 +76,18 @@ class ScrapeRunModel(Base):
     jobs_found: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     jobs_inserted: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class ScrapeExecutionModel(Base):
+    """One CLI or dashboard invocation, with durable source/account results."""
+
+    __tablename__ = "scrape_executions"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    sources: Mapped[list[str]] = mapped_column(JSONB, nullable=False)
+    days: Mapped[int] = mapped_column(Integer, nullable=False)
+    status: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    results: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)

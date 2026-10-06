@@ -30,6 +30,10 @@ dev = [
 export = [
     "pyarrow>=25.0.1",
 ]
+web = [
+    "fastapi>=0.142.2",
+    "uvicorn>=0.54.0",
+]
 
 [project.scripts]
 job-scrapper = "job_scrapper.cli:app"
