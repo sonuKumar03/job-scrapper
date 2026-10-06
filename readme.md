@@ -46,11 +46,11 @@ make setup
 
 Use `make up` to start PostgreSQL again and `make down` to stop it.
 
-Use `make reset` to delete all collected jobs, sightings, and scrape-run records from the configured database. Stop scrapers first. Schema and migration history are preserved.
+Use `make cli-reset` to delete all collected jobs, sightings, and scrape-run records from the configured database. Stop scrapers first. Schema and migration history are preserved.
 
 The CLI and Alembic both load `.env`. Process environment variables take precedence. Scraping settings are `DATABASE_URL`, `MAX_CONCURRENT_REQUESTS` (1–3), `MIN_REQUEST_DELAY_SECONDS` and `MAX_REQUEST_DELAY_SECONDS` (1–3 seconds), `REQUEST_TIMEOUT_SECONDS` (positive seconds), and `HTTP_PROXY`.
 
-For a fresh scrape, apply schema updates with `make migrate` before starting the CLI. Existing scraped jobs may be removed when changing collection or deduplication behavior; use `make reset` after stopping scrapers to clear only this project's collection and execution history. Preserve Alembic history and unrelated tables. Dashboard migrations do not require clearing existing jobs. Downgrading to the old unique-content-hash schema requires that no two jobs share a content hash.
+For a fresh scrape, apply schema updates with `make migrate` before starting the CLI. Existing scraped jobs may be removed when changing collection or deduplication behavior; use `make cli-reset` after stopping scrapers to clear only this project's collection and execution history. Preserve Alembic history and unrelated tables. Dashboard migrations do not require clearing existing jobs. Downgrading to the old unique-content-hash schema requires that no two jobs share a content hash.
 
 ## Local dashboard & REST API
 
@@ -78,14 +78,14 @@ Current collection uses public JSON APIs (Himalayas, Jobicy, Arbeitnow, RemoteOK
 
 ### 2. Scraping Jobs
 ```bash
-make scrape
+make cli-scrape
 ```
 
 ### 3. Exporting Datasets for ML Training
 ```bash
-make export
-make parquet
-make status
+make cli-export
+make cli-export format=parquet
+make cli-status
 ```
 
 Parquet stores `labels` as a UTF-8 JSON string so postings with different attribute keys share one schema. JSONL keeps `labels` as a JSON object. Both exports write 500-row batches and replace the destination only after a successful write.

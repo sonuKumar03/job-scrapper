@@ -37,7 +37,7 @@ Every component must support high-volume scraping (~10k jobs/day), resilient ded
   2. Pure pipeline transforms (HTML text cleaning, relative date parsing, SHA-256 content hasher).
   3. Storage contract via `InMemoryJobSink`.
 - **Do NOT write flaky network tests** against live websites or write heavy mock frameworks for external boards. Use captured fixtures for parser tests.
-- For manual live development checks, use a one-day window and select only the sources being checked (`rtk make scrape source=jobicy days=1`). Bound diagnostic page counts when a smaller date window does not reduce feed traversal. Use broader windows for collection runs.
+- For manual live development checks, use a one-day window and select only the sources being checked (`rtk make cli-scrape source=jobicy days=1`). Bound diagnostic page counts when a smaller date window does not reduce feed traversal. Use broader windows for collection runs.
 
 ### Invariant 4: Local IP Safety & Anti-Bot Strategy
 - Scrapers run primarily from a local IP. Agents must enforce:
