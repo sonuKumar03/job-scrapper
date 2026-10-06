@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Briefcase, Play, Database, Sun, Moon } from "lucide-react";
 import { fetchApi } from "./services/api";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSession, useRuns } from "./services/queries";
 import JobsExplorer from "./features/jobs/JobsExplorer";
 import ScrapeRuns from "./features/scraper/ScrapeRuns";
 
 export default function App() {
   const headerRef = useRef(null);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     const header = headerRef.current;
@@ -25,6 +26,16 @@ export default function App() {
     refetchInterval: 5000,
   });
   const totalJobsCount = countQuery.data?.total ?? null;
+  const previousCountRef = useRef(null);
+
+  useEffect(() => {
+    if (totalJobsCount === null) return;
+    if (previousCountRef.current !== null && previousCountRef.current !== totalJobsCount) {
+      queryClient.invalidateQueries({ queryKey: ["jobs", "list"] });
+      queryClient.invalidateQueries({ queryKey: ["filters"] });
+    }
+    previousCountRef.current = totalJobsCount;
+  }, [totalJobsCount, queryClient]);
   const [theme, setTheme] = useState(() => {
     return localStorage.getItem("app-theme") || "light";
   });

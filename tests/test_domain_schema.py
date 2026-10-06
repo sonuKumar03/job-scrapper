@@ -20,6 +20,20 @@ def test_job_posting_rejects_blank_required_text() -> None:
             JobPosting(**{**values, field: "  "})
 
 
+def test_job_posting_decodes_html_entities_in_title() -> None:
+    job = JobPosting(
+        source="test_source",
+        source_job_id="101",
+        source_url="https://example.com/job/101",
+        title="&#x28;Senior&#x29; Engineer &ndash; Python",
+        company_name="Acme",
+        description_text="Build software",
+        posted_at=datetime.now(timezone.utc),
+    )
+
+    assert job.title == "(Senior) Engineer – Python"
+
+
 def test_job_posting_normalizes_naive_dates_and_rejects_future_dates() -> None:
     values = {
         "source": "test_source",

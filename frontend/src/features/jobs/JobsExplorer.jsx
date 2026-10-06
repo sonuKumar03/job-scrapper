@@ -6,7 +6,6 @@ import {
   ChevronRight,
   Building2,
   Loader2,
-  RefreshCw,
 } from "lucide-react";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { fetchApi } from "../../services/api";
@@ -72,7 +71,6 @@ export default function JobsExplorer() {
   const error = jobsQuery.isError ? "Could not load postings. Check the local API and try again." : null;
   const selectedJob = selectedJobId ? detailQuery.data : null;
   const detailError = detailQuery.isError && !dismissedDetailError ? "Could not load this posting. Return to the list and try again." : null;
-
   const searchTimerRef = useRef(null);
   const searchRef = useRef(null);
   const openedDetailRef = useRef(false);
@@ -103,6 +101,10 @@ export default function JobsExplorer() {
     updateUrlState(targetPage, text, src, comp, size);
     queryClient.invalidateQueries({ queryKey: ["jobs", "list", targetPage, size, text.trim(), src, comp] });
   }, [page, search, selectedSource, selectedCompany, pageSize, updateUrlState, queryClient]);
+
+  useEffect(() => {
+    if (jobsQuery.isSuccess && page > totalPages) loadJobs(totalPages);
+  }, [jobsQuery.isSuccess, page, totalPages, loadJobs]);
 
   useEffect(() => {
     const restoreRoute = () => {
@@ -233,15 +235,6 @@ export default function JobsExplorer() {
               align="right"
             />
 
-            <Button
-              variant="secondary"
-              size="icon"
-              onClick={() => loadJobs(page)}
-              title="Refresh table"
-              aria-label="Refresh job table"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin text-accent" : ""}`} />
-            </Button>
           </div>
         </div>
 
@@ -278,7 +271,7 @@ export default function JobsExplorer() {
         {error ? (
           <div className="p-8 text-center space-y-3">
             <p className="text-status-danger font-medium">{error}</p>
-            <Button variant="secondary" onClick={() => loadJobs(page)}>
+            <Button variant="secondary" onClick={() => jobsQuery.refetch()}>
               Try Again
             </Button>
           </div>

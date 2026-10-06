@@ -1,6 +1,7 @@
 """Domain models for Job Scrapper."""
 
 from datetime import datetime, timezone
+from html import unescape
 from typing import Any
 from pydantic import BaseModel, Field, field_validator
 from job_scrapper.pipeline.hasher import compute_content_hash
@@ -26,6 +27,11 @@ class JobPosting(BaseModel):
         if not value.strip():
             raise ValueError("must not be blank")
         return value
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def decode_title_entities(cls, value: Any) -> Any:
+        return unescape(value) if isinstance(value, str) else value
 
     @field_validator("posted_at")
     @classmethod
