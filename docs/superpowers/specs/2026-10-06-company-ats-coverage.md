@@ -2,7 +2,7 @@
 
 ## Goal
 
-Collect every currently listed posting from companies in the moreThanFAANGM directory when its public job board is supported, regardless of posting age, and make coverage gaps visible so more companies can be added through shared ATS adapters.
+Collect every currently listed posting from companies in the moreThanFAANGM directory and additional verified employers when their public job boards are supported, regardless of posting age, and make coverage gaps visible so more companies can be added through shared ATS adapters.
 
 ## Context and constraints
 
@@ -86,3 +86,64 @@ This phase makes coverage explicit and adds shared support for validated ATS pla
 | Target | 2,000 | 14,131 |
 
 These four boards retain `needs_review` status. Counts are verification snapshots, not current job inventory guarantees.
+
+## Coverage expansion on 2026-10-07
+
+Enabled 48 additional directory companies, bringing supported catalog coverage to **100 of 482**. Existing supported records and provider defaults remain enabled. This expands the existing adapters without adding dependencies or changing request limits.
+
+| Provider | Added | Supported catalog total |
+| --- | ---: | ---: |
+| Greenhouse | 26 | 42 |
+| Workday | 15 | 40 |
+| Lever | 6 | 8 |
+| Ashby | 1 | 9 |
+| Workable | 0 | 1 |
+
+New companies:
+
+- Greenhouse: AQR, Arcesium, Careem, Coupang, Dashlane, Dialpad, DigitalOcean, Discord, Doximity, Epic Games, GoDaddy, Grafana, Groupon, HackerRank, InMobi, LogicMonitor, Ocrolus, PubMatic, Rockstar Games, Rubrik, Roku, Sigmoid, Sureify, ThoughtWorks, Upwork, WorldQuant.
+- Workday: Adobe, Applied Materials, Athena Health, BlackRock, Blue Origin, Broadcom, Equinix, FactSet, HP, Intel, Mastercard, PayPal, Salesforce, Wells Fargo, Yahoo.
+- Lever: Appen, Bazaarvoice, FamPay, Meesho, Turvo, Zeta.
+- Ashby: Atlan.
+
+Verification:
+
+- Checked public listing responses using the shared paced HTTP client. Greenhouse board metadata confirmed employer names. Account aliases such as `digitalocean98`, `ocrolusinc`, and `arcesiumllc` are retained explicitly rather than inferred from company names.
+- Checked Workday response totals and facets for exposed caps, plus one description and publication date from each newly enabled board. Workday validation was bounded to the first listing page and one detail; it does not certify retrieval of every current posting.
+- Passed captured-response checks through the actual connectors and `InMemoryJobSink` for all 48 enabled additions, including canonical model validation, account-scoped IDs, and repeat-ingestion deduplication. Lever captured checks used one listing; they are parser checks, not complete feed counts.
+- Live one-day smoke checks saved 6 Ocrolus, 16 Careem, 3 Turvo, and 6 Atlan postings in memory, with no errors or truncation. Turvo was bounded to two pages. PostgreSQL was not modified.
+- All 13 existing project tests passed. No automated live-network tests were added.
+
+Kept unresolved:
+
+- NVIDIA: reported 2,000 listings while a facet reported 2,655, indicating capped results.
+- Tower Research Capital: 2 of 93 listings lacked usable publication dates in the captured response.
+- Gartner: the sampled detail had a future UTC publication date and failed canonical model validation.
+- Failed candidate account URLs remain unresolved; a guessed account returning 404/422 is not evidence that the company's entire careers site is unavailable.
+
+The catalog still contains all 482 original companies and their original source URLs. The remaining 382 entries are unresolved or unsupported. These checks establish usable provider mappings at verification time; availability and complete inventory remain observable per-run outcomes.
+
+## Expansion to 200 on 2026-10-07
+
+Enabled another 100 company boards using existing adapters. The catalog now contains **570 companies, with 200 supported**: 112 of the original 482 directory companies and 88 additional employers. All original source URLs and the previous 100 supported records are preserved. The remaining 370 directory entries remain unresolved or unsupported.
+
+| Provider | Added in this expansion | Supported catalog total |
+| --- | ---: | ---: |
+| Greenhouse | 35 | 77 |
+| Ashby | 53 | 62 |
+| Workday | 11 | 51 |
+| Workable | 1 | 2 |
+| Lever | 0 | 8 |
+
+New directory mappings include ASML, BMC software, Deutsche Bank, eBay, Fidelity investments, fiserv, GE Healthcare, Phillips (the directory's spelling for Philips), Samsung, Shell, Sony, and Apna. Additional employers include Cockroach Labs, ClickHouse, Pinecone, Neo4j, Cohere, WorkOS, Adyen, Cerebras, Roblox, and Pinterest. Each catalog record retains its verified provider account and board URL.
+
+Verification:
+
+- Verified nonempty public listing responses with the existing paced HTTP client. Greenhouse board metadata and Ashby account URLs/employer descriptions were checked against the expected employer identity.
+- Passed captured-response checks through actual connectors and `InMemoryJobSink` for all 100 additions, including canonical model validation, account-scoped identifiers, and repeat-ingestion deduplication. Greenhouse and Ashby checks used their complete captured feeds; Workable parsed 111 Apna postings.
+- Workday checks inspected listing totals and facets plus the first listing page and one dated detail per board. These bounded checks establish usable mappings, not exhaustive inventory retrieval.
+- Live checks with `max_days=1` saved 18 Cockroach Labs, 3 Knock, and 111 Apna postings in memory, with no errors or truncation. Company ATS feeds intentionally include older open jobs regardless of this day setting. PostgreSQL was not modified.
+- Rejected Lowe's because its 21,164 reported postings exceed the existing 10,000-job traversal ceiling. Rejected the candidate Intercom account because its board metadata identifies Fin. Neither is enabled by this expansion.
+- All 13 existing project tests passed. No dependencies, connector implementations, permanent network tests, or database records were changed.
+
+Supported means a verified usable mapping at this snapshot. Per-run errors, missing publication dates, and traversal limits still determine actual collection completeness.

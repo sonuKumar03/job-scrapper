@@ -9,6 +9,7 @@ A job scraping engine for collecting recent postings and exporting datasets for 
 - **Decoupled collection**: Connectors pass `JobPosting` records through the `JobSink` protocol. PostgreSQL stores jobs; an in-memory sink supports local checks.
 - **Polite requests**: `curl_cffi` uses Chrome 120 TLS impersonation, request spacing, and a limit of three concurrent requests per domain. Sites can still block requests.
 - **Publication window**: General boards filter publication dates by a configurable cutoff (default: 7 days). Company ATS connectors collect all currently open jobs regardless of the cutoff.
+- **Company coverage**: The packaged catalog enables 200 verified company boards: 112 from the original 482-company directory and 88 additional employers, alongside existing provider defaults. See [coverage verification and unresolved boards](docs/superpowers/specs/2026-10-06-company-ats-coverage.md). Enabled boards can still fail or omit publication dates during collection; per-account results report those gaps.
 - **Extensible Classification Schema**:
   - Core canonical fields (`title`, `company_name`, `description_text`, `posted_at`) paired with a flexible `attributes` JSON payload (`seniority`, `work_arrangement`, `location`, `salary_min`, `salary_max`, `experience_years_min`, `experience_years_max`, `tech_stack`).
   - Add or modify classification labels without database migrations.
