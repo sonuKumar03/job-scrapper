@@ -3,8 +3,9 @@
 from datetime import datetime, timezone
 from html import unescape
 from typing import Any
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, ValidationInfo, field_validator
 from job_scrapper.pipeline.hasher import compute_content_hash
+from job_scrapper.pipeline.attributes import normalize_attributes
 
 
 class JobPosting(BaseModel):
@@ -19,7 +20,12 @@ class JobPosting(BaseModel):
     posted_at: datetime
     scraped_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     content_hash: str = ""
-    attributes: dict[str, Any] = Field(default_factory=dict)
+    attributes: dict[str, Any] = Field(default_factory=dict, validate_default=True)
+
+    @field_validator("attributes")
+    @classmethod
+    def normalize_attribute_fields(cls, value: dict[str, Any], info: ValidationInfo) -> dict[str, Any]:
+        return normalize_attributes(value, info.data.get("description_text", ""))
 
     @field_validator("source", "source_job_id", "source_url", "title", "company_name", "description_text")
     @classmethod

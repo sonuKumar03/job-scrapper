@@ -79,6 +79,12 @@ Seeding inserts missing rows without overwriting runtime names, board ownership,
 
 This stage provides the database catalog and reset-safe seed. Automatic company discovery, catalog-management UI, priority scheduling, and publication-date sorting are not implemented yet. The current UI continues to show collected jobs in collection order.
 
+## Attribute normalization
+
+Every connector's `JobPosting` passes through the pure `pipeline.attributes.normalize_attributes` transform before storage. It normalizes explicit work arrangements (`remote`, `hybrid`, `in-office`, `unknown`), employment types, and nonnegative numeric experience bounds. Custom attributes remain intact; `_attribute_evidence` records the original value, extraction method, and normalized result.
+
+Structured source values take priority. Missing fields may use explicitly labeled work/employment text or unambiguous required-experience text from descriptions. Ambiguous labels become unknown; invalid or reversed experience bounds become null. These conservative rules do not infer seniority, salary, locations, or technologies. They apply to newly created postings; existing stored records are not rewritten. Connectors remain responsible for mapping source-specific fields, and deduplication retains evidence for backfilled attributes.
+
 ## Dashboard and REST API
 
 The dashboard supports debounced search, source/company filters, pagination, job details, and per-run start/stop controls. Both native and development-container frontends use port 3000. Native/development API documentation is at http://127.0.0.1:8000/docs.

@@ -50,3 +50,30 @@ def test_hasher_uses_full_description() -> None:
     assert compute_content_hash("Acme", "Engineer", prefix + "Python") != compute_content_hash(
         "Acme", "Engineer", prefix + "Kotlin"
     )
+
+
+def test_attribute_extraction_uses_explicit_unambiguous_evidence() -> None:
+    from job_scrapper.pipeline.attributes import normalize_attributes
+    result = normalize_attributes({}, "Work arrangement: hybrid\nEmployment type: contract\nRequires 3–5 years of experience.")
+    assert result["work_arrangement"] == "hybrid"
+    assert result["employment_type"] == "contract"
+    assert (result["experience_years_min"], result["experience_years_max"]) == (3, 5)
+    assert result["_attribute_evidence"]["experience_years_min"]["method"] == "description"
+    assert normalize_attributes(result, "Work arrangement: hybrid\nEmployment type: contract\nRequires 3–5 years of experience.") == result
+    assert normalize_attributes({}, "We have 10 years of experience. Remote work benefits. Full time parents welcome.") == {}
+    ambiguous = normalize_attributes({}, "Requires 3–5 years of experience or 1–2 years of experience.")
+    assert "experience_years_min" not in ambiguous
+
+
+def test_attribute_normalization_preserves_invalid_values_as_evidence() -> None:
+    from job_scrapper.pipeline.attributes import normalize_attributes
+    result = normalize_attributes({"employment_type": ["FULL_TIME", "CONTRACT"],
+                                   "experience_years_min": True, "experience_years_max": -1,
+                                   "work_arrangement": "remote or onsite"}, "")
+    assert result["employment_type"] == "unknown"
+    assert result["work_arrangement"] == "unknown"
+    assert result["experience_years_min"] is None
+    assert result["experience_years_max"] is None
+    reversed_range = normalize_attributes({"experience_years_min": 5, "experience_years_max": 3}, "")
+    assert reversed_range["experience_years_min"] is None
+    assert reversed_range["experience_years_max"] is None

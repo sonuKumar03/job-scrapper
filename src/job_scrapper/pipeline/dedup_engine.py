@@ -121,6 +121,8 @@ class StandardDeduplicationEngine:
         changed = False
 
         for k, v in duplicate.items():
+            if k == "_attribute_evidence":
+                continue
             if v is None or v == "" or v == []:
                 continue
 
@@ -139,4 +141,12 @@ class StandardDeduplicationEngine:
                     merged[k] = combined
                     changed = True
 
+        evidence = dict(canonical.get("_attribute_evidence") or {})
+        for field, incoming in (duplicate.get("_attribute_evidence") or {}).items():
+            if (isinstance(incoming, dict) and incoming.get("normalized") == merged.get(field)
+                    and (field not in evidence or canonical.get(field) != merged.get(field))):
+                evidence[field] = incoming
+        if evidence and evidence != canonical.get("_attribute_evidence"):
+            merged["_attribute_evidence"] = evidence
+            changed = True
         return merged, changed

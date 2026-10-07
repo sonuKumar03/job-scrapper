@@ -107,3 +107,19 @@ async def test_job_posting_auto_hash_and_sink_dedup() -> None:
     assert await sink.contains("another_source", "999") is True
     assert await sink.contains_many("another_source", ["999", "missing", "999"]) == {"999"}
     assert await sink.contains_many("test_source", ["101", "999", "new"]) == {"101"}
+
+
+def test_attributes_normalize_at_the_shared_job_contract() -> None:
+    raw = {"work_arrangement": "OnSite", "employment_type": ["FULL_TIME"],
+           "experience_years_min": "3", "experience_years_max": "5", "custom": {"label": "keep"}}
+    job = JobPosting(source="test", source_job_id="1", source_url="https://example.com/job",
+                     title="Engineer", company_name="Example", description_text="Work arrangement: remote",
+                     posted_at=datetime.now(timezone.utc), attributes=raw)
+    assert job.attributes["work_arrangement"] == "in-office"
+    assert job.attributes["employment_type"] == "full_time"
+    assert job.attributes["experience_years_min"] == 3
+    assert job.attributes["experience_years_max"] == 5
+    assert job.attributes["custom"] == raw["custom"]
+    assert raw["work_arrangement"] == "OnSite"
+    assert job.attributes["_attribute_evidence"]["work_arrangement"]["value"] == "OnSite"
+    assert JobPosting.model_validate(job.model_dump()).attributes == job.attributes

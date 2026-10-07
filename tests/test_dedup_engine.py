@@ -129,3 +129,14 @@ def test_layer3_attribute_enrichment() -> None:
     assert merged["nested_labels"] == [
         ["engineering"], {"category": "software"}, {"category": "data"}
     ]
+
+
+def test_attribute_backfill_keeps_matching_extraction_evidence() -> None:
+    engine = StandardDeduplicationEngine()
+    canonical = {"work_arrangement": "unknown", "_attribute_evidence": {
+        "work_arrangement": {"method": "source", "value": "ambiguous", "normalized": "unknown"}}}
+    duplicate = {"work_arrangement": "remote", "_attribute_evidence": {
+        "work_arrangement": {"method": "source", "value": "TELECOMMUTE", "normalized": "remote"}}}
+    merged, changed = engine.enrich_attributes(canonical, duplicate)
+    assert changed and merged["work_arrangement"] == "remote"
+    assert merged["_attribute_evidence"]["work_arrangement"]["value"] == "TELECOMMUTE"
