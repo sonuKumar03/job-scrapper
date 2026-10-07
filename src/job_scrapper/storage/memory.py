@@ -11,6 +11,7 @@ class InMemoryJobSink:
         self.jobs_by_id: dict[tuple[str, str], JobPosting] = {}
         self.jobs: list[JobPosting] = []
         self.jobs_by_signature: dict[str, dict[str, list[JobPosting]]] = {}
+        self.sources_by_canonical: dict[int, set[str]] = {}
         self.dedup_engine = StandardDeduplicationEngine()
 
     async def contains(self, source: str, source_job_id: str) -> bool:
@@ -23,18 +24,18 @@ class InMemoryJobSink:
         new_count = 0
         for job in jobs:
             key = (job.source, job.source_job_id)
-            if key in self.jobs_by_id:
-                continue
-
+            canonical = self.jobs_by_id.get(key)
             signature = self.dedup_engine.compute_canonical_signature(job)
-            canonical = next(
-                (existing
-                 for source, group in self.jobs_by_signature.get(signature, {}).items()
-                 if source != job.source
-                 for existing in group
-                 if self.dedup_engine.is_duplicate(existing, job)),
-                None,
-            )
+            if canonical is None:
+                canonical = next(
+                    (existing
+                     for source, group in self.jobs_by_signature.get(signature, {}).items()
+                     if source != job.source
+                     for existing in group
+                     if job.source not in self.sources_by_canonical[id(existing)]
+                     and self.dedup_engine.is_duplicate(existing, job)),
+                    None,
+                )
             if canonical:
                 merged, changed = self.dedup_engine.enrich_attributes(canonical.attributes, job.attributes)
                 if changed:
@@ -45,6 +46,7 @@ class InMemoryJobSink:
                 self.jobs_by_signature.setdefault(signature, {}).setdefault(job.source, []).append(canonical)
                 new_count += 1
             self.jobs_by_id[key] = canonical
+            self.sources_by_canonical.setdefault(id(canonical), set()).add(job.source)
 
         return new_count
 

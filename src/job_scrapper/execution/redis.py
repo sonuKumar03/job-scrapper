@@ -3,17 +3,19 @@
 import asyncio
 import logging
 from collections import deque
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable
+from typing import TypeVar
 from uuid import uuid4
 
 from pydantic import ValidationError
 from redis.asyncio import Redis
-from redis.exceptions import ResponseError
+from redis.exceptions import AuthenticationError, ConnectionError, ResponseError, TimeoutError
 
 from job_scrapper.execution.contracts import ScrapeTask
 
 logger = logging.getLogger(__name__)
 GROUP = 'scrape-workers-v1'
+T = TypeVar('T')
 
 
 class RedisDelivery:
@@ -22,10 +24,12 @@ class RedisDelivery:
 
     async def ack(self) -> None:
         if not self._settled:
-            async with self._transport._client.pipeline(transaction=True) as pipe:
-                pipe.xack(self._transport.stream, GROUP, self._id)
-                pipe.xdel(self._transport.stream, self._id)
-                await pipe.execute()
+            async def settle():
+                async with self._transport._client.pipeline(transaction=True) as pipe:
+                    pipe.xack(self._transport.stream, GROUP, self._id)
+                    pipe.xdel(self._transport.stream, self._id)
+                    await pipe.execute()
+            await self._transport._retry(settle)
             self._settled = True
 
     async def reject(self, *, requeue: bool) -> None:
@@ -42,6 +46,18 @@ class RedisTaskTransport:
                                       socket_timeout=3, health_check_interval=15)
         self._closed = False
         self._recovered: deque = deque()
+
+    async def _retry(self, operation: Callable[[], Awaitable[T]]) -> T:
+        delay = 0.5
+        while True:
+            try:
+                return await operation()
+            except AuthenticationError:
+                raise
+            except (ConnectionError, TimeoutError) as error:
+                logger.warning('Redis temporarily unavailable: %s; retrying in %.1fs', type(error).__name__, delay)
+                await asyncio.sleep(delay)
+                delay = min(delay * 2, 5)
 
     async def publish(self, task: ScrapeTask) -> None:
         if self._closed:
@@ -66,11 +82,13 @@ class RedisTaskTransport:
                 break
 
     async def dead_letter(self, entry_id: str, payload: str) -> None:
-        async with self._client.pipeline(transaction=True) as pipe:
-            pipe.xadd(f'{self.stream}.dead', {'entry_id': entry_id, 'task': payload[:4096]}, maxlen=1000)
-            pipe.xack(self.stream, GROUP, entry_id)
-            pipe.xdel(self.stream, entry_id)
-            await pipe.execute()
+        async def settle():
+            async with self._client.pipeline(transaction=True) as pipe:
+                pipe.xadd(f'{self.stream}.dead', {'entry_id': entry_id, 'task': payload[:4096]}, maxlen=1000)
+                pipe.xack(self.stream, GROUP, entry_id)
+                pipe.xdel(self.stream, entry_id)
+                await pipe.execute()
+        await self._retry(settle)
 
     async def deliveries(self) -> AsyncIterator[RedisDelivery]:
         consumer = f'worker-{uuid4()}'
@@ -78,8 +96,16 @@ class RedisTaskTransport:
             if self._recovered:
                 entries = [self._recovered.popleft()]
             else:
-                response = await self._client.xreadgroup(GROUP, consumer, {self.stream: '>'}, count=1, block=500)
-                entries = response[0][1] if response else []
+                async def read():
+                    # A lost response may already have assigned an entry to this
+                    # consumer. Read its pending entries before requesting new work.
+                    response = await self._client.xreadgroup(GROUP, consumer, {self.stream: '0'}, count=1)
+                    entries = response[0][1] if response else []
+                    if not entries:
+                        response = await self._client.xreadgroup(GROUP, consumer, {self.stream: '>'}, count=1, block=500)
+                        entries = response[0][1] if response else []
+                    return entries
+                entries = await self._retry(read)
             for entry_id, fields in entries:
                 try:
                     task = ScrapeTask.model_validate_json(fields.get('task', ''))

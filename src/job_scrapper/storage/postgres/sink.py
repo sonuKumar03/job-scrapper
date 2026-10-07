@@ -112,6 +112,17 @@ class PostgresJobSink:
                 for model in sorted(models_by_id.values(), key=lambda row: (row.posted_at, str(row.id)))
             ]
             refs_by_id = {candidate[1]: candidate for candidate in candidates}
+            sources_by_canonical = {
+                candidate[1]: {candidate[0].source} for candidate in candidates
+            }
+            if refs_by_id:
+                represented_sources = await session.execute(
+                    select(JobSightingModel.job_id, JobSightingModel.source).where(
+                        JobSightingModel.job_id.in_(refs_by_id)
+                    )
+                )
+                for job_id, source in represented_sources:
+                    sources_by_canonical[job_id].add(source)
             candidates_by_signature: dict[
                 str, dict[str, list[tuple[JobPosting, uuid.UUID, JobModel | None]]]
             ] = {}
@@ -138,7 +149,8 @@ class PostgresJobSink:
                          for source, group in candidates_by_signature.get(signature, {}).items()
                          if source != job.source
                          for candidate in group
-                         if self.dedup_engine.is_duplicate(candidate[0], job)),
+                         if job.source not in sources_by_canonical[candidate[1]]
+                         and self.dedup_engine.is_duplicate(candidate[0], job)),
                         None,
                     )
 
@@ -175,6 +187,7 @@ class PostgresJobSink:
                             records_by_id[canonical_id]["attributes"] = merged
 
                 identity_map[source_key] = ref
+                sources_by_canonical.setdefault(ref[1], set()).add(job.source)
                 sightings_by_source.setdefault(
                     source_key,
                     {

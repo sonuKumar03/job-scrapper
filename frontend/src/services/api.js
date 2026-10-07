@@ -1,4 +1,5 @@
 let sessionToken = "";
+let sessionRefresh = null;
 
 export function setSessionToken(token) {
   sessionToken = token;
@@ -8,7 +9,7 @@ export function getSessionToken() {
   return sessionToken;
 }
 
-export async function fetchApi(path, options = {}) {
+export async function fetchApi(path, options = {}, retrySession = true) {
   const headers = {
     Accept: "application/json",
     ...(options.headers || {}),
@@ -30,6 +31,17 @@ export async function fetchApi(path, options = {}) {
   });
 
   const data = await res.json().catch(() => null);
+
+  if (res.status === 403 && retrySession && headers["X-Scrape-Token"] &&
+      data?.detail === "Valid X-Scrape-Token header required. Fetch from /api/session first.") {
+    if (!sessionRefresh) {
+      sessionRefresh = fetchApi("session")
+        .then((session) => setSessionToken(session.token))
+        .finally(() => { sessionRefresh = null; });
+    }
+    await sessionRefresh;
+    return fetchApi(path, options, false);
+  }
 
   if (!res.ok) {
     let errorMsg = "An error occurred while fetching data";
