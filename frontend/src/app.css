@@ -45,8 +45,8 @@
   --bg-surface-overlay: rgba(15, 23, 42, 0.45);
 
   --border-subtle: #dce2d9;
-  --border-muted: #cbd5e1;
-  --border-focus: #176149;
+  --border-muted: #b6c1b7;
+  --border-focus: #626e66;
 
   --accent: #176149;
   --accent-hover: #124b39;
@@ -82,8 +82,8 @@
   --bg-surface-overlay: rgba(0, 0, 0, 0.7);
 
   --border-subtle: #1e293b;
-  --border-muted: #334155;
-  --border-focus: #10b981;
+  --border-muted: #48584b;
+  --border-focus: #a6b3a9;
 
   --accent: #10b981;
   --accent-hover: #059669;
@@ -147,10 +147,6 @@
 }
 
 @layer base {
-  :where(button, a, input, select, summary, [tabindex]):focus-visible {
-    outline: 2px solid var(--border-focus);
-    outline-offset: 3px;
-  }
   :where(button, input, select, summary) { min-height: 44px; }
   button { min-width: 44px; }
   input, select { font-size: 16px; }
@@ -181,6 +177,6 @@
   --tw-ring-offset-shadow: 0 0 #0000;
 }
 :is(button, a, input, select, summary, [tabindex]):focus-visible {
-  outline: 1px solid var(--border-focus);
-  outline-offset: 1px;
+  outline: 2px solid var(--border-focus);
+  outline-offset: -2px;
 }

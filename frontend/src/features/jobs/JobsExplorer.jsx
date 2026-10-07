@@ -181,7 +181,7 @@ export default function JobsExplorer() {
               value={search}
               onChange={handleSearchChange}
               placeholder="Search title or company · / to focus"
-              className="w-full pl-10 pr-4 py-2.5 min-h-[44px] bg-bg-surface border border-border-subtle rounded-xl text-sm text-text-main placeholder:text-text-dim focus:outline-none focus:border-border-focus focus:ring-2 focus:ring-border-focus transition-colors"
+              className="jobs-search w-full pl-10 pr-4 py-2.5 min-h-[44px] bg-bg-surface border border-border-subtle rounded-xl text-sm text-text-main placeholder:text-text-dim hover:border-border-muted transition-colors"
             />
           </div>
 
