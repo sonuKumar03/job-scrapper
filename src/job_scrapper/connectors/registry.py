@@ -1,6 +1,7 @@
 """Connector registry for discovering and dispatching scrapers."""
 
 from typing import Type
+from job_scrapper.companies.contracts import ATS_PROVIDERS, CompanyTarget
 from job_scrapper.connectors.arbeitnow import ArbeitnowConnector
 from job_scrapper.connectors.ashby import AshbyConnector
 from job_scrapper.connectors.base import BaseConnector
@@ -42,12 +43,17 @@ CONNECTORS: dict[str, Type[BaseConnector]] = {
 }
 
 
-def get_connector(name: str, http_client: HttpClient | None = None) -> BaseConnector:
+def get_connector(name: str, http_client: HttpClient | None = None, *,
+                  company_targets: tuple[CompanyTarget, ...] | None = None) -> BaseConnector:
     """Retrieve an instantiated connector by name."""
     cls = CONNECTORS.get(name.lower())
     if not cls:
         available = ", ".join(CONNECTORS.keys())
         raise ValueError(f"Unknown connector '{name}'. Available: {available}")
+    if name.lower() in ATS_PROVIDERS:
+        if company_targets is None:
+            raise ValueError('ATS connectors require an explicit company target snapshot')
+        return cls(targets=company_targets, http_client=http_client)
     return cls(http_client=http_client)
 
 

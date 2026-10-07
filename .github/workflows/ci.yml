@@ -1,0 +1,59 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        python: ['3.11', '3.13']
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
+        with:
+          version: '0.12.22'
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+      - run: uv sync --frozen --extra web
+      - run: make check
+      - run: uv build
+      - name: Check installed wheel outside the source tree
+        run: |
+          uv venv /tmp/package-check
+          uv pip install --python /tmp/package-check/bin/python dist/*.whl
+          cd /tmp
+          /tmp/package-check/bin/job-scrapper --help
+          /tmp/package-check/bin/python -c "from importlib.resources import files; from importlib.metadata import distribution; from job_scrapper.companies.seed import load_seed; d=distribution('job-scrapper'); assert d.metadata['License-Expression']=='MIT'; assert any(str(f).endswith('/licenses/LICENSE') for f in d.files); assert files('job_scrapper').joinpath('company_seed.json').is_file(); assert all(load_seed())"
+
+  frontend:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+
+  containers:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - run: docker build --target production -t job-scrapper-api-check .
+      - name: Verify packaged production runtime
+        run: |
+          docker run --rm job-scrapper-api-check python -c "import os; from job_scrapper.companies.seed import load_seed; import pyarrow; assert os.getuid()==10001; assert all(load_seed())"

@@ -15,8 +15,10 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import func, or_, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from job_scrapper.connectors.registry import list_connectors
+from job_scrapper.config import get_settings
 from job_scrapper.execution.bootstrap import execution_runtime
 from job_scrapper.execution.contracts import RunConflict, StartScrapeCommand
 from job_scrapper.storage.postgres.models import JobModel, ScrapeExecutionModel
@@ -46,6 +48,8 @@ def columns(row: Any) -> dict[str, Any]:
 
 
 def create_app() -> FastAPI:
+    settings = get_settings()
+    database_probe: asyncio.Task | None = None
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         manager = DatabaseSessionManager()
@@ -56,6 +60,9 @@ def create_app() -> FastAPI:
                 app.state.control = control
                 yield
         finally:
+            if database_probe is not None:
+                database_probe.cancel()
+                await asyncio.gather(database_probe, return_exceptions=True)
             await manager.close()
 
     app = FastAPI(
@@ -70,15 +77,18 @@ def create_app() -> FastAPI:
     # Enable CORS for decoupled frontends (Vite dev server, standalone react app, etc.)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000", "http://127.0.0.1:3000", "*"],
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_origins=settings.api_allowed_origins,
+        allow_credentials=False,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type", "X-Scrape-Token"],
     )
 
     @app.middleware("http")
     async def security_and_token_boundary(request: Request, call_next):
         if request.method not in {"GET", "HEAD", "OPTIONS"}:
+            origin = request.headers.get('origin')
+            if origin is not None and origin not in settings.api_allowed_origins:
+                return JSONResponse({'detail': 'Request origin is not allowed.'}, status_code=403)
             content_type = request.headers.get("content-type", "").split(";")[0].strip().lower()
             if content_type != "application/json":
                 return JSONResponse({"detail": "Send application/json."}, status_code=415)
@@ -90,6 +100,8 @@ def create_app() -> FastAPI:
         if request.url.path.startswith("/api/"):
             response.headers["Cache-Control"] = "no-store"
         return response
+
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.api_allowed_hosts, www_redirect=False)
 
     @app.exception_handler(SQLAlchemyError)
     async def database_error(request: Request, error: SQLAlchemyError):
@@ -103,6 +115,44 @@ def create_app() -> FastAPI:
     @app.get("/health")
     async def health():
         return {"status": "ok"}
+
+    @app.get('/ready')
+    async def ready():
+        nonlocal database_probe
+        components = {'database': 'ok', 'execution': 'ok'}
+
+        async def probe_database():
+            async with app.state.manager.session() as session:
+                await session.execute(select(1))
+
+        # Driver cancellation can wait on an unresponsive server. Share one
+        # in-flight probe instead of blocking responses or piling up queries.
+        if database_probe is not None and database_probe.done():
+            try:
+                database_probe.result()
+            except (SQLAlchemyError, TimeoutError):
+                pass
+            database_probe = None
+        if database_probe is None:
+            database_probe = asyncio.create_task(probe_database())
+        probe = database_probe
+        done, _ = await asyncio.wait((probe,), timeout=2)
+        try:
+            if not done:
+                raise TimeoutError
+            probe.result()
+        except (SQLAlchemyError, TimeoutError):
+            components['database'] = 'unavailable'
+        finally:
+            if done and database_probe is probe:
+                database_probe = None
+        try:
+            app.state.control.check_health()
+        except RunConflict:
+            components['execution'] = 'unavailable'
+        available = all(value == 'ok' for value in components.values())
+        return JSONResponse({'status': 'ok' if available else 'unavailable', 'components': components},
+                            status_code=200 if available else 503)
 
     @app.get("/api/session")
     async def session_info():
@@ -143,6 +193,7 @@ def create_app() -> FastAPI:
             JobModel.title,
             JobModel.company_name,
             JobModel.source,
+            JobModel.source_url,
             JobModel.posted_at,
             JobModel.scraped_at,
             JobModel.attributes,

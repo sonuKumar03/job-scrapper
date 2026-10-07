@@ -9,7 +9,7 @@ A job scraping engine for collecting recent postings and exporting datasets for 
 - **Decoupled collection**: Connectors pass `JobPosting` records through the `JobSink` protocol. PostgreSQL stores jobs; an in-memory sink supports local checks.
 - **Polite requests**: `curl_cffi` uses Chrome 120 TLS impersonation, request spacing, and a limit of three concurrent requests per domain. Sites can still block requests.
 - **Publication window**: General boards filter publication dates by a configurable cutoff (default: 7 days). Company ATS connectors collect all currently open jobs regardless of the cutoff.
-- **Company coverage**: The packaged catalog enables 200 verified company boards: 112 from the original 482-company directory and 88 additional employers, alongside existing provider defaults. See [coverage verification and unresolved boards](docs/superpowers/specs/2026-10-06-company-ats-coverage.md). Enabled boards can still fail or omit publication dates during collection; per-account results report those gaps.
+- **Company coverage**: PostgreSQL supplies runtime targets for Greenhouse, Lever, Ashby, Workday, and Workable. Initialization restores 200 verified catalog mappings plus 38 previously enabled provider defaults; those defaults are not newly verified. Per-account results report failures, missing dates, and incomplete collection.
 - **Extensible Classification Schema**:
   - Core canonical fields (`title`, `company_name`, `description_text`, `posted_at`) paired with a flexible `attributes` JSON payload (`seniority`, `work_arrangement`, `location`, `salary_min`, `salary_max`, `experience_years_min`, `experience_years_max`, `tech_stack`).
   - Add or modify classification labels without database migrations.
@@ -38,34 +38,52 @@ Job boards → connectors → `JobPosting` → `PostgresJobSink` → PostgreSQL 
 
 ## Quickstart
 
-### 1. Prerequisites & Setup
-Make sure you have [uv](https://docs.astral.sh/uv/) and Docker installed.
+Prerequisites: Docker with Compose v2 and Make. Native Python commands additionally need uv and Python 3.11+; native frontend work needs Node 22/npm. RTK is not required for contributors.
 
-```bash
-make setup
+### Development containers
+
+```sh
+make up                 # Full stack at http://localhost:3000
+make up executor=broker # Redis and one external worker
+make down               # Stop services; keep volumes
 ```
 
-Use `make up` to start PostgreSQL again and `make down` to stop it.
+This is a development stack with source mounts and API reload. Stop it before running native servers on the same ports or changing modes.
 
-Use `make cli-reset` to delete all collected jobs, sightings, and scrape-run records from the configured database. Stop scrapers first. Schema and migration history are preserved.
+### Native development
 
-The CLI and Alembic both load `.env`. Process environment variables take precedence. Scraping settings are `DATABASE_URL`, `MAX_CONCURRENT_REQUESTS` (1–3), `MIN_REQUEST_DELAY_SECONDS` and `MAX_REQUEST_DELAY_SECONDS` (1–3 seconds), `REQUEST_TIMEOUT_SECONDS` (positive seconds), and `HTTP_PROXY`.
-
-For a fresh scrape, apply schema updates with `make migrate` before starting the CLI. Existing scraped jobs may be removed when changing collection or deduplication behavior; use `make cli-reset` after stopping scrapers to clear only this project's collection and execution history. Preserve Alembic history and unrelated tables. Dashboard migrations do not require clearing existing jobs. Downgrading to the old unique-content-hash schema requires that no two jobs share a content hash.
-
-## Local dashboard & REST API
-
-```bash
-rtk make up        # Start PostgreSQL database (or full stack in Docker)
-rtk make migrate   # Apply latest database migrations
-rtk make api       # Start FastAPI REST API backend (http://127.0.0.1:8000)
-rtk make web       # Start React frontend development server (http://localhost:5173)
+```sh
+make setup              # Frozen dependencies, PostgreSQL, migration and seed
+make api                # http://127.0.0.1:8000
+# Another terminal:
+make web                # http://localhost:3000
 ```
 
-- **React Dashboard**: Open `http://localhost:5173`. Browse jobs with debounced search, company/source filters, server-side pagination (25, 50, or 100 rows), and slide-over job details showing full descriptions, stored attributes, multi-source sightings, and cryptographic dedup metadata.
-- **REST API & Swagger Docs**: Open `http://127.0.0.1:8000/docs`. The backend provides clean OpenAPI-documented endpoints (`/api/jobs`, `/api/jobs/count`, `/api/jobs/{id}`, `/api/runs`, `/api/session`, `/api/filters`, `/health`) with CORS support. The count endpoint returns only `{"total": <job count>}`. The dashboard uses TanStack Query for shared caching, refreshes, and five-second polling of the total and run history.
+Keep container API/worker services stopped. Memory mode permits one worker-owning CLI/API process against a database; stop the API before a native memory scrape. Use `make check` for correctness lint and unit tests and `make web-build` for the frontend build.
 
-On **Scraper Controller**, select sources and a day window to start a background scrape. The interface reports real source/account results with explicit errors and incomplete coverage.
+### Deployment
+
+The deployment target is Vercel for the frontend, Railway for the API and one external scraping worker, and separate PostgreSQL and Redis services. The backend production image uses locked dependencies and runs as a non-root user. See [operations](docs/operations.md) for configuration, initialization, health, and recovery.
+
+Public deployment still needs an authentication boundary: the request token is not user authentication. Cloud deployment has not been verified yet.
+
+The CLI and Alembic load `.env`; process environment wins. Request settings constrain per-domain concurrency to 1–3 and delays to 1–3 seconds. `make migrate` applies schema and inserts missing seed records. `make cli-reset` removes scraped jobs/sightings/run history while retaining company configuration and migration history; stop scrapers first. Full database recreation restores only the packaged company baseline.
+
+### Company targets and database resets
+
+`make migrate` applies schema updates and seeds missing company records. Compose runs one migration/seed service before the API or broker worker starts. API, CLI scrape, and worker startup also repeat the idempotent seed operation, so an already migrated database with empty catalog tables is repopulated.
+
+The packaged `company_seed.json` is bootstrap data only; connectors receive an immutable database target snapshot when their provider task starts. Companies and board targets are separate records, allowing multiple boards per employer. The initial seed contains 608 company identities (all 570 previous catalog records plus 38 default-specific identities) and 248 boards, of which 238 are enabled. Disabled/unresolved boards are retained for review. The CLI's all-source summary distinguishes companies, boards, enabled boards, and verification statuses.
+
+Seeding inserts missing rows without overwriting runtime names, board ownership, enabled flags, or verification results. Conflicting seed mappings are reported and existing mappings are preserved. `cli-reset` leaves this configuration intact. After a full database wipe, migrate/initialization restores the packaged baseline; additional runtime discoveries and edits are lost. Raw `alembic upgrade head` creates schema only; use `make migrate` for complete initialization or follow it with `uv run python -m job_scrapper.companies.bootstrap`.
+
+This stage provides the database catalog and reset-safe seed. Automatic company discovery, catalog-management UI, priority scheduling, and publication-date sorting are not implemented yet. The current UI continues to show collected jobs in collection order.
+
+## Dashboard and REST API
+
+The dashboard supports debounced search, source/company filters, pagination, job details, and per-run start/stop controls. Both native and development-container frontends use port 3000. Native/development API documentation is at http://127.0.0.1:8000/docs.
+
+The API includes `/api/jobs`, `/api/jobs/count`, `/api/jobs/{id}`, `/api/runs`, `/api/runs/active`, `/api/session`, and `/api/filters`. TanStack Query shares cached data; counts/history poll every five seconds and active runs every two seconds. `/health` checks liveness; `/ready` checks PostgreSQL and local execution admission. Broker API readiness does not certify Redis or the external worker. The frontend supports `VITE_API_URL` for a separate API, or same-origin `/api` requests through a hosting rewrite.
 
 ## Concurrent execution
 
@@ -76,9 +94,9 @@ All runs in the worker host share three source slots and one HTTP client. Per-do
 ### Memory mode (default)
 
 ```bash
-rtk make up
+make up
 # Or, with the API stopped, own an embedded worker from the CLI:
-rtk make cli-scrape source=jobicy,remoteok days=1 separate=1
+make cli-scrape source=jobicy,remoteok days=1 separate=1
 ```
 
 The CLI or API embeds the queue and workers. The API and a scraping CLI cannot both own this runtime against the same database. Memory mode imports no Redis client and needs no broker. If the host crashes, its unfinished runs become interrupted at the next startup; already committed jobs remain saved.
@@ -86,20 +104,20 @@ The CLI or API embeds the queue and workers. The API and a scraping CLI cannot b
 ### Redis broker mode
 
 ```bash
-rtk make up executor=broker
-rtk make cli-scrape executor=broker source=jobicy,remoteok days=1 separate=1
-rtk make cli-stop run_id=<execution-uuid>
+make up executor=broker
+make cli-scrape executor=broker source=jobicy,remoteok days=1 separate=1
+make cli-stop run_id=<execution-uuid>
 ```
 
-The optional Compose profile starts Redis and one external worker. CLI/API submit durable database dispatch intents and observe runs; they do not own scraping tasks. Local CLI connections use `redis://localhost:6379/0`; containers use `redis://redis:6379/0`. For a local worker instead of the container worker, use `rtk make cli-worker broker_url=redis://localhost:6379/0`. Never run both workers against the same database.
+The optional Compose profile starts Redis and one external worker. CLI/API submit durable database dispatch intents and observe runs; they do not own scraping tasks. Local CLI connections use `redis://localhost:6379/0`; containers use `redis://redis:6379/0`. For a local worker instead of the container worker, use `make cli-worker broker_url=redis://localhost:6379/0`. Never run both workers against the same database.
 
-Direct CLI usage is `rtk uv run --extra broker job-scrapper scrape ...` with `SCRAPE_EXECUTOR=broker` and `SCRAPE_BROKER_URL` in the environment or `.env`. Each distinct database must use a distinct Redis database number or `SCRAPE_BROKER_STREAM`; sharing a stream across project databases is unsupported.
+Direct CLI usage is `uv run --extra broker job-scrapper scrape ...` with `SCRAPE_EXECUTOR=broker` and `SCRAPE_BROKER_URL` in the environment or `.env`. Each distinct database must use a distinct Redis database number or `SCRAPE_BROKER_STREAM`; sharing a stream across project databases is unsupported.
 
 Redis uses a persistent volume, AOF with `appendfsync always`, and `noeviction`. Tasks contain only a version, run ID, and dispatch generation. Consumer acknowledgements follow committed completion or retry state; stale deliveries are skipped. The sole worker reclaims pending entries on startup. Malformed messages go to `<stream>.dead`, bounded to approximately 1,000 entries. A single Redis instance does not provide machine/disk-loss availability.
 
 Infrastructure interruptions retry up to three attempts, waiting 5 then 30 seconds. Normal connector errors produce terminal failed/partial results rather than automatically refetching entire boards. Retried results describe the latest attempt; database counts remain authoritative. Delivery outages leave accepted work queued, with a visible dispatch delay. Stop queued work immediately; stop running work after the current batch. Ctrl+C stops only the CLI's submitted run IDs; it never shuts down an external worker.
 
-`rtk make cli-stop` without an ID works only when exactly one run is unfinished. Reset refuses while runs are writing; idle/queued reset removes execution and dispatch records. Redis messages for deleted IDs are skipped without purging other queues. Runtime shutdown allows up to 60 seconds for cooperative cleanup; unfinished batches beyond that ceiling are interrupted. Stop/finish all unfinished runs before changing modes, then stop the old host and start the new topology. To return from broker to memory, use `rtk make down` before `rtk make up` so an old broker worker cannot retain host ownership.
+`make cli-stop` without an ID works only when exactly one run is unfinished. Reset refuses while runs are writing; idle/queued reset removes execution and dispatch records. Redis messages for deleted IDs are skipped without purging other queues. Runtime shutdown allows up to 60 seconds for cooperative cleanup; unfinished batches beyond that ceiling are interrupted. Stop/finish all unfinished runs before changing modes, then stop the old host and start the new topology. To return from broker to memory, use `make down` before `make up` so an old broker worker cannot retain host ownership.
 
 The API accepts runs with HTTP 202 and status `queued`. `/api/runs/active` returns all queued/running/stopping runs plus configured capacity, independently of history pagination. The dashboard polls that endpoint every two seconds and displays per-run controls.
 
@@ -134,7 +152,7 @@ Parquet stores `labels` as a UTF-8 JSON string so postings with different attrib
 ```
 job-scrapper/
 ├── pyproject.toml              # Project dependencies and CLI entry point
-├── docker-compose.yml          # Local PostgreSQL container
+├── docker-compose.yml          # Development stack
 ├── alembic.ini                 # Database migrations configuration
 ├── migrations/                 # Alembic migration revisions
 ├── src/
@@ -163,3 +181,7 @@ job-scrapper/
 │       └── cli.py              # Typer CLI application
 └── tests/                      # Minimal contract & normalization tests
 ```
+
+## Contributing and license
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, architecture boundaries, and checks, and [SECURITY.md](SECURITY.md) for the deployment security boundary and pending security-report channel. Code is licensed under [MIT](LICENSE). CI configuration is included; hosted status requires a configured GitHub remote and push.

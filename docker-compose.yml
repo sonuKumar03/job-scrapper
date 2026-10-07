@@ -17,10 +17,27 @@ services:
       timeout: 5s
       retries: 5
 
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    environment:
+      - DATABASE_URL=postgresql+psycopg://postgres:postgrespassword@db:5432/job_scrapper
+    volumes:
+      - ./src:/app/src
+      - ./migrations:/app/migrations
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "alembic upgrade head && python -m job_scrapper.companies.bootstrap"
+
   api:
     build:
       context: .
       dockerfile: Dockerfile
+      target: development
     container_name: job_scrapper_api
     restart: unless-stopped
     ports:
@@ -35,15 +52,16 @@ services:
       - ./src:/app/src
       - ./migrations:/app/migrations
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
     command: >
-      sh -c "alembic upgrade head && job-scrapper api --host 0.0.0.0 --port 8000 --reload"
+      job-scrapper api --host 0.0.0.0 --port 8000 --reload
 
   web:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: development
     container_name: job_scrapper_web
     restart: unless-stopped
     ports:
@@ -77,6 +95,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: development
     profiles: [broker]
     restart: unless-stopped
     stop_grace_period: 75s
@@ -90,12 +109,12 @@ services:
       - ./src:/app/src
       - ./migrations:/app/migrations
     depends_on:
-      db:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       redis:
         condition: service_healthy
     command: >
-      sh -c "alembic upgrade head && job-scrapper worker"
+      job-scrapper worker
 
 volumes:
   pgdata:

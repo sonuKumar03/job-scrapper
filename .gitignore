@@ -28,6 +28,10 @@ ENV/
 
 # Environment variables
 .env
+.env.production
+.env.*.local
+.superpowers/
+.ruff_cache/
 
 # Data & outputs
 data/

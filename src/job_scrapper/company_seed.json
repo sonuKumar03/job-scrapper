@@ -1,0 +1,6135 @@
+{
+  "version": 1,
+  "companies": [
+    {
+      "company_key": "accenture",
+      "company_name": "Accenture",
+      "source_url": "https://www.accenture.com/in-en/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "accolite-software",
+      "company_name": "Accolite software",
+      "source_url": "https://www.accolite.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "accord-software",
+      "company_name": "Accord software",
+      "source_url": "https://accord-global.com/careers.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "adobe",
+      "company_name": "Adobe",
+      "source_url": "https://www.adobe.com/careers.html",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "able",
+      "company_name": "Able",
+      "source_url": "https://able.co/team",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "abstract",
+      "company_name": "Abstract",
+      "source_url": "https://angel.co/company/abstract/jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "acko",
+      "company_name": "Acko",
+      "source_url": "https://www.acko.com/careers/jobs/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "accredible",
+      "company_name": "Accredible",
+      "source_url": "https://careers.accredible.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "activision-blizzard",
+      "company_name": "Activision Blizzard",
+      "source_url": "https://careers.activisionblizzard.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "affinidi",
+      "company_name": "Affinidi",
+      "source_url": "https://www.affinidi.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "agile-solutions",
+      "company_name": "Agile Solutions",
+      "source_url": "http://agilesolutions.com/careers-2/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "agnikul-cosmos",
+      "company_name": "Agnikul Cosmos",
+      "source_url": "https://agnikul.in/#/career",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "airbase",
+      "company_name": "Airbase",
+      "source_url": "https://www.airbase.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "airbnb",
+      "company_name": "Airbnb",
+      "source_url": "https://careers.airbnb.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "airbus",
+      "company_name": "Airbus",
+      "source_url": "https://www.airbus.com/careers.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "airtel-x-labs",
+      "company_name": "Airtel x labs",
+      "source_url": "https://careers.airtel.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ajio",
+      "company_name": "Ajio",
+      "source_url": "https://www.ajio.com/ajio-careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "akamai",
+      "company_name": "Akamai",
+      "source_url": "https://www.akamai.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "alibaba-group",
+      "company_name": "Alibaba Group",
+      "source_url": "https://talent.alibaba.com/en/home?lang=en",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "alstom",
+      "company_name": "Alstom",
+      "source_url": "https://www.alstom.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "alpha-grep",
+      "company_name": "Alpha-grep",
+      "source_url": "https://www.alpha-grep.com/career/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "alphonso",
+      "company_name": "Alphonso",
+      "source_url": "https://lgads.tv/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "amadeus-labs",
+      "company_name": "Amadeus labs",
+      "source_url": "https://jobs.amadeus.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "amagi",
+      "company_name": "Amagi",
+      "source_url": "https://www.amagi.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "amd",
+      "company_name": "AMD",
+      "source_url": "https://careers.amd.com/careers-home",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "amazon",
+      "company_name": "Amazon",
+      "source_url": "https://www.amazon.jobs/en/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "amdocs",
+      "company_name": "Amdocs",
+      "source_url": "https://asset.amdocs.com/careers/home",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "american-express",
+      "company_name": "American express",
+      "source_url": "https://www.americanexpress.com/en-us/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "amway",
+      "company_name": "Amway",
+      "source_url": "https://www.amway.in/about-amway/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "angelone",
+      "company_name": "Angelone",
+      "source_url": "https://www.angelone.in/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "analog-devices",
+      "company_name": "Analog Devices",
+      "source_url": "https://www.analog.com/en/about-adi/careers.html",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "ansys",
+      "company_name": "Ansys",
+      "source_url": "https://www.ansys.com/en-in/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "apna",
+      "company_name": "Apna",
+      "source_url": "https://www.instahyre.com/jobs-at-apna/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "app-dynamics",
+      "company_name": "App Dynamics",
+      "source_url": "https://www.appdynamics.com/company/careers/india",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "appen",
+      "company_name": "Appen",
+      "source_url": "https://appen.com/jobs/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "appfolio",
+      "company_name": "Appfolio",
+      "source_url": "https://www.appfolio.com/company/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "apple",
+      "company_name": "Apple",
+      "source_url": "https://www.apple.com/careers/us/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "appinventiv",
+      "company_name": "AppInventiv",
+      "source_url": "https://appinventiv.com/career/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "applied-materials",
+      "company_name": "Applied Materials",
+      "source_url": "https://www.appliedmaterials.com/us/en/careers.html",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "aptiv",
+      "company_name": "Aptiv",
+      "source_url": "https://jobs.aptiv.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "aqr",
+      "company_name": "AQR",
+      "source_url": "https://www.aqr.com/About-Us/Careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "arcesium",
+      "company_name": "Arcesium",
+      "source_url": "https://www.arcesium.com/careers.html",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "arista-networks",
+      "company_name": "Arista Networks",
+      "source_url": "https://www.arista.com/en/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "aryaka-networks",
+      "company_name": "Aryaka networks",
+      "source_url": "https://www.linkedin.com/company/aryaka-networks/jobs?originalSubdomain=in",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "asteria-aerospace-ltd",
+      "company_name": "Asteria Aerospace Ltd",
+      "source_url": "https://asteria.co.in/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "asml",
+      "company_name": "ASML",
+      "source_url": "https://www.asml.com/en/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "athena-health",
+      "company_name": "Athena Health",
+      "source_url": "https://www.athenahealth.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "atlan",
+      "company_name": "Atlan",
+      "source_url": "https://atlan.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "atlassian",
+      "company_name": "Atlassian",
+      "source_url": "https://www.atlassian.com/company/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "automatic-data-processing",
+      "company_name": "Automatic Data Processing",
+      "source_url": "https://jobs.adp.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "auzmor",
+      "company_name": "Auzmor",
+      "source_url": "https://auzmor.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "avail-finance",
+      "company_name": "Avail finance",
+      "source_url": "https://availfinance.in/opportunities/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "avalara",
+      "company_name": "Avalara",
+      "source_url": "https://www.avalara.com/us/en/about/jobs/job-openings.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "avaya",
+      "company_name": "Avaya",
+      "source_url": "https://careers.avaya.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "axis-bank",
+      "company_name": "Axis Bank",
+      "source_url": "https://www.axisbank.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "barclays",
+      "company_name": "Barclays",
+      "source_url": "https://home.barclays/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bain-co",
+      "company_name": "Bain & Co",
+      "source_url": "https://www.bain.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "barc-india",
+      "company_name": "BARC India",
+      "source_url": "https://www.barcindia.co.in/life-at-barc",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bankbazaar",
+      "company_name": "bankbazaar",
+      "source_url": "https://www.bankbazaar.com/careers.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bazaarvoice",
+      "company_name": "Bazaarvoice",
+      "source_url": "https://www.bazaarvoice.com/company/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "bcg",
+      "company_name": "BCG",
+      "source_url": "https://careers.bcg.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bellatrix-aerospace",
+      "company_name": "Bellatrix Aerospace",
+      "source_url": "http://www.bellatrixaerospace.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "benchmark",
+      "company_name": "Benchmark",
+      "source_url": "https://benchmarkit.zohorecruit.com/jobs/Careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "better",
+      "company_name": "Better",
+      "source_url": "https://better.com/about-us/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "bharatpe",
+      "company_name": "BharatPe",
+      "source_url": "https://bharatpe.com/career",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bidgely",
+      "company_name": "Bidgely",
+      "source_url": "https://www.bidgely.com/bidgely-career-opportunities/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bigbasket",
+      "company_name": "BigBasket",
+      "source_url": "https://careers.bigbasket.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "billdesk",
+      "company_name": "Billdesk",
+      "source_url": "https://www.linkedin.com/company/billdesk/jobs/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bitdefender",
+      "company_name": "bitdefender",
+      "source_url": "https://www.bitdefender.com/company/job-opportunities/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bitly",
+      "company_name": "bitly",
+      "source_url": "https://bitly.com/pages/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "blackbuck",
+      "company_name": "BlackBuck",
+      "source_url": "https://www.blackbuck.com/careers.php",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "blackrock",
+      "company_name": "Blackrock",
+      "source_url": "https://careers.blackrock.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "blackberry",
+      "company_name": "BlackBerry",
+      "source_url": "https://bb.wd3.myworkdayjobs.com/BlackBerry/jobs",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "blinkit",
+      "company_name": "Blinkit",
+      "source_url": "https://blinkit.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "block-inc",
+      "company_name": "Block Inc",
+      "source_url": "https://block.xyz/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bloomberg-lp",
+      "company_name": "Bloomberg LP",
+      "source_url": "https://careers.bloomberg.com/job/search",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bluejeans",
+      "company_name": "BlueJeans",
+      "source_url": "https://www.bluejeans.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "blueorigin",
+      "company_name": "blueorigin",
+      "source_url": "https://www.blueorigin.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "bluestacks",
+      "company_name": "Bluestacks",
+      "source_url": "https://www.bluestacks.com/work-at-bluestacks.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bmc-software",
+      "company_name": "BMC software",
+      "source_url": "https://www.bmc.com/careers/careers.html",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "bny-mellon",
+      "company_name": "BNY Mellon",
+      "source_url": "https://jobs.bnymellon.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "boeing",
+      "company_name": "Boeing",
+      "source_url": "https://jobs.boeing.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "booking-com",
+      "company_name": "Booking.com",
+      "source_url": "https://jobs.booking.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bosch",
+      "company_name": "Bosch",
+      "source_url": "https://www.bosch.in/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bottemline-technologies",
+      "company_name": "Bottemline Technologies",
+      "source_url": "https://www.bottomline.com/apac/about/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bounce",
+      "company_name": "Bounce",
+      "source_url": "https://careers-bounce.peoplestrong.com/portal/job/joblist",
+      "directory_status": "unsupported"
+    },
+    {
+      "company_key": "box",
+      "company_name": "Box",
+      "source_url": "https://www.box.com/en-in/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "brahmastra-aerospace",
+      "company_name": "Brahmastra Aerospace",
+      "source_url": "https://www.brahmastraspace.org/career",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "browser-stack",
+      "company_name": "Browser stack",
+      "source_url": "https://www.browserstack.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "broadcom",
+      "company_name": "Broadcom",
+      "source_url": "https://www.broadcom.com/company/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "bukuwarung",
+      "company_name": "BukuWarung",
+      "source_url": "https://www.notion.so/BukuWarung-Building-the-digital-infrastructure-for-60-million-MSMEs-in-Indonesia-7e8a4f614acb4c4888659f9d36179579",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "bytedance",
+      "company_name": "ByteDance",
+      "source_url": "https://jobs.bytedance.com/en",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "cadence",
+      "company_name": "Cadence",
+      "source_url": "https://www.cadence.com/en_US/home/company/careers.html",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "capillary",
+      "company_name": "Capillary",
+      "source_url": "https://www.capillarytech.com/about-us/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "capital-one",
+      "company_name": "Capital One",
+      "source_url": "https://www.capitalonecareers.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "cardekho",
+      "company_name": "CarDekho",
+      "source_url": "https://careers.cardekho.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "careem",
+      "company_name": "Careem",
+      "source_url": "https://www.careem.com/en-ae/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "carwale",
+      "company_name": "CarWale",
+      "source_url": "https://www.carwale.com/career/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "cashfree",
+      "company_name": "Cashfree",
+      "source_url": "https://www.cashfree.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "cimpress",
+      "company_name": "Cimpress",
+      "source_url": "https://cimpress.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "celigo",
+      "company_name": "Celigo",
+      "source_url": "https://www.celigo.com/company/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "citi-bank",
+      "company_name": "Citi Bank",
+      "source_url": "https://jobs.citi.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "cerner",
+      "company_name": "Cerner",
+      "source_url": "https://careers.cerner.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "chargebee",
+      "company_name": "Chargebee",
+      "source_url": "https://careers.chargebee.com/jobs/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "checkout-com",
+      "company_name": "Checkout.com",
+      "source_url": "https://www.checkout.com/careers#jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "chronus",
+      "company_name": "Chronus",
+      "source_url": "https://chronus.com/about-us/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "cisco",
+      "company_name": "Cisco",
+      "source_url": "https://jobs.cisco.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "citadel",
+      "company_name": "Citadel",
+      "source_url": "https://www.citadel.com/careers/open-positions/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "citadel-securities",
+      "company_name": "Citadel Securities",
+      "source_url": "https://www.citadelsecurities.com/careers/open-roles/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "citrix",
+      "company_name": "Citrix",
+      "source_url": "https://jobs.citrix.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "classplus",
+      "company_name": "Classplus",
+      "source_url": "https://www.linkedin.com/jobs/classplus-jobs/?originalSubdomain=in",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "clearglass",
+      "company_name": "ClearGlass",
+      "source_url": "https://clearglass.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "cleartrip",
+      "company_name": "Cleartrip",
+      "source_url": "https://careers.cleartrip.com/#!/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "cloudera",
+      "company_name": "Cloudera",
+      "source_url": "https://www.cloudera.com/careers.html",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "cloudflare",
+      "company_name": "cloudflare",
+      "source_url": "https://www.cloudflare.com/careers/jobs/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "codenation-innovation-labs",
+      "company_name": "Codenation innovation labs",
+      "source_url": "http://codenation.co.in/hiringprocess.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "codeparva-technologies-pvt-ltd",
+      "company_name": "CodeParva Technologies Pvt Ltd",
+      "source_url": "https://cutshort.io/company/codeparva-technologies-pvt-ltd-t0cDhxZW",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "codingninjas",
+      "company_name": "CodingNinjas",
+      "source_url": "https://www.linkedin.com/jobs/coding-ninjas-jobs/?originalSubdomain=in",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "cognizant",
+      "company_name": "Cognizant",
+      "source_url": "https://careers.cognizant.com/in/en",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "coinbase",
+      "company_name": "CoinBase",
+      "source_url": "https://www.coinbase.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "coindcx",
+      "company_name": "CoinDCX",
+      "source_url": "https://careers.coindcx.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "coinswitch-kuber",
+      "company_name": "Coinswitch kuber",
+      "source_url": "https://recruiterflow.com/coinswitch/jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "commvault",
+      "company_name": "Commvault",
+      "source_url": "https://careers.commvault.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "continental",
+      "company_name": "Continental",
+      "source_url": "https://www.continental.com/en/career/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "contra",
+      "company_name": "Contra",
+      "source_url": "https://contra.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "coupang",
+      "company_name": "Coupang",
+      "source_url": "https://rocketyourcareer.usa.coupang.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "cradlepoint",
+      "company_name": "Cradlepoint",
+      "source_url": "https://cradlepoint.com/about-us/careers/job-listings/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "cred",
+      "company_name": "Cred",
+      "source_url": "https://careers.cred.club/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "credit-suisse",
+      "company_name": "Credit Suisse",
+      "source_url": "https://www.credit-suisse.com/careers/en/apply.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "crestron",
+      "company_name": "Crestron",
+      "source_url": "https://www.crestron.com/About/careers-jobs-employment-opportunities",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "crowdstrike",
+      "company_name": "Crowdstrike",
+      "source_url": "https://www.crowdstrike.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "css-corp",
+      "company_name": "CSS Corp",
+      "source_url": "https://www.csscorp.com/company/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "cure-fit",
+      "company_name": "cure.fit",
+      "source_url": "https://www.cult.fit/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "cvent",
+      "company_name": "Cvent",
+      "source_url": "https://www.cvent.com/en/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "dailyhunt",
+      "company_name": "DailyHunt",
+      "source_url": "https://careers.dailyhunt.com/#!/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "dashlane",
+      "company_name": "Dashlane",
+      "source_url": "https://www.dashlane.com/about/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "databricks",
+      "company_name": "Databricks",
+      "source_url": "https://databricks.com/company/careers/open-positions",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "dataminr",
+      "company_name": "Dataminr",
+      "source_url": "https://www.dataminr.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "dbs",
+      "company_name": "DBS",
+      "source_url": "https://www.dbs.com/careers/default.page",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "d-e-shaw-co",
+      "company_name": "D. E. Shaw & Co.",
+      "source_url": "https://www.deshawindia.com/careers/career-development",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "dealshare",
+      "company_name": "DealShare",
+      "source_url": "https://www.dealshare.in/careers#home",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "delhivery",
+      "company_name": "Delhivery",
+      "source_url": "https://www.delhivery.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "dell",
+      "company_name": "Dell",
+      "source_url": "https://jobs.dell.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "deutsche-bank",
+      "company_name": "Deutsche Bank",
+      "source_url": "https://careers.db.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "dhruva-space",
+      "company_name": "Dhruva Space",
+      "source_url": "https://angel.co/company/dhruvaspace",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "dialpad",
+      "company_name": "Dialpad",
+      "source_url": "https://www.dialpad.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "directi",
+      "company_name": "Directi",
+      "source_url": "https://careers.directi.com/",
+      "directory_status": "unavailable"
+    },
+    {
+      "company_key": "digit",
+      "company_name": "digit",
+      "source_url": "https://digit.co/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "digitalocean",
+      "company_name": "digitalocean",
+      "source_url": "https://www.digitalocean.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "discord",
+      "company_name": "Discord",
+      "source_url": "https://discord.com/jobs",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "discovery-inc",
+      "company_name": "Discovery inc",
+      "source_url": "https://jobs.discovery.com/careers-home/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "disney",
+      "company_name": "Disney",
+      "source_url": "https://jobs.disneycareers.com/location/india-jobs/391-28648/1269750/2",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "dolby",
+      "company_name": "dolby",
+      "source_url": "https://www.dolby.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "doordash",
+      "company_name": "DoorDash",
+      "source_url": "https://careers.doordash.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "doximity",
+      "company_name": "doximity",
+      "source_url": "https://www.doximity.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "dp-world",
+      "company_name": "DP World",
+      "source_url": "https://ehpv.fa.em2.oraclecloud.com/hcmUI/CandidateExperience/en/sites/CX_1/requisitions",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "drdo",
+      "company_name": "DRDO",
+      "source_url": "https://www.drdo.gov.in/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "dream11",
+      "company_name": "Dream11",
+      "source_url": "https://www.dreamsports.group/careers",
+      "directory_status": "unavailable"
+    },
+    {
+      "company_key": "droom",
+      "company_name": "droom",
+      "source_url": "https://droom.in/career",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "dropbox",
+      "company_name": "Dropbox",
+      "source_url": "https://www.dropbox.com/jobs",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "druva",
+      "company_name": "Druva",
+      "source_url": "https://www.druva.com/about/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "dukaan",
+      "company_name": "Dukaan",
+      "source_url": "https://angel.co/company/dukaan-app/jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "dunzo",
+      "company_name": "Dunzo",
+      "source_url": "https://www.dunzo.com/careers#jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "duo",
+      "company_name": "duo",
+      "source_url": "https://duo.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "dupont",
+      "company_name": "DuPont",
+      "source_url": "https://careers.dupont.com/us/en",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "dynatrace",
+      "company_name": "dynatrace",
+      "source_url": "https://careers.dynatrace.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ea-games",
+      "company_name": "EA Games",
+      "source_url": "https://www.ea.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ebay",
+      "company_name": "eBay",
+      "source_url": "https://jobs.ebayinc.com/us/en",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "enfussion",
+      "company_name": "Enfussion",
+      "source_url": "https://enfusion.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "envestnet-yoodlee",
+      "company_name": "Envestnet Yoodlee",
+      "source_url": "https://www.yodlee.com/oceania/india-careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "epam",
+      "company_name": "Epam",
+      "source_url": "https://www.epam.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "epic-games",
+      "company_name": "Epic Games",
+      "source_url": "https://www.epicgames.com/site/en-US/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "ericsson",
+      "company_name": "Ericsson",
+      "source_url": "https://www.ericsson.com/en/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "eurofins",
+      "company_name": "Eurofins",
+      "source_url": "https://careers.eurofins.com/in/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "equinix",
+      "company_name": "Equinix",
+      "source_url": "https://careers.equinix.com/homepage",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "exl-healthcare",
+      "company_name": "EXL Healthcare",
+      "source_url": "https://exlservice.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "expedia",
+      "company_name": "Expedia",
+      "source_url": "https://lifeatexpediagroup.com/jobs/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "ey",
+      "company_name": "EY",
+      "source_url": "https://careers.ey.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "eyerov",
+      "company_name": "EyeROV",
+      "source_url": "https://www.eyerov.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "f5",
+      "company_name": "F5",
+      "source_url": "https://www.f5.com/company/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "factset",
+      "company_name": "factset",
+      "source_url": "https://www.factset.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "fampay",
+      "company_name": "FamPay",
+      "source_url": "https://fampay.in/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "fidelity-investments",
+      "company_name": "Fidelity investments",
+      "source_url": "https://jobs.fidelity.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "fireeye-inc",
+      "company_name": "FireEye inc",
+      "source_url": "https://www.fireeye.com/company/jobs.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "fischer-jordan",
+      "company_name": "Fischer Jordan",
+      "source_url": "https://fischerjordan.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "fiserv",
+      "company_name": "fiserv",
+      "source_url": "https://www.careers.fiserv.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "flexport",
+      "company_name": "Flexport",
+      "source_url": "https://www.flexport.com/careers/jobs/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "flipkart",
+      "company_name": "Flipkart",
+      "source_url": "https://www.flipkartcareers.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "flyfin",
+      "company_name": "FlyFin",
+      "source_url": "https://www.linkedin.com/company/flyfin-ai/jobs/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "fincover",
+      "company_name": "fincover",
+      "source_url": "https://www.fincover.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "fractal",
+      "company_name": "Fractal",
+      "source_url": "https://fractal.ai/job-openings/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "frappe-technologies",
+      "company_name": "Frappe Technologies",
+      "source_url": "https://frappe.io/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "freecharge",
+      "company_name": "FreeCharge",
+      "source_url": "https://careers.freecharge.in/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "freshworks",
+      "company_name": "Freshworks",
+      "source_url": "https://www.freshworks.com/company/life-at-freshworks/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "furlenco",
+      "company_name": "Furlenco",
+      "source_url": "https://jobs.furlenco.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "fyle",
+      "company_name": "fyle",
+      "source_url": "https://www.fylehq.com/company/team/join",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "fico",
+      "company_name": "Fico",
+      "source_url": "https://www.fico.com/en/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "fujitsu",
+      "company_name": "Fujitsu",
+      "source_url": "https://www.fujitsu.com/global/about/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "gartner",
+      "company_name": "Gartner",
+      "source_url": "https://jobs.gartner.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "garuda-aerospace-private-ltd",
+      "company_name": "Garuda Aerospace private Ltd",
+      "source_url": "https://www.garudaaerospace.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "geeksforgeeks",
+      "company_name": "GeeksForGeeks",
+      "source_url": "https://www.geeksforgeeks.org/careers/?",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ge",
+      "company_name": "GE",
+      "source_url": "https://www.ge.com/in/careers/opportunities",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ge-healthcare",
+      "company_name": "GE Healthcare",
+      "source_url": "https://jobs.gecareers.com/healthcare/global/en",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "geekyants",
+      "company_name": "GeekyAnts",
+      "source_url": "https://geekyants.com/join-geekyants",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "genpact",
+      "company_name": "Genpact",
+      "source_url": "https://www.genpact.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "ghost",
+      "company_name": "Ghost",
+      "source_url": "https://careers.ghost.org/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "github",
+      "company_name": "Github",
+      "source_url": "https://github.com/about/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "gitlab",
+      "company_name": "Gitlab",
+      "source_url": "https://about.gitlab.com/jobs/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "glass-door",
+      "company_name": "Glass Door",
+      "source_url": "https://www.glassdoor.com/Jobs/Glassdoor-Jobs-E100431.htm",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "godaddy",
+      "company_name": "GoDaddy",
+      "source_url": "https://careers.godaddy.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "godigit",
+      "company_name": "GoDigit",
+      "source_url": "https://www.godigit.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "godrej-aerospace",
+      "company_name": "Godrej Aerospace",
+      "source_url": "https://www.godrej.com/godrejandboyce/gnb-careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "gojek",
+      "company_name": "Gojek",
+      "source_url": "https://career.gojek.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "goldman-sachs",
+      "company_name": "Goldman Sachs",
+      "source_url": "https://www.goldmansachs.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "goodspace",
+      "company_name": "GoodSpace",
+      "source_url": "https://goodspace.ai/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "google",
+      "company_name": "Google",
+      "source_url": "https://careers.google.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "go-pro",
+      "company_name": "Go Pro",
+      "source_url": "https://jobs.gopro.com/?lang=en-us#/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "global-logic",
+      "company_name": "Global Logic",
+      "source_url": "https://www.globallogic.com/in/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "grab",
+      "company_name": "Grab",
+      "source_url": "https://grab.careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "grafana",
+      "company_name": "Grafana",
+      "source_url": "https://grafana.com/about/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "gravitont-rading",
+      "company_name": "Gravitont Rading",
+      "source_url": "https://www.gravitontrading.com/careers.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "groupon",
+      "company_name": "Groupon",
+      "source_url": "https://www.grouponcareers.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "grofers",
+      "company_name": "Grofers",
+      "source_url": "https://grofers.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "groww",
+      "company_name": "Groww",
+      "source_url": "https://groww.skillate.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "groq",
+      "company_name": "Groq",
+      "source_url": "https://groq.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "hackerearth",
+      "company_name": "Hackerearth",
+      "source_url": "https://www.hackerearth.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "hackerrank",
+      "company_name": "HackerRank",
+      "source_url": "https://www.hackerrank.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "hashedin",
+      "company_name": "Hashedin",
+      "source_url": "https://hashedin.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "hashnode",
+      "company_name": "Hashnode",
+      "source_url": "https://careers.hashnode.com/jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "hbo",
+      "company_name": "HBO",
+      "source_url": "https://warnermediacareers.com/hbo-jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "hcl-tech",
+      "company_name": "HCL Tech",
+      "source_url": "https://www.hcltech.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "hdfc-bank",
+      "company_name": "HDFC Bank",
+      "source_url": "https://www.hdfcbank.com/personal/about-us/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "healthasyst",
+      "company_name": "HealthAsyst",
+      "source_url": "https://www.healthasyst.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "healthify-me",
+      "company_name": "Healthify me",
+      "source_url": "https://www.healthifyme.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "here",
+      "company_name": "HERE",
+      "source_url": "https://www.here.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "hexagone",
+      "company_name": "Hexagone",
+      "source_url": "https://hexagon.com/about/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "hotstar",
+      "company_name": "Hotstar",
+      "source_url": "https://tech.hotstar.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "honeywell",
+      "company_name": "Honeywell",
+      "source_url": "https://careers.honeywell.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "hp",
+      "company_name": "HP",
+      "source_url": "https://jobs.hp.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "hsbc-bank",
+      "company_name": "HSBC Bank",
+      "source_url": "https://www.hsbc.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "hub-spot",
+      "company_name": "Hub Spot",
+      "source_url": "https://www.hubspot.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "huggingface",
+      "company_name": "Hugging Face",
+      "source_url": "https://apply.workable.com/huggingface/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "5ire",
+      "company_name": "5ire",
+      "source_url": "https://www.5ire.org/carreer-blockchain",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "iac",
+      "company_name": "IAC",
+      "source_url": "https://www.iac.com/join-team",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ibm",
+      "company_name": "IBM",
+      "source_url": "https://www.ibm.com/in-en/employment/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ideaforge",
+      "company_name": "IdeaForge",
+      "source_url": "https://www.ideaforge.co.in/career/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ihs-markit",
+      "company_name": "IHS Markit",
+      "source_url": "https://careers.ihsmarkit.com/",
+      "directory_status": "unavailable"
+    },
+    {
+      "company_key": "impact-analytics",
+      "company_name": "Impact Analytics",
+      "source_url": "https://www.impactanalytics.co/join-us/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "indeed",
+      "company_name": "Indeed",
+      "source_url": "https://in.indeed.com/cmp/Indeed",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "india-mart",
+      "company_name": "India Mart",
+      "source_url": "https://careers.indiamart.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "infor",
+      "company_name": "Infor",
+      "source_url": "https://www.infor.com/nordics/about/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "informatica",
+      "company_name": "Informatica",
+      "source_url": "https://informatica.gr8people.com/jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "infospoke",
+      "company_name": "Infospoke",
+      "source_url": "http://www.infospoke.in/careers.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "inmobi",
+      "company_name": "Inmobi",
+      "source_url": "https://www.inmobi.com/company/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "innovaccer",
+      "company_name": "Innovaccer",
+      "source_url": "https://innovaccer.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "intel",
+      "company_name": "Intel",
+      "source_url": "https://www.intel.com/content/www/us/en/jobs/jobs-at-intel.html",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "intellika",
+      "company_name": "Intellika",
+      "source_url": "https://www.intellika.in/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "intuit",
+      "company_name": "Intuit",
+      "source_url": "https://www.intuit.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ip-infusion",
+      "company_name": "IP Infusion",
+      "source_url": "https://www.ipinfusion.com/career/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "isro",
+      "company_name": "ISRO",
+      "source_url": "https://www.isro.gov.in/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "iquanti",
+      "company_name": "iQuanti",
+      "source_url": "https://www.iquanti.com/contact-us/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "jaguar",
+      "company_name": "Jaguar",
+      "source_url": "https://www.jaguarlandrovercareers.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "jar",
+      "company_name": "Jar",
+      "source_url": "https://www.myjar.app/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "jio",
+      "company_name": "Jio",
+      "source_url": "https://careers.jio.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "jm-financial",
+      "company_name": "JM Financial",
+      "source_url": "https://jmfl.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "jp-morgan",
+      "company_name": "JP Morgan",
+      "source_url": "https://careers.jpmorgan.com/IN/en/home",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "juniper-networks",
+      "company_name": "Juniper networks",
+      "source_url": "https://www.juniper.net/us/en/company/culture-careers.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "jupiter-money",
+      "company_name": "Jupiter money",
+      "source_url": "https://jobs.lever.co/jupiter",
+      "directory_status": "unavailable"
+    },
+    {
+      "company_key": "juspay",
+      "company_name": "Juspay",
+      "source_url": "https://www.juspay.in/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "jumbotail",
+      "company_name": "Jumbotail",
+      "source_url": "https://jumbotail.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "kantar",
+      "company_name": "Kantar",
+      "source_url": "https://www.kantar.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "kesari-bharat",
+      "company_name": "Kesari bharat",
+      "source_url": "https://www.linkedin.com/in/deepak-sharda-6594561b1/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "keyence",
+      "company_name": "Keyence",
+      "source_url": "https://www.keyence.com/ss/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "keyvalue",
+      "company_name": "Keyvalue",
+      "source_url": "https://keyvalue.systems/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "khatabook",
+      "company_name": "Khatabook",
+      "source_url": "https://khatabook.com/hiring",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "khoros",
+      "company_name": "khoros",
+      "source_url": "https://khoros.com/about/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "kla-tencor",
+      "company_name": "KLA Tencor",
+      "source_url": "https://www.kla-tencor.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "koch",
+      "company_name": "Koch",
+      "source_url": "https://jobs.kochcareers.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "kotak-mahindra-bank",
+      "company_name": "Kotak Mahindra Bank",
+      "source_url": "https://www.kotak.com/en/about-us/careers.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "lambdatest",
+      "company_name": "LambdaTest",
+      "source_url": "https://www.lambdatest.com/career",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "lam-research",
+      "company_name": "Lam Research",
+      "source_url": "https://www.lamresearch.com/careers/careers-overview/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "land-rover",
+      "company_name": "Land rover",
+      "source_url": "https://www.jaguarlandrovercareers.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "lenskart",
+      "company_name": "Lenskart",
+      "source_url": "https://hiring.lenskart.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "lenovo",
+      "company_name": "Lenovo",
+      "source_url": "https://jobs.lenovo.com/en_US/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "leap-finance",
+      "company_name": "Leap Finance",
+      "source_url": "https://leapfinance.freshteam.com/jobs",
+      "directory_status": "unsupported"
+    },
+    {
+      "company_key": "level-ai",
+      "company_name": "Level AI",
+      "source_url": "https://thelevel.ai/career/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "licious",
+      "company_name": "Licious",
+      "source_url": "https://www.careers.in/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "liebherr",
+      "company_name": "Liebherr",
+      "source_url": "https://www.liebherr.com/en/usa/start/start-page.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "linkedin",
+      "company_name": "LinkedIn",
+      "source_url": "https://careers.linkedin.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "logicfruit",
+      "company_name": "LogicFruit",
+      "source_url": "https://www.logic-fruit.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "logicmonitor",
+      "company_name": "Logicmonitor",
+      "source_url": "https://www.logicmonitor.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "lowe-s-companies-inc",
+      "company_name": "Lowe's companies, inc",
+      "source_url": "https://corporate.lowes.com/careers/search-apply",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "magicpin",
+      "company_name": "Magicpin",
+      "source_url": "https://magicpin.darwinbox.in/ms/candidate/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "makemytrip",
+      "company_name": "MakeMyTrip",
+      "source_url": "https://careers.makemytrip.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "mastercard",
+      "company_name": "Mastercard",
+      "source_url": "https://www.mastercard.us/en-us/vision/who-we-are/careers.html",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "mastery",
+      "company_name": "Mastery",
+      "source_url": "https://mastery.net/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "mathworks",
+      "company_name": "Mathworks",
+      "source_url": "https://in.mathworks.com/company/jobs/opportunities.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "maq-software",
+      "company_name": "Maq Software",
+      "source_url": "https://maqsoftware.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "mckinsey",
+      "company_name": "McKinsey",
+      "source_url": "https://www.mckinsey.com/in/careers-in-india",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "media-net",
+      "company_name": "Media.net",
+      "source_url": "https://careers.media.net/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "meta",
+      "company_name": "Meta",
+      "source_url": "https://www.metacareers.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "meesho",
+      "company_name": "Meesho",
+      "source_url": "https://careers.meesho.com/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "memory",
+      "company_name": "Memory",
+      "source_url": "https://memory.ai/jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "micron",
+      "company_name": "Micron",
+      "source_url": "https://micron.eightfold.ai/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "microsoft",
+      "company_name": "Microsoft",
+      "source_url": "https://careers.microsoft.com/us/en",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "mindtickle",
+      "company_name": "MindTickle",
+      "source_url": "https://www.mindtickle.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "mobikwik",
+      "company_name": "MobiKwik",
+      "source_url": "https://mobikwik.recruiterbox.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "molbio-diagnostics",
+      "company_name": "Molbio Diagnostics",
+      "source_url": "https://www.molbiodiagnostics.com/career.php",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "morgan-stanley",
+      "company_name": "Morgan Stanley",
+      "source_url": "https://www.morganstanley.com/people-opportunities/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "mount-talent",
+      "company_name": "Mount talent",
+      "source_url": "https://careers.mounttalent.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "mpl",
+      "company_name": "MPL",
+      "source_url": "https://mpl.darwinbox.in/ms/candidate/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "mtx",
+      "company_name": "MTX",
+      "source_url": "https://www.mtxb2b.com/s/career",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "multiverse-software",
+      "company_name": "Multiverse Software",
+      "source_url": "https://multiverseapp.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "myntra",
+      "company_name": "Myntra",
+      "source_url": "https://careers.myntra.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "nagarro",
+      "company_name": "Nagarro",
+      "source_url": "https://www.nagarro.com/en/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "nasdaq",
+      "company_name": "NASDAQ",
+      "source_url": "https://www.nasdaq.com/about/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "national-instruments",
+      "company_name": "National instruments",
+      "source_url": "https://www.ni.com/en-in/about-ni/careers.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "natwest-group",
+      "company_name": "NatWest Group",
+      "source_url": "https://jobs.natwestgroup.com/search/jobs/in/country/india",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "navi",
+      "company_name": "navi",
+      "source_url": "https://www.navifinserv.com/life-at-chaitanya",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ncr-corporation",
+      "company_name": "NCR Corporation",
+      "source_url": "https://www.ncr.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "netapp",
+      "company_name": "NetApp",
+      "source_url": "https://www.netapp.com/company/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "netcracker",
+      "company_name": "Netcracker",
+      "source_url": "https://www.netcracker.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "netflix",
+      "company_name": "Netflix",
+      "source_url": "https://jobs.netflix.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "netmeds",
+      "company_name": "Netmeds",
+      "source_url": "https://netmeds.darwinbox.in/ms/candidate/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "nike",
+      "company_name": "Nike",
+      "source_url": "https://jobs.nike.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ninjacart",
+      "company_name": "Ninjacart",
+      "source_url": "https://ninjacart.in/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "nokia",
+      "company_name": "Nokia",
+      "source_url": "https://www.nokia.com/about-us/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "nurture-farm",
+      "company_name": "nurture.farm",
+      "source_url": "https://nurture.farm/join-us/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "nutanix",
+      "company_name": "Nutanix",
+      "source_url": "https://www.nutanix.com/company/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "nvidia",
+      "company_name": "Nvidia",
+      "source_url": "https://www.nvidia.com/en-in/about-nvidia/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "nykaa",
+      "company_name": "Nykaa",
+      "source_url": "https://www.nykaa.com/careers?gclid=CjwKCAiAv_KMBhAzEiwAs-rX1AaeJPV4qukBH6DJnWPnJfUpAwGN9pMmMU6hYHyEfUELj3RNCKRkkBoCVHAQAvD_BwE&ef_id=CjwKCAiAv_KMBhAzEiwAs-rX1AaeJPV4qukBH6DJnWPnJfUpAwGN9pMmMU6hYHyEfUELj3RNCKRkkBoCVHAQAvD_BwE:G:s&s_kwcid=AL!599!3!560340772706!!!g!!&utm_source=GooglePaid&utm_medium=search&utm_campaign=adwords_search_dsa_full_site",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "obvious",
+      "company_name": "Obvious",
+      "source_url": "https://obvious.in/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ocrolus",
+      "company_name": "Ocrolus",
+      "source_url": "https://www.ocrolus.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "ola",
+      "company_name": "Ola",
+      "source_url": "https://www.olacabs.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "olx",
+      "company_name": "Olx",
+      "source_url": "https://careers.olxgroup.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "onecard",
+      "company_name": "OneCard",
+      "source_url": "https://www.getonecard.app/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "oneplus",
+      "company_name": "Oneplus",
+      "source_url": "https://www.oneplus.com/global/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "oracle",
+      "company_name": "Oracle",
+      "source_url": "https://www.oracle.com/apac/corporate/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "oyo",
+      "company_name": "OYO",
+      "source_url": "https://www.naukri.com/oyo-jobs-careers-2884032",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "observe-ai",
+      "company_name": "Observe.ai",
+      "source_url": "https://www.observe.ai/careers#section-current-openings",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "open-ai",
+      "company_name": "Open AI",
+      "source_url": "https://openai.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "opentext",
+      "company_name": "OpenText",
+      "source_url": "https://careers.opentext.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "optum",
+      "company_name": "Optum",
+      "source_url": "https://www.optum.in/about/careers.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "optym",
+      "company_name": "Optym",
+      "source_url": "https://optym.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "palo-alto-networks",
+      "company_name": "Palo Alto Networks",
+      "source_url": "https://jobs.paloaltonetworks.com/en/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "park",
+      "company_name": "Park+",
+      "source_url": "https://parkplus.io/we-are-hiring#hiring",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "paypal",
+      "company_name": "Paypal",
+      "source_url": "https://www.paypal.com/in/webapps/mpp/jobs",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "paytm",
+      "company_name": "Paytm",
+      "source_url": "https://paytm.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "payu",
+      "company_name": "PayU",
+      "source_url": "https://payu.in/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "pazo",
+      "company_name": "Pazo",
+      "source_url": "https://www.gopazo.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "peoplestrong",
+      "company_name": "PeopleStrong",
+      "source_url": "https://www.peoplestrong.com/careers/",
+      "directory_status": "unsupported"
+    },
+    {
+      "company_key": "persistent-systems",
+      "company_name": "persistent systems",
+      "source_url": "https://www.persistent.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "pharmeasy",
+      "company_name": "PharmEasy",
+      "source_url": "https://pharmeasy.in/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "phillips",
+      "company_name": "Phillips",
+      "source_url": "https://www.careers.philips.com/professional/in/en",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "phonepe",
+      "company_name": "Phonepe",
+      "source_url": "https://www.phonepe.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "playment",
+      "company_name": "Playment",
+      "source_url": "https://www.playment.io/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "planful",
+      "company_name": "Planful",
+      "source_url": "https://planful.com/jobs/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "polygon-technology",
+      "company_name": "Polygon Technology",
+      "source_url": "https://polygon.technology/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "postman",
+      "company_name": "postman",
+      "source_url": "https://www.postman.com/company/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "practo",
+      "company_name": "Practo",
+      "source_url": "https://practo.app.param.ai/jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "priceline",
+      "company_name": "priceline",
+      "source_url": "https://careers.priceline.com/search",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "principal",
+      "company_name": "Principal",
+      "source_url": "https://www.principal.com/about-us/careers/global-jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "privado-ai",
+      "company_name": "Privado.ai",
+      "source_url": "https://www.privado.ai",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "providence-healthcare",
+      "company_name": "Providence Healthcare",
+      "source_url": "https://www.providencehealthcare.org/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "protegrity",
+      "company_name": "Protegrity",
+      "source_url": "https://jobs.lever.co/protegrity?location=Bengaluru",
+      "directory_status": "unavailable"
+    },
+    {
+      "company_key": "proximity-labs",
+      "company_name": "Proximity Labs",
+      "source_url": "https://www.proximity.tech/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "prodapt",
+      "company_name": "Prodapt",
+      "source_url": "https://www.prodapt.com/en/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "publicis-sapient",
+      "company_name": "Publicis Sapient",
+      "source_url": "https://careers.publicissapient.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "pubmatic",
+      "company_name": "PubMatic",
+      "source_url": "https://pubmatic.com/careers/home/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "qualcomm",
+      "company_name": "Qualcomm",
+      "source_url": "https://www.qualcomm.com/company/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "quantiphi",
+      "company_name": "Quantiphi",
+      "source_url": "https://quantiphi.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "quicksell",
+      "company_name": "QuickSell",
+      "source_url": "https://www.linkedin.com/company/quicksell/jobs/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "quora",
+      "company_name": "Quora",
+      "source_url": "https://www.quora.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "ramp",
+      "company_name": "Ramp",
+      "source_url": "https://ramp.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "razorpay",
+      "company_name": "Razorpay",
+      "source_url": "https://razorpay.com/jobs/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "red-hat",
+      "company_name": "Red hat",
+      "source_url": "https://www.redhat.com/en/jobs",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "reelo",
+      "company_name": "Reelo",
+      "source_url": "https://angel.co/company/reelohq",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "reprise",
+      "company_name": "Reprise",
+      "source_url": "https://www.getreprise.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "rippling",
+      "company_name": "Rippling",
+      "source_url": "https://www.rippling.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "rivigo",
+      "company_name": "Rivigo",
+      "source_url": "https://www.rivigo.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "rocket-companies",
+      "company_name": "Rocket Companies",
+      "source_url": "https://www.myrocketcareer.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "rockstar-games",
+      "company_name": "Rockstar Games",
+      "source_url": "https://www.rockstargames.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "rubrik",
+      "company_name": "Rubrik",
+      "source_url": "https://www.rubrik.com/company/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "roku",
+      "company_name": "Roku",
+      "source_url": "https://www.weareroku.com/jobs/search",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "saavan",
+      "company_name": "Saavan",
+      "source_url": "https://www.jiosaavn.com/corporate/jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "sabre-corporation",
+      "company_name": "Sabre corporation",
+      "source_url": "https://www.sabre.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "salarybox",
+      "company_name": "SalaryBox",
+      "source_url": "https://www.salarybox.in/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "salesforce",
+      "company_name": "Salesforce",
+      "source_url": "https://www.salesforce.com/company/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "samsung",
+      "company_name": "Samsung",
+      "source_url": "https://www.samsung.com/in/about-us/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "sap",
+      "company_name": "SAP",
+      "source_url": "https://jobs.sap.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "schneider-electric",
+      "company_name": "Schneider Electric",
+      "source_url": "https://www.se.com/in/en/about-us/careers/overview.jsp",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "searchapi",
+      "company_name": "SearchApi",
+      "source_url": "https://www.searchapi.io/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "sendinblue",
+      "company_name": "SendinBlue",
+      "source_url": "https://jobs.sendinblue.com/en",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "serpapi",
+      "company_name": "SerpApi",
+      "source_url": "https://serpapi.com/team",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "servicenow",
+      "company_name": "ServiceNow",
+      "source_url": "https://www.servicenow.com/careers.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "shaadi-com",
+      "company_name": "Shaadi.com",
+      "source_url": "https://www.naukri.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "sharechat",
+      "company_name": "ShareChat",
+      "source_url": "https://sharechat.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "shell",
+      "company_name": "Shell",
+      "source_url": "https://www.shell.com/careers.html",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "shiprocket",
+      "company_name": "Shiprocket",
+      "source_url": "https://careers.shiprocket.in/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "shipsy",
+      "company_name": "Shipsy",
+      "source_url": "https://shipsy.io/career/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "shopee",
+      "company_name": "Shopee",
+      "source_url": "https://careers.shopee.sg/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "shopify",
+      "company_name": "Shopify",
+      "source_url": "https://www.shopify.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "siemens",
+      "company_name": "Siemens",
+      "source_url": "https://new.siemens.com/global/en/company/jobs/our-locations/india.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "siemens-healthineers",
+      "company_name": "Siemens Healthineers",
+      "source_url": "https://www.siemens-healthineers.com/en-in/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "sigmoid",
+      "company_name": "Sigmoid",
+      "source_url": "https://www.sigmoid.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "skillvertex",
+      "company_name": "SkillVertex",
+      "source_url": "https://www.linkedin.com/jobs/search/?f_C=75860188&geoId=92000000",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "skyroot-aerospace",
+      "company_name": "Skyroot Aerospace",
+      "source_url": "https://skyroot.in/join/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "sling-media",
+      "company_name": "Sling Media",
+      "source_url": "https://www.linkedin.com/jobs/sling-media-jobs/?originalSubdomain=in",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "smith-detection",
+      "company_name": "Smith Detection",
+      "source_url": "https://www.smithsdetection.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "sony",
+      "company_name": "Sony",
+      "source_url": "https://www.sonyjobs.com/careers.html",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "spinny",
+      "company_name": "Spinny",
+      "source_url": "https://spinny.freshteam.com/jobs",
+      "directory_status": "unsupported"
+    },
+    {
+      "company_key": "sprinklr",
+      "company_name": "Sprinklr",
+      "source_url": "https://www.sprinklr.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "squadstack",
+      "company_name": "Squadstack",
+      "source_url": "https://www.squadstack.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "stripe",
+      "company_name": "Stripe",
+      "source_url": "https://stripe.com/in/jobs",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "sureify",
+      "company_name": "Sureify",
+      "source_url": "https://sureify.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "swiggy",
+      "company_name": "Swiggy",
+      "source_url": "https://careers.swiggy.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "synopsys",
+      "company_name": "Synopsys",
+      "source_url": "https://www.synopsys.com/careers.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "target",
+      "company_name": "Target",
+      "source_url": "https://corporate.target.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "tata-advanced-sysytems-ltd",
+      "company_name": "TATA Advanced Sysytems Ltd",
+      "source_url": "https://www.tataadvancedsystems.com/careers.php",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "tata-nexarc",
+      "company_name": "TATA nexarc",
+      "source_url": "https://www.tatanexarc.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "te-connectivity",
+      "company_name": "TE Connectivity",
+      "source_url": "https://careers.te.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "tek-systems",
+      "company_name": "TEK Systems",
+      "source_url": "https://www.teksystems.com/en-in/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "tekion-corp",
+      "company_name": "Tekion corp",
+      "source_url": "https://tekion.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "tencent",
+      "company_name": "Tencent",
+      "source_url": "https://careers.tencent.com/en-us/search.html?query=ot_40001001,ot_40001002,ot_40001003,ot_40001004,ot_40001005,ot_40001006",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "tesla",
+      "company_name": "Tesla",
+      "source_url": "https://www.tesla.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "testingbot",
+      "company_name": "TestingBot",
+      "source_url": "https://testingbot.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "teradata",
+      "company_name": "Teradata",
+      "source_url": "https://careers.teradata.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "texas-instruments",
+      "company_name": "Texas Instruments",
+      "source_url": "https://careers.ti.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "tsmc",
+      "company_name": "TSMC",
+      "source_url": "https://www.tsmc.com/static/english/careers/index.htm",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "thoughtspot",
+      "company_name": "ThoughtSpot",
+      "source_url": "https://www.thoughtspot.com/careers-listing",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "thoughtworks",
+      "company_name": "ThoughtWorks",
+      "source_url": "https://www.thoughtworks.com/careers/jobs",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "topcoder",
+      "company_name": "Topcoder",
+      "source_url": "https://www.topcoder.com/company/jobs/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "toptal",
+      "company_name": "Toptal",
+      "source_url": "https://www.toptal.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "tower-research-capital",
+      "company_name": "tower research capital",
+      "source_url": "https://www.tower-research.com/positions",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "treebo-hotels",
+      "company_name": "Treebo Hotels",
+      "source_url": "https://www.linkedin.com/company/treebohotels/jobs/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "turvo",
+      "company_name": "Turvo",
+      "source_url": "https://turvo.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "twilio",
+      "company_name": "Twilio",
+      "source_url": "https://www.twilio.com/company/jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "twitter",
+      "company_name": "Twitter",
+      "source_url": "https://careers.twitter.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "uber",
+      "company_name": "Uber",
+      "source_url": "https://www.uber.com/us/en/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ubisoft",
+      "company_name": "Ubisoft",
+      "source_url": "https://www.ubisoft.com/en-us/company/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "udaan",
+      "company_name": "Udaan",
+      "source_url": "https://careers.udaan.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "ultimate-kronos-group",
+      "company_name": "Ultimate Kronos Group",
+      "source_url": "https://careers.ukg.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "unacadamy",
+      "company_name": "unacadamy",
+      "source_url": "https://unacademy.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "unicommerce",
+      "company_name": "Unicommerce",
+      "source_url": "https://unicommerce.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "unisys",
+      "company_name": "Unisys",
+      "source_url": "https://jobs.unisys.com/us/en",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "upgrad",
+      "company_name": "Upgrad",
+      "source_url": "https://www.upgrad.com/us/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "upstox",
+      "company_name": "Upstox",
+      "source_url": "https://jobs.lever.co/upstox",
+      "directory_status": "unavailable"
+    },
+    {
+      "company_key": "upwork",
+      "company_name": "Upwork",
+      "source_url": "https://www.upwork.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "urban-company",
+      "company_name": "Urban company",
+      "source_url": "https://careers.urbancompany.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "valuefy",
+      "company_name": "Valuefy",
+      "source_url": "https://valuefy-solutions.breezy.hr/",
+      "directory_status": "unsupported"
+    },
+    {
+      "company_key": "viasat",
+      "company_name": "Viasat",
+      "source_url": "https://careers.viasat.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "vicara",
+      "company_name": "Vicara",
+      "source_url": "https://vicara.ch/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "visa",
+      "company_name": "Visa",
+      "source_url": "https://www.visa.co.in/careers.html",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "vmware",
+      "company_name": "Vmware",
+      "source_url": "https://careers.vmware.com/main/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "vogo",
+      "company_name": "Vogo",
+      "source_url": "https://vogo.in/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "walmart",
+      "company_name": "Walmart",
+      "source_url": "https://careers.walmart.com/technology",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "warner-bros",
+      "company_name": "Warner Bros.",
+      "source_url": "https://warnermediacareers.com/warner-bros-jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "wells-fargo",
+      "company_name": "Wells Fargo",
+      "source_url": "https://www.wellsfargo.com/about/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "western-digital",
+      "company_name": "Western Digital",
+      "source_url": "https://jobs.westerndigital.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "whatfix",
+      "company_name": "Whatfix",
+      "source_url": "https://whatfix.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "wooqer",
+      "company_name": "Wooqer",
+      "source_url": "https://wooqer.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "worldquant",
+      "company_name": "worldQuant",
+      "source_url": "https://www.worldquant.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "xiaomi",
+      "company_name": "Xiaomi",
+      "source_url": "https://xiaomi.app.param.ai/jobs/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "xicom-technologies",
+      "company_name": "Xicom Technologies",
+      "source_url": "https://www.xicom.biz/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "yahoo",
+      "company_name": "Yahoo",
+      "source_url": "https://research.yahoo.com/careers",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "yellow-ai",
+      "company_name": "yellow.ai",
+      "source_url": "https://yellow.ai/career",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "yugabyte",
+      "company_name": "yugabyte",
+      "source_url": "https://www.yugabyte.com/careers/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "yulu-bikes",
+      "company_name": "Yulu Bikes",
+      "source_url": "https://www.yulu.bike/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "yeasitech",
+      "company_name": "YeasiTech",
+      "source_url": "https://www.yeasitech.com/career",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "zepto",
+      "company_name": "Zepto",
+      "source_url": "https://zeptonow.openings.co/#!/#openpositions",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "zerodha",
+      "company_name": "zerodha",
+      "source_url": "https://careers.zerodha.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "zeta",
+      "company_name": "Zeta",
+      "source_url": "https://careers.zeta.tech/work-with-us/",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "zivame",
+      "company_name": "ZivaMe",
+      "source_url": "https://careers.zivame.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "zoho",
+      "company_name": "zoho",
+      "source_url": "https://careers.zohocorp.com/jobs/Careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "zomato",
+      "company_name": "Zomato",
+      "source_url": "https://www.zomato.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "zoomcar",
+      "company_name": "ZoomCar",
+      "source_url": "https://www.zoomcar.com/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "zs",
+      "company_name": "ZS",
+      "source_url": "https://jobs.zs.com/all/jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "1-mg",
+      "company_name": "1 mg",
+      "source_url": "https://www.1mg.com/jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "3i-infotech",
+      "company_name": "3i Infotech",
+      "source_url": "https://www.3i-infotech.com/careers/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "4i-apps",
+      "company_name": "4i Apps",
+      "source_url": "https://www.4iapps.com/careers/#jobs",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "314e-corporation",
+      "company_name": "314e Corporation",
+      "source_url": "https://www.314e.com/",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "24-7-ai",
+      "company_name": "[24]7.ai",
+      "source_url": "https://www.247.ai/company/careers",
+      "directory_status": "needs_review"
+    },
+    {
+      "company_key": "modal",
+      "company_name": "Modal",
+      "source_url": "https://jobs.ashbyhq.com/modal",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "cognition",
+      "company_name": "Cognition",
+      "source_url": "https://jobs.ashbyhq.com/cognition",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "elevenlabs",
+      "company_name": "ElevenLabs",
+      "source_url": "https://jobs.ashbyhq.com/elevenlabs",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "deepgram",
+      "company_name": "Deepgram",
+      "source_url": "https://jobs.ashbyhq.com/deepgram",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "cockroach-labs",
+      "company_name": "Cockroach Labs",
+      "source_url": "https://job-boards.greenhouse.io/cockroachlabs",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "replit",
+      "company_name": "Replit",
+      "source_url": "https://jobs.ashbyhq.com/replit",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "n8n",
+      "company_name": "n8n",
+      "source_url": "https://jobs.ashbyhq.com/n8n",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "vanta",
+      "company_name": "Vanta",
+      "source_url": "https://jobs.ashbyhq.com/vanta",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "planetscale",
+      "company_name": "PlanetScale",
+      "source_url": "https://job-boards.greenhouse.io/planetscale",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "airtable",
+      "company_name": "Airtable",
+      "source_url": "https://job-boards.greenhouse.io/airtable",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "oyster",
+      "company_name": "Oyster",
+      "source_url": "https://jobs.ashbyhq.com/oyster",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "lovable",
+      "company_name": "Lovable",
+      "source_url": "https://jobs.ashbyhq.com/lovable",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "mixpanel",
+      "company_name": "Mixpanel",
+      "source_url": "https://job-boards.greenhouse.io/mixpanel",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "launchdarkly",
+      "company_name": "LaunchDarkly",
+      "source_url": "https://job-boards.greenhouse.io/launchdarkly",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "pagerduty",
+      "company_name": "PagerDuty",
+      "source_url": "https://job-boards.greenhouse.io/pagerduty",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "airbyte",
+      "company_name": "Airbyte",
+      "source_url": "https://jobs.ashbyhq.com/airbyte",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "hightouch",
+      "company_name": "Hightouch",
+      "source_url": "https://jobs.ashbyhq.com/hightouch",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "samsara",
+      "company_name": "Samsara",
+      "source_url": "https://job-boards.greenhouse.io/samsara",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "temporal",
+      "company_name": "Temporal",
+      "source_url": "https://jobs.ashbyhq.com/temporal",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "squarespace",
+      "company_name": "Squarespace",
+      "source_url": "https://job-boards.greenhouse.io/squarespace",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "sentry",
+      "company_name": "Sentry",
+      "source_url": "https://jobs.ashbyhq.com/sentry",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "okta",
+      "company_name": "Okta",
+      "source_url": "https://job-boards.greenhouse.io/okta",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "clickhouse",
+      "company_name": "ClickHouse",
+      "source_url": "https://jobs.ashbyhq.com/clickhouse",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "pinecone",
+      "company_name": "Pinecone",
+      "source_url": "https://jobs.ashbyhq.com/pinecone",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "weaviate",
+      "company_name": "Weaviate",
+      "source_url": "https://jobs.ashbyhq.com/weaviate",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "braze",
+      "company_name": "Braze",
+      "source_url": "https://job-boards.greenhouse.io/braze",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "klaviyo",
+      "company_name": "Klaviyo",
+      "source_url": "https://job-boards.greenhouse.io/klaviyo",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "lancedb",
+      "company_name": "LanceDB",
+      "source_url": "https://jobs.ashbyhq.com/lancedb",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "motherduck",
+      "company_name": "MotherDuck",
+      "source_url": "https://jobs.ashbyhq.com/motherduck",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "neon",
+      "company_name": "Neon",
+      "source_url": "https://jobs.ashbyhq.com/neon",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "toast",
+      "company_name": "Toast",
+      "source_url": "https://job-boards.greenhouse.io/toast",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "convex",
+      "company_name": "Convex",
+      "source_url": "https://jobs.ashbyhq.com/convex-dev",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "salesloft",
+      "company_name": "Salesloft",
+      "source_url": "https://job-boards.greenhouse.io/salesloft",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "inngest",
+      "company_name": "Inngest",
+      "source_url": "https://jobs.ashbyhq.com/inngest",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "greenhouse",
+      "company_name": "Greenhouse",
+      "source_url": "https://job-boards.greenhouse.io/greenhouse",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "lattice",
+      "company_name": "Lattice",
+      "source_url": "https://job-boards.greenhouse.io/lattice",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "resend",
+      "company_name": "Resend",
+      "source_url": "https://jobs.ashbyhq.com/resend",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "culture-amp",
+      "company_name": "Culture Amp",
+      "source_url": "https://job-boards.greenhouse.io/cultureamp",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "knock",
+      "company_name": "Knock",
+      "source_url": "https://jobs.ashbyhq.com/knock",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "clerk",
+      "company_name": "Clerk",
+      "source_url": "https://jobs.ashbyhq.com/clerk",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "workos",
+      "company_name": "WorkOS",
+      "source_url": "https://jobs.ashbyhq.com/workos",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "workato",
+      "company_name": "Workato",
+      "source_url": "https://job-boards.greenhouse.io/workato",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "starburst",
+      "company_name": "Starburst",
+      "source_url": "https://job-boards.greenhouse.io/starburst",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "e2b",
+      "company_name": "E2B",
+      "source_url": "https://jobs.ashbyhq.com/e2b",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "dremio",
+      "company_name": "Dremio",
+      "source_url": "https://job-boards.greenhouse.io/dremio",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "browserbase",
+      "company_name": "Browserbase",
+      "source_url": "https://jobs.ashbyhq.com/browserbase",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "firecrawl",
+      "company_name": "Firecrawl",
+      "source_url": "https://jobs.ashbyhq.com/firecrawl",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "exa",
+      "company_name": "Exa",
+      "source_url": "https://jobs.ashbyhq.com/exa",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "tavily",
+      "company_name": "Tavily",
+      "source_url": "https://jobs.ashbyhq.com/tavily",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "cohere",
+      "company_name": "Cohere",
+      "source_url": "https://jobs.ashbyhq.com/cohere",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "neo4j",
+      "company_name": "Neo4j",
+      "source_url": "https://job-boards.greenhouse.io/neo4j",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "fal",
+      "company_name": "fal",
+      "source_url": "https://jobs.ashbyhq.com/fal-ai",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "baseten",
+      "company_name": "Baseten",
+      "source_url": "https://jobs.ashbyhq.com/baseten",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "sofi",
+      "company_name": "SoFi",
+      "source_url": "https://job-boards.greenhouse.io/sofi",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "runpod",
+      "company_name": "Runpod",
+      "source_url": "https://jobs.ashbyhq.com/runpod",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "lambda",
+      "company_name": "Lambda",
+      "source_url": "https://jobs.ashbyhq.com/lambda",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "crusoe",
+      "company_name": "Crusoe",
+      "source_url": "https://jobs.ashbyhq.com/crusoe",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "adyen",
+      "company_name": "Adyen",
+      "source_url": "https://job-boards.greenhouse.io/adyen",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "fluidstack",
+      "company_name": "Fluidstack",
+      "source_url": "https://jobs.ashbyhq.com/fluidstack",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "forter",
+      "company_name": "Forter",
+      "source_url": "https://job-boards.greenhouse.io/forter",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "tensorwave",
+      "company_name": "TensorWave",
+      "source_url": "https://jobs.ashbyhq.com/tensorwave",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "riskified",
+      "company_name": "Riskified",
+      "source_url": "https://job-boards.greenhouse.io/riskified",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "cerebras",
+      "company_name": "Cerebras",
+      "source_url": "https://jobs.ashbyhq.com/cerebras",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "etched",
+      "company_name": "Etched",
+      "source_url": "https://jobs.ashbyhq.com/etched",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "mercury",
+      "company_name": "Mercury",
+      "source_url": "https://job-boards.greenhouse.io/mercury",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "d-matrix",
+      "company_name": "d-Matrix",
+      "source_url": "https://jobs.ashbyhq.com/d-matrix",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "betterment",
+      "company_name": "Betterment",
+      "source_url": "https://job-boards.greenhouse.io/betterment",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "miro",
+      "company_name": "Miro",
+      "source_url": "https://jobs.ashbyhq.com/miro",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "gamma",
+      "company_name": "Gamma",
+      "source_url": "https://jobs.ashbyhq.com/gamma",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "public",
+      "company_name": "Public",
+      "source_url": "https://job-boards.greenhouse.io/public",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "fireblocks",
+      "company_name": "Fireblocks",
+      "source_url": "https://job-boards.greenhouse.io/fireblocks",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "synthesia",
+      "company_name": "Synthesia",
+      "source_url": "https://jobs.ashbyhq.com/synthesia",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "runway",
+      "company_name": "Runway",
+      "source_url": "https://jobs.ashbyhq.com/runway",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "pika",
+      "company_name": "Pika",
+      "source_url": "https://jobs.ashbyhq.com/pika",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "luma-ai",
+      "company_name": "Luma AI",
+      "source_url": "https://jobs.ashbyhq.com/lumaai",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "krea",
+      "company_name": "Krea",
+      "source_url": "https://jobs.ashbyhq.com/krea",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "midjourney",
+      "company_name": "Midjourney",
+      "source_url": "https://jobs.ashbyhq.com/midjourney",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "ideogram",
+      "company_name": "Ideogram",
+      "source_url": "https://jobs.ashbyhq.com/ideogram",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "suno",
+      "company_name": "Suno",
+      "source_url": "https://jobs.ashbyhq.com/suno",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "roblox",
+      "company_name": "Roblox",
+      "source_url": "https://job-boards.greenhouse.io/roblox",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "bungie",
+      "company_name": "Bungie",
+      "source_url": "https://job-boards.greenhouse.io/bungie",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "riot-games",
+      "company_name": "Riot Games",
+      "source_url": "https://job-boards.greenhouse.io/riotgames",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "2k",
+      "company_name": "2K",
+      "source_url": "https://job-boards.greenhouse.io/2k",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "opusclip",
+      "company_name": "OpusClip",
+      "source_url": "https://jobs.ashbyhq.com/opusclip",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "scopely",
+      "company_name": "Scopely",
+      "source_url": "https://job-boards.greenhouse.io/scopely",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "twitch",
+      "company_name": "Twitch",
+      "source_url": "https://job-boards.greenhouse.io/twitch",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "wistia",
+      "company_name": "Wistia",
+      "source_url": "https://jobs.ashbyhq.com/wistia",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "pinterest",
+      "company_name": "Pinterest",
+      "source_url": "https://job-boards.greenhouse.io/pinterest",
+      "directory_status": "supported"
+    },
+    {
+      "company_key": "greenhouse-figma",
+      "company_name": "Figma",
+      "source_url": "https://job-boards.greenhouse.io/figma",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-vercel",
+      "company_name": "Vercel",
+      "source_url": "https://job-boards.greenhouse.io/vercel",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-webflow",
+      "company_name": "Webflow",
+      "source_url": "https://job-boards.greenhouse.io/webflow",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-asana",
+      "company_name": "Asana",
+      "source_url": "https://job-boards.greenhouse.io/asana",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-duolingo",
+      "company_name": "Duolingo",
+      "source_url": "https://job-boards.greenhouse.io/duolingo",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-anthropic",
+      "company_name": "Anthropic",
+      "source_url": "https://job-boards.greenhouse.io/anthropic",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-scaleai",
+      "company_name": "Scaleai",
+      "source_url": "https://job-boards.greenhouse.io/scaleai",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-datadog",
+      "company_name": "Datadog",
+      "source_url": "https://job-boards.greenhouse.io/datadog",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-elastic",
+      "company_name": "Elastic",
+      "source_url": "https://job-boards.greenhouse.io/elastic",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-instacart",
+      "company_name": "Instacart",
+      "source_url": "https://job-boards.greenhouse.io/instacart",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-robinhood",
+      "company_name": "Robinhood",
+      "source_url": "https://job-boards.greenhouse.io/robinhood",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-affirm",
+      "company_name": "Affirm",
+      "source_url": "https://job-boards.greenhouse.io/affirm",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-brex",
+      "company_name": "Brex",
+      "source_url": "https://job-boards.greenhouse.io/brex",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-reddit",
+      "company_name": "Reddit",
+      "source_url": "https://job-boards.greenhouse.io/reddit",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-mongodb",
+      "company_name": "Mongodb",
+      "source_url": "https://job-boards.greenhouse.io/mongodb",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-gusto",
+      "company_name": "Gusto",
+      "source_url": "https://job-boards.greenhouse.io/gusto",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-carta",
+      "company_name": "Carta",
+      "source_url": "https://job-boards.greenhouse.io/carta",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "greenhouse-checkr",
+      "company_name": "Checkr",
+      "source_url": "https://job-boards.greenhouse.io/checkr",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-palantir",
+      "company_name": "Palantir",
+      "source_url": "https://jobs.lever.co/palantir",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-spotify",
+      "company_name": "Spotify",
+      "source_url": "https://jobs.lever.co/spotify",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-sysdig",
+      "company_name": "Sysdig",
+      "source_url": "https://jobs.lever.co/sysdig",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-brightedge",
+      "company_name": "Brightedge",
+      "source_url": "https://jobs.lever.co/brightedge",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-brilliant",
+      "company_name": "Brilliant",
+      "source_url": "https://jobs.lever.co/brilliant",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-360learning",
+      "company_name": "360learning",
+      "source_url": "https://jobs.lever.co/360learning",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-parallelwireless",
+      "company_name": "Parallelwireless",
+      "source_url": "https://jobs.lever.co/parallelwireless",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-lever",
+      "company_name": "Lever",
+      "source_url": "https://jobs.lever.co/lever",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-paralleldomain",
+      "company_name": "Paralleldomain",
+      "source_url": "https://jobs.lever.co/paralleldomain",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-kepler",
+      "company_name": "Kepler",
+      "source_url": "https://jobs.lever.co/kepler",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-scanifly",
+      "company_name": "Scanifly",
+      "source_url": "https://jobs.lever.co/scanifly",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-lyrahealth",
+      "company_name": "Lyrahealth",
+      "source_url": "https://jobs.lever.co/lyrahealth",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-ekimetrics",
+      "company_name": "Ekimetrics",
+      "source_url": "https://jobs.lever.co/ekimetrics",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "lever-lwolf",
+      "company_name": "Lwolf",
+      "source_url": "https://jobs.lever.co/lwolf",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "ashby-supabase",
+      "company_name": "Supabase",
+      "source_url": "https://jobs.ashbyhq.com/supabase",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "ashby-linear",
+      "company_name": "Linear",
+      "source_url": "https://jobs.ashbyhq.com/linear",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "ashby-notion",
+      "company_name": "Notion",
+      "source_url": "https://jobs.ashbyhq.com/notion",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "ashby-perplexity",
+      "company_name": "Perplexity",
+      "source_url": "https://jobs.ashbyhq.com/perplexity",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "ashby-cursor",
+      "company_name": "Cursor",
+      "source_url": "https://jobs.ashbyhq.com/cursor",
+      "directory_status": "unverified"
+    },
+    {
+      "company_key": "ashby-ashby",
+      "company_name": "Ashby",
+      "source_url": "https://jobs.ashbyhq.com/ashby",
+      "directory_status": "unverified"
+    }
+  ],
+  "targets": [
+    {
+      "company_key": "accenture",
+      "company_name": "Accenture",
+      "provider": "workday",
+      "account_key": "accenture:AccentureCareers",
+      "board_url": "https://accenture.wd103.myworkdayjobs.com/AccentureCareers",
+      "verification_status": "needs_review",
+      "enabled": false,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "adobe",
+      "company_name": "Adobe",
+      "provider": "workday",
+      "account_key": "adobe:external_experienced",
+      "board_url": "https://adobe.wd5.myworkdayjobs.com/external_experienced",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "able",
+      "company_name": "Able",
+      "provider": "greenhouse",
+      "account_key": "able",
+      "board_url": "https://job-boards.greenhouse.io/able",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "affinidi",
+      "company_name": "Affinidi",
+      "provider": "greenhouse",
+      "account_key": "affinidi",
+      "board_url": "https://job-boards.greenhouse.io/affinidi",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "airbnb",
+      "company_name": "Airbnb",
+      "provider": "greenhouse",
+      "account_key": "airbnb",
+      "board_url": "https://job-boards.greenhouse.io/airbnb",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "airbus",
+      "company_name": "Airbus",
+      "provider": "workday",
+      "account_key": "ag:Airbus",
+      "board_url": "https://ag.wd3.myworkdayjobs.com/Airbus",
+      "verification_status": "needs_review",
+      "enabled": false,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "alphonso",
+      "company_name": "Alphonso",
+      "provider": "ashby",
+      "account_key": "lgads",
+      "board_url": "https://jobs.ashbyhq.com/lgads",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "amadeus-labs",
+      "company_name": "Amadeus labs",
+      "provider": "workday",
+      "account_key": "amadeus:jobs",
+      "board_url": "https://amadeus.wd502.myworkdayjobs.com/jobs",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "analog-devices",
+      "company_name": "Analog Devices",
+      "provider": "workday",
+      "account_key": "analogdevices:External",
+      "board_url": "https://analogdevices.wd1.myworkdayjobs.com/External",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "apna",
+      "company_name": "Apna",
+      "provider": "workable",
+      "account_key": "apna",
+      "board_url": "https://apply.workable.com/apna/",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "appen",
+      "company_name": "Appen",
+      "provider": "lever",
+      "account_key": "appen",
+      "board_url": "https://jobs.lever.co/appen",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "applied-materials",
+      "company_name": "Applied Materials",
+      "provider": "workday",
+      "account_key": "amat:External",
+      "board_url": "https://amat.wd1.myworkdayjobs.com/External",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "aqr",
+      "company_name": "AQR",
+      "provider": "greenhouse",
+      "account_key": "aqr",
+      "board_url": "https://job-boards.greenhouse.io/aqr",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "arcesium",
+      "company_name": "Arcesium",
+      "provider": "greenhouse",
+      "account_key": "arcesiumllc",
+      "board_url": "https://job-boards.greenhouse.io/arcesiumllc",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "asml",
+      "company_name": "ASML",
+      "provider": "workday",
+      "account_key": "asml:ASMLEXT1",
+      "board_url": "https://asml.wd3.myworkdayjobs.com/ASMLEXT1",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "athena-health",
+      "company_name": "Athena Health",
+      "provider": "workday",
+      "account_key": "athenahealth:External",
+      "board_url": "https://athenahealth.wd1.myworkdayjobs.com/External",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "atlan",
+      "company_name": "Atlan",
+      "provider": "ashby",
+      "account_key": "atlan",
+      "board_url": "https://jobs.ashbyhq.com/atlan",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "bazaarvoice",
+      "company_name": "Bazaarvoice",
+      "provider": "lever",
+      "account_key": "bazaarvoice",
+      "board_url": "https://jobs.lever.co/bazaarvoice",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "better",
+      "company_name": "Better",
+      "provider": "ashby",
+      "account_key": "better-mortgage",
+      "board_url": "https://jobs.ashbyhq.com/better-mortgage",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "blackrock",
+      "company_name": "Blackrock",
+      "provider": "workday",
+      "account_key": "blackrock:BlackRock_Professional",
+      "board_url": "https://blackrock.wd1.myworkdayjobs.com/BlackRock_Professional",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "blackberry",
+      "company_name": "BlackBerry",
+      "provider": "workday",
+      "account_key": "bb:BlackBerry",
+      "board_url": "https://bb.wd3.myworkdayjobs.com/BlackBerry/jobs",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "blueorigin",
+      "company_name": "blueorigin",
+      "provider": "workday",
+      "account_key": "blueorigin:BlueOrigin",
+      "board_url": "https://blueorigin.wd5.myworkdayjobs.com/BlueOrigin",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "bmc-software",
+      "company_name": "BMC software",
+      "provider": "workday",
+      "account_key": "bmc:BMC",
+      "board_url": "https://bmc.wd1.myworkdayjobs.com/BMC",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "boeing",
+      "company_name": "Boeing",
+      "provider": "workday",
+      "account_key": "boeing:EXTERNAL_CAREERS",
+      "board_url": "https://boeing.wd1.myworkdayjobs.com/EXTERNAL_CAREERS",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "browser-stack",
+      "company_name": "Browser stack",
+      "provider": "workday",
+      "account_key": "browserstack:External",
+      "board_url": "https://browserstack.wd3.myworkdayjobs.com/External",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "broadcom",
+      "company_name": "Broadcom",
+      "provider": "workday",
+      "account_key": "broadcom:External_Career",
+      "board_url": "https://broadcom.wd1.myworkdayjobs.com/External_Career",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "cadence",
+      "company_name": "Cadence",
+      "provider": "workday",
+      "account_key": "cadence:External_Careers",
+      "board_url": "https://cadence.wd1.myworkdayjobs.com/External_Careers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "capital-one",
+      "company_name": "Capital One",
+      "provider": "workday",
+      "account_key": "capitalone:Capital_One",
+      "board_url": "https://capitalone.wd12.myworkdayjobs.com/Capital_One",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "careem",
+      "company_name": "Careem",
+      "provider": "greenhouse",
+      "account_key": "careem",
+      "board_url": "https://job-boards.greenhouse.io/careem",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "celigo",
+      "company_name": "Celigo",
+      "provider": "greenhouse",
+      "account_key": "celigo",
+      "board_url": "https://job-boards.greenhouse.io/celigo",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "citi-bank",
+      "company_name": "Citi Bank",
+      "provider": "workday",
+      "account_key": "citi:2",
+      "board_url": "https://citi.wd5.myworkdayjobs.com/2",
+      "verification_status": "needs_review",
+      "enabled": false,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "cloudera",
+      "company_name": "Cloudera",
+      "provider": "workday",
+      "account_key": "cloudera:External_Career",
+      "board_url": "https://cloudera.wd5.myworkdayjobs.com/External_Career",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "cloudflare",
+      "company_name": "cloudflare",
+      "provider": "greenhouse",
+      "account_key": "cloudflare",
+      "board_url": "https://job-boards.greenhouse.io/cloudflare",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "coinbase",
+      "company_name": "CoinBase",
+      "provider": "greenhouse",
+      "account_key": "coinbase",
+      "board_url": "https://job-boards.greenhouse.io/coinbase",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "contra",
+      "company_name": "Contra",
+      "provider": "ashby",
+      "account_key": "contra",
+      "board_url": "https://jobs.ashbyhq.com/contra",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "coupang",
+      "company_name": "Coupang",
+      "provider": "greenhouse",
+      "account_key": "coupang",
+      "board_url": "https://job-boards.greenhouse.io/coupang",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "crowdstrike",
+      "company_name": "Crowdstrike",
+      "provider": "workday",
+      "account_key": "crowdstrike:crowdstrikecareers",
+      "board_url": "https://crowdstrike.wd5.myworkdayjobs.com/crowdstrikecareers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "dashlane",
+      "company_name": "Dashlane",
+      "provider": "greenhouse",
+      "account_key": "dashlane",
+      "board_url": "https://job-boards.greenhouse.io/dashlane",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "databricks",
+      "company_name": "Databricks",
+      "provider": "greenhouse",
+      "account_key": "databricks",
+      "board_url": "https://job-boards.greenhouse.io/databricks",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "dbs",
+      "company_name": "DBS",
+      "provider": "workday",
+      "account_key": "dbs:DBS_Careers",
+      "board_url": "https://dbs.wd3.myworkdayjobs.com/DBS_Careers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "deutsche-bank",
+      "company_name": "Deutsche Bank",
+      "provider": "workday",
+      "account_key": "db:DBWebsite",
+      "board_url": "https://db.wd3.myworkdayjobs.com/DBWebsite",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "dialpad",
+      "company_name": "Dialpad",
+      "provider": "greenhouse",
+      "account_key": "dialpad",
+      "board_url": "https://job-boards.greenhouse.io/dialpad",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "directi",
+      "company_name": "Directi",
+      "provider": "lever",
+      "account_key": "directi",
+      "board_url": "https://jobs.lever.co/directi",
+      "verification_status": "unavailable",
+      "enabled": false,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "digitalocean",
+      "company_name": "digitalocean",
+      "provider": "greenhouse",
+      "account_key": "digitalocean98",
+      "board_url": "https://job-boards.greenhouse.io/digitalocean98",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "discord",
+      "company_name": "Discord",
+      "provider": "greenhouse",
+      "account_key": "discord",
+      "board_url": "https://job-boards.greenhouse.io/discord",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "doximity",
+      "company_name": "doximity",
+      "provider": "greenhouse",
+      "account_key": "doximity",
+      "board_url": "https://job-boards.greenhouse.io/doximity",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "dream11",
+      "company_name": "Dream11",
+      "provider": "lever",
+      "account_key": "dreamsports",
+      "board_url": "https://jobs.lever.co/dreamsports",
+      "verification_status": "unavailable",
+      "enabled": false,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "dropbox",
+      "company_name": "Dropbox",
+      "provider": "greenhouse",
+      "account_key": "dropbox",
+      "board_url": "https://job-boards.greenhouse.io/dropbox",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "druva",
+      "company_name": "Druva",
+      "provider": "greenhouse",
+      "account_key": "druva",
+      "board_url": "https://job-boards.greenhouse.io/druva",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "ebay",
+      "company_name": "eBay",
+      "provider": "workday",
+      "account_key": "ebay:apply",
+      "board_url": "https://ebay.wd5.myworkdayjobs.com/apply",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "epic-games",
+      "company_name": "Epic Games",
+      "provider": "greenhouse",
+      "account_key": "epicgames",
+      "board_url": "https://job-boards.greenhouse.io/epicgames",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "equinix",
+      "company_name": "Equinix",
+      "provider": "workday",
+      "account_key": "equinix:External",
+      "board_url": "https://equinix.wd1.myworkdayjobs.com/External",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "expedia",
+      "company_name": "Expedia",
+      "provider": "workday",
+      "account_key": "expedia:search",
+      "board_url": "https://expedia.wd108.myworkdayjobs.com/search",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "f5",
+      "company_name": "F5",
+      "provider": "workday",
+      "account_key": "ffive:f5jobs",
+      "board_url": "https://ffive.wd5.myworkdayjobs.com/f5jobs",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "factset",
+      "company_name": "factset",
+      "provider": "workday",
+      "account_key": "factset:FactSetCareers",
+      "board_url": "https://factset.wd108.myworkdayjobs.com/FactSetCareers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "fampay",
+      "company_name": "FamPay",
+      "provider": "lever",
+      "account_key": "fampay",
+      "board_url": "https://jobs.lever.co/fampay",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "fidelity-investments",
+      "company_name": "Fidelity investments",
+      "provider": "workday",
+      "account_key": "fmr:FidelityCareers",
+      "board_url": "https://fmr.wd1.myworkdayjobs.com/FidelityCareers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "fiserv",
+      "company_name": "fiserv",
+      "provider": "workday",
+      "account_key": "fiserv:EXT",
+      "board_url": "https://fiserv.wd5.myworkdayjobs.com/EXT",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "flexport",
+      "company_name": "Flexport",
+      "provider": "greenhouse",
+      "account_key": "flexport",
+      "board_url": "https://job-boards.greenhouse.io/flexport",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "fico",
+      "company_name": "Fico",
+      "provider": "workday",
+      "account_key": "fico:External",
+      "board_url": "https://fico.wd1.myworkdayjobs.com/External",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "ge-healthcare",
+      "company_name": "GE Healthcare",
+      "provider": "workday",
+      "account_key": "gehc:GEHC_ExternalSite",
+      "board_url": "https://gehc.wd5.myworkdayjobs.com/GEHC_ExternalSite",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "genpact",
+      "company_name": "Genpact",
+      "provider": "workday",
+      "account_key": "genpact:External_Careers",
+      "board_url": "https://genpact.wd108.myworkdayjobs.com/External_Careers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "gitlab",
+      "company_name": "Gitlab",
+      "provider": "greenhouse",
+      "account_key": "gitlab",
+      "board_url": "https://job-boards.greenhouse.io/gitlab",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "godaddy",
+      "company_name": "GoDaddy",
+      "provider": "greenhouse",
+      "account_key": "godaddy",
+      "board_url": "https://job-boards.greenhouse.io/godaddy",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "go-pro",
+      "company_name": "Go Pro",
+      "provider": "greenhouse",
+      "account_key": "goprojobs",
+      "board_url": "https://job-boards.greenhouse.io/goprojobs",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "grafana",
+      "company_name": "Grafana",
+      "provider": "greenhouse",
+      "account_key": "grafanalabs",
+      "board_url": "https://job-boards.greenhouse.io/grafanalabs",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "groupon",
+      "company_name": "Groupon",
+      "provider": "greenhouse",
+      "account_key": "groupon",
+      "board_url": "https://job-boards.greenhouse.io/groupon",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "hackerrank",
+      "company_name": "HackerRank",
+      "provider": "greenhouse",
+      "account_key": "hackerrank",
+      "board_url": "https://job-boards.greenhouse.io/hackerrank",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "hp",
+      "company_name": "HP",
+      "provider": "workday",
+      "account_key": "hp:ExternalCareerSite",
+      "board_url": "https://hp.wd5.myworkdayjobs.com/ExternalCareerSite",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "huggingface",
+      "company_name": "Hugging Face",
+      "provider": "workable",
+      "account_key": "huggingface",
+      "board_url": "https://apply.workable.com/huggingface",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "ihs-markit",
+      "company_name": "IHS Markit",
+      "provider": "workday",
+      "account_key": "ihsmarkit:Careers",
+      "board_url": "https://ihsmarkit.wd1.myworkdayjobs.com/Careers",
+      "verification_status": "unavailable",
+      "enabled": false,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "inmobi",
+      "company_name": "Inmobi",
+      "provider": "greenhouse",
+      "account_key": "inmobi",
+      "board_url": "https://job-boards.greenhouse.io/inmobi",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "intel",
+      "company_name": "Intel",
+      "provider": "workday",
+      "account_key": "intel:External",
+      "board_url": "https://intel.wd1.myworkdayjobs.com/External",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "jupiter-money",
+      "company_name": "Jupiter money",
+      "provider": "lever",
+      "account_key": "jupiter",
+      "board_url": "https://jobs.lever.co/jupiter",
+      "verification_status": "unavailable",
+      "enabled": false,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "kantar",
+      "company_name": "Kantar",
+      "provider": "workday",
+      "account_key": "kantar:KANTAR",
+      "board_url": "https://kantar.wd3.myworkdayjobs.com/KANTAR",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "kla-tencor",
+      "company_name": "KLA Tencor",
+      "provider": "workday",
+      "account_key": "kla:Search",
+      "board_url": "https://kla.wd1.myworkdayjobs.com/Search",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "logicmonitor",
+      "company_name": "Logicmonitor",
+      "provider": "greenhouse",
+      "account_key": "logicmonitor",
+      "board_url": "https://job-boards.greenhouse.io/logicmonitor",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "mastercard",
+      "company_name": "Mastercard",
+      "provider": "workday",
+      "account_key": "mastercard:CorporateCareers",
+      "board_url": "https://mastercard.wd1.myworkdayjobs.com/CorporateCareers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "meesho",
+      "company_name": "Meesho",
+      "provider": "lever",
+      "account_key": "meesho",
+      "board_url": "https://jobs.lever.co/meesho",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "micron",
+      "company_name": "Micron",
+      "provider": "workday",
+      "account_key": "micron:External",
+      "board_url": "https://micron.wd1.myworkdayjobs.com/External",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "mindtickle",
+      "company_name": "MindTickle",
+      "provider": "lever",
+      "account_key": "mindtickle",
+      "board_url": "https://jobs.lever.co/mindtickle",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "nasdaq",
+      "company_name": "NASDAQ",
+      "provider": "workday",
+      "account_key": "nasdaq:Global_External_Site",
+      "board_url": "https://nasdaq.wd1.myworkdayjobs.com/Global_External_Site",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "ocrolus",
+      "company_name": "Ocrolus",
+      "provider": "greenhouse",
+      "account_key": "ocrolusinc",
+      "board_url": "https://job-boards.greenhouse.io/ocrolusinc",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "observe-ai",
+      "company_name": "Observe.ai",
+      "provider": "greenhouse",
+      "account_key": "observeai",
+      "board_url": "https://job-boards.greenhouse.io/observeai",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "open-ai",
+      "company_name": "Open AI",
+      "provider": "ashby",
+      "account_key": "openai",
+      "board_url": "https://jobs.ashbyhq.com/openai",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "palo-alto-networks",
+      "company_name": "Palo Alto Networks",
+      "provider": "workday",
+      "account_key": "paloaltonetworks:panwexternalcareers",
+      "board_url": "https://paloaltonetworks.wd5.myworkdayjobs.com/panwexternalcareers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "paypal",
+      "company_name": "Paypal",
+      "provider": "workday",
+      "account_key": "paypal:jobs",
+      "board_url": "https://paypal.wd1.myworkdayjobs.com/jobs",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "paytm",
+      "company_name": "Paytm",
+      "provider": "lever",
+      "account_key": "paytm",
+      "board_url": "https://jobs.lever.co/paytm",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "phillips",
+      "company_name": "Phillips",
+      "provider": "workday",
+      "account_key": "philips:jobs-and-careers",
+      "board_url": "https://philips.wd3.myworkdayjobs.com/jobs-and-careers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "protegrity",
+      "company_name": "Protegrity",
+      "provider": "lever",
+      "account_key": "protegrity",
+      "board_url": "https://jobs.lever.co/protegrity",
+      "verification_status": "unavailable",
+      "enabled": false,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "pubmatic",
+      "company_name": "PubMatic",
+      "provider": "greenhouse",
+      "account_key": "pubmatic",
+      "board_url": "https://job-boards.greenhouse.io/pubmatic",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "quantiphi",
+      "company_name": "Quantiphi",
+      "provider": "workday",
+      "account_key": "quantiphi:Careers_at_Quantiphi",
+      "board_url": "https://quantiphi.wd1.myworkdayjobs.com/Careers_at_Quantiphi",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "quora",
+      "company_name": "Quora",
+      "provider": "ashby",
+      "account_key": "quora",
+      "board_url": "https://jobs.ashbyhq.com/quora",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "ramp",
+      "company_name": "Ramp",
+      "provider": "ashby",
+      "account_key": "ramp",
+      "board_url": "https://jobs.ashbyhq.com/ramp",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "razorpay",
+      "company_name": "Razorpay",
+      "provider": "greenhouse",
+      "account_key": "razorpaysoftwareprivatelimited",
+      "board_url": "https://job-boards.greenhouse.io/razorpaysoftwareprivatelimited",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "red-hat",
+      "company_name": "Red hat",
+      "provider": "workday",
+      "account_key": "redhat:jobs",
+      "board_url": "https://redhat.wd5.myworkdayjobs.com/jobs",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "reprise",
+      "company_name": "Reprise",
+      "provider": "ashby",
+      "account_key": "reprise",
+      "board_url": "https://jobs.ashbyhq.com/reprise",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "rockstar-games",
+      "company_name": "Rockstar Games",
+      "provider": "greenhouse",
+      "account_key": "rockstargames",
+      "board_url": "https://job-boards.greenhouse.io/rockstargames",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "rubrik",
+      "company_name": "Rubrik",
+      "provider": "greenhouse",
+      "account_key": "rubrik",
+      "board_url": "https://job-boards.greenhouse.io/rubrik",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "roku",
+      "company_name": "Roku",
+      "provider": "greenhouse",
+      "account_key": "roku",
+      "board_url": "https://job-boards.greenhouse.io/roku",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "sabre-corporation",
+      "company_name": "Sabre corporation",
+      "provider": "workday",
+      "account_key": "sabre:SabreJobs",
+      "board_url": "https://sabre.wd1.myworkdayjobs.com/SabreJobs",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "salesforce",
+      "company_name": "Salesforce",
+      "provider": "workday",
+      "account_key": "salesforce:External_Career_Site",
+      "board_url": "https://salesforce.wd12.myworkdayjobs.com/External_Career_Site",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "samsung",
+      "company_name": "Samsung",
+      "provider": "workday",
+      "account_key": "sec:Samsung_Careers",
+      "board_url": "https://sec.wd3.myworkdayjobs.com/Samsung_Careers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "searchapi",
+      "company_name": "SearchApi",
+      "provider": "ashby",
+      "account_key": "SearchApi",
+      "board_url": "https://jobs.ashbyhq.com/SearchApi",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "shell",
+      "company_name": "Shell",
+      "provider": "workday",
+      "account_key": "shell:ShellCareers",
+      "board_url": "https://shell.wd3.myworkdayjobs.com/ShellCareers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "sigmoid",
+      "company_name": "Sigmoid",
+      "provider": "greenhouse",
+      "account_key": "sigmoid",
+      "board_url": "https://job-boards.greenhouse.io/sigmoid",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "sony",
+      "company_name": "Sony",
+      "provider": "workday",
+      "account_key": "sonyglobal:SonyGlobalCareers",
+      "board_url": "https://sonyglobal.wd1.myworkdayjobs.com/SonyGlobalCareers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "sprinklr",
+      "company_name": "Sprinklr",
+      "provider": "workday",
+      "account_key": "sprinklr:careers",
+      "board_url": "https://sprinklr.wd1.myworkdayjobs.com/careers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "stripe",
+      "company_name": "Stripe",
+      "provider": "greenhouse",
+      "account_key": "stripe",
+      "board_url": "https://job-boards.greenhouse.io/stripe",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "sureify",
+      "company_name": "Sureify",
+      "provider": "greenhouse",
+      "account_key": "sureify",
+      "board_url": "https://job-boards.greenhouse.io/sureify",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "target",
+      "company_name": "Target",
+      "provider": "workday",
+      "account_key": "target:targetcareers",
+      "board_url": "https://target.wd5.myworkdayjobs.com/targetcareers",
+      "verification_status": "needs_review",
+      "enabled": false,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "thoughtspot",
+      "company_name": "ThoughtSpot",
+      "provider": "workday",
+      "account_key": "thoughtspot:careers",
+      "board_url": "https://thoughtspot.wd5.myworkdayjobs.com/careers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "thoughtworks",
+      "company_name": "ThoughtWorks",
+      "provider": "greenhouse",
+      "account_key": "thoughtworks",
+      "board_url": "https://job-boards.greenhouse.io/thoughtworks",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "turvo",
+      "company_name": "Turvo",
+      "provider": "lever",
+      "account_key": "turvo",
+      "board_url": "https://jobs.lever.co/turvo",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "unisys",
+      "company_name": "Unisys",
+      "provider": "workday",
+      "account_key": "unisys:External",
+      "board_url": "https://unisys.wd5.myworkdayjobs.com/External",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "upstox",
+      "company_name": "Upstox",
+      "provider": "lever",
+      "account_key": "upstox",
+      "board_url": "https://jobs.lever.co/upstox",
+      "verification_status": "unavailable",
+      "enabled": false,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "upwork",
+      "company_name": "Upwork",
+      "provider": "greenhouse",
+      "account_key": "upwork",
+      "board_url": "https://job-boards.greenhouse.io/upwork",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "wells-fargo",
+      "company_name": "Wells Fargo",
+      "provider": "workday",
+      "account_key": "wf:WellsFargoJobs",
+      "board_url": "https://wf.wd1.myworkdayjobs.com/WellsFargoJobs",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "worldquant",
+      "company_name": "worldQuant",
+      "provider": "greenhouse",
+      "account_key": "worldquant",
+      "board_url": "https://job-boards.greenhouse.io/worldquant",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "yahoo",
+      "company_name": "Yahoo",
+      "provider": "workday",
+      "account_key": "ouryahoo:careers",
+      "board_url": "https://ouryahoo.wd5.myworkdayjobs.com/careers",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "yugabyte",
+      "company_name": "yugabyte",
+      "provider": "greenhouse",
+      "account_key": "yugabyte",
+      "board_url": "https://job-boards.greenhouse.io/yugabyte",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "zeta",
+      "company_name": "Zeta",
+      "provider": "lever",
+      "account_key": "zeta",
+      "board_url": "https://jobs.lever.co/zeta",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "modal",
+      "company_name": "Modal",
+      "provider": "ashby",
+      "account_key": "modal",
+      "board_url": "https://jobs.ashbyhq.com/modal",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "cognition",
+      "company_name": "Cognition",
+      "provider": "ashby",
+      "account_key": "cognition",
+      "board_url": "https://jobs.ashbyhq.com/cognition",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "elevenlabs",
+      "company_name": "ElevenLabs",
+      "provider": "ashby",
+      "account_key": "elevenlabs",
+      "board_url": "https://jobs.ashbyhq.com/elevenlabs",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "deepgram",
+      "company_name": "Deepgram",
+      "provider": "ashby",
+      "account_key": "deepgram",
+      "board_url": "https://jobs.ashbyhq.com/deepgram",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "cockroach-labs",
+      "company_name": "Cockroach Labs",
+      "provider": "greenhouse",
+      "account_key": "cockroachlabs",
+      "board_url": "https://job-boards.greenhouse.io/cockroachlabs",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "replit",
+      "company_name": "Replit",
+      "provider": "ashby",
+      "account_key": "replit",
+      "board_url": "https://jobs.ashbyhq.com/replit",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "n8n",
+      "company_name": "n8n",
+      "provider": "ashby",
+      "account_key": "n8n",
+      "board_url": "https://jobs.ashbyhq.com/n8n",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "vanta",
+      "company_name": "Vanta",
+      "provider": "ashby",
+      "account_key": "vanta",
+      "board_url": "https://jobs.ashbyhq.com/vanta",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "planetscale",
+      "company_name": "PlanetScale",
+      "provider": "greenhouse",
+      "account_key": "planetscale",
+      "board_url": "https://job-boards.greenhouse.io/planetscale",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "airtable",
+      "company_name": "Airtable",
+      "provider": "greenhouse",
+      "account_key": "airtable",
+      "board_url": "https://job-boards.greenhouse.io/airtable",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "oyster",
+      "company_name": "Oyster",
+      "provider": "ashby",
+      "account_key": "oyster",
+      "board_url": "https://jobs.ashbyhq.com/oyster",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "lovable",
+      "company_name": "Lovable",
+      "provider": "ashby",
+      "account_key": "lovable",
+      "board_url": "https://jobs.ashbyhq.com/lovable",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "mixpanel",
+      "company_name": "Mixpanel",
+      "provider": "greenhouse",
+      "account_key": "mixpanel",
+      "board_url": "https://job-boards.greenhouse.io/mixpanel",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "launchdarkly",
+      "company_name": "LaunchDarkly",
+      "provider": "greenhouse",
+      "account_key": "launchdarkly",
+      "board_url": "https://job-boards.greenhouse.io/launchdarkly",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "pagerduty",
+      "company_name": "PagerDuty",
+      "provider": "greenhouse",
+      "account_key": "pagerduty",
+      "board_url": "https://job-boards.greenhouse.io/pagerduty",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "airbyte",
+      "company_name": "Airbyte",
+      "provider": "ashby",
+      "account_key": "airbyte",
+      "board_url": "https://jobs.ashbyhq.com/airbyte",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "hightouch",
+      "company_name": "Hightouch",
+      "provider": "ashby",
+      "account_key": "hightouch",
+      "board_url": "https://jobs.ashbyhq.com/hightouch",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "samsara",
+      "company_name": "Samsara",
+      "provider": "greenhouse",
+      "account_key": "samsara",
+      "board_url": "https://job-boards.greenhouse.io/samsara",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "temporal",
+      "company_name": "Temporal",
+      "provider": "ashby",
+      "account_key": "temporal",
+      "board_url": "https://jobs.ashbyhq.com/temporal",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "squarespace",
+      "company_name": "Squarespace",
+      "provider": "greenhouse",
+      "account_key": "squarespace",
+      "board_url": "https://job-boards.greenhouse.io/squarespace",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "sentry",
+      "company_name": "Sentry",
+      "provider": "ashby",
+      "account_key": "sentry",
+      "board_url": "https://jobs.ashbyhq.com/sentry",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "okta",
+      "company_name": "Okta",
+      "provider": "greenhouse",
+      "account_key": "okta",
+      "board_url": "https://job-boards.greenhouse.io/okta",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "clickhouse",
+      "company_name": "ClickHouse",
+      "provider": "ashby",
+      "account_key": "clickhouse",
+      "board_url": "https://jobs.ashbyhq.com/clickhouse",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "pinecone",
+      "company_name": "Pinecone",
+      "provider": "ashby",
+      "account_key": "pinecone",
+      "board_url": "https://jobs.ashbyhq.com/pinecone",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "weaviate",
+      "company_name": "Weaviate",
+      "provider": "ashby",
+      "account_key": "weaviate",
+      "board_url": "https://jobs.ashbyhq.com/weaviate",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "braze",
+      "company_name": "Braze",
+      "provider": "greenhouse",
+      "account_key": "braze",
+      "board_url": "https://job-boards.greenhouse.io/braze",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "klaviyo",
+      "company_name": "Klaviyo",
+      "provider": "greenhouse",
+      "account_key": "klaviyo",
+      "board_url": "https://job-boards.greenhouse.io/klaviyo",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "lancedb",
+      "company_name": "LanceDB",
+      "provider": "ashby",
+      "account_key": "lancedb",
+      "board_url": "https://jobs.ashbyhq.com/lancedb",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "motherduck",
+      "company_name": "MotherDuck",
+      "provider": "ashby",
+      "account_key": "motherduck",
+      "board_url": "https://jobs.ashbyhq.com/motherduck",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "neon",
+      "company_name": "Neon",
+      "provider": "ashby",
+      "account_key": "neon",
+      "board_url": "https://jobs.ashbyhq.com/neon",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "toast",
+      "company_name": "Toast",
+      "provider": "greenhouse",
+      "account_key": "toast",
+      "board_url": "https://job-boards.greenhouse.io/toast",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "convex",
+      "company_name": "Convex",
+      "provider": "ashby",
+      "account_key": "convex-dev",
+      "board_url": "https://jobs.ashbyhq.com/convex-dev",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "salesloft",
+      "company_name": "Salesloft",
+      "provider": "greenhouse",
+      "account_key": "salesloft",
+      "board_url": "https://job-boards.greenhouse.io/salesloft",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "inngest",
+      "company_name": "Inngest",
+      "provider": "ashby",
+      "account_key": "inngest",
+      "board_url": "https://jobs.ashbyhq.com/inngest",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "greenhouse",
+      "company_name": "Greenhouse",
+      "provider": "greenhouse",
+      "account_key": "greenhouse",
+      "board_url": "https://job-boards.greenhouse.io/greenhouse",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "lattice",
+      "company_name": "Lattice",
+      "provider": "greenhouse",
+      "account_key": "lattice",
+      "board_url": "https://job-boards.greenhouse.io/lattice",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "resend",
+      "company_name": "Resend",
+      "provider": "ashby",
+      "account_key": "resend",
+      "board_url": "https://jobs.ashbyhq.com/resend",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "culture-amp",
+      "company_name": "Culture Amp",
+      "provider": "greenhouse",
+      "account_key": "cultureamp",
+      "board_url": "https://job-boards.greenhouse.io/cultureamp",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "knock",
+      "company_name": "Knock",
+      "provider": "ashby",
+      "account_key": "knock",
+      "board_url": "https://jobs.ashbyhq.com/knock",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "clerk",
+      "company_name": "Clerk",
+      "provider": "ashby",
+      "account_key": "clerk",
+      "board_url": "https://jobs.ashbyhq.com/clerk",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "workos",
+      "company_name": "WorkOS",
+      "provider": "ashby",
+      "account_key": "workos",
+      "board_url": "https://jobs.ashbyhq.com/workos",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "workato",
+      "company_name": "Workato",
+      "provider": "greenhouse",
+      "account_key": "workato",
+      "board_url": "https://job-boards.greenhouse.io/workato",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "starburst",
+      "company_name": "Starburst",
+      "provider": "greenhouse",
+      "account_key": "starburst",
+      "board_url": "https://job-boards.greenhouse.io/starburst",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "e2b",
+      "company_name": "E2B",
+      "provider": "ashby",
+      "account_key": "e2b",
+      "board_url": "https://jobs.ashbyhq.com/e2b",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "dremio",
+      "company_name": "Dremio",
+      "provider": "greenhouse",
+      "account_key": "dremio",
+      "board_url": "https://job-boards.greenhouse.io/dremio",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "browserbase",
+      "company_name": "Browserbase",
+      "provider": "ashby",
+      "account_key": "browserbase",
+      "board_url": "https://jobs.ashbyhq.com/browserbase",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "firecrawl",
+      "company_name": "Firecrawl",
+      "provider": "ashby",
+      "account_key": "firecrawl",
+      "board_url": "https://jobs.ashbyhq.com/firecrawl",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "exa",
+      "company_name": "Exa",
+      "provider": "ashby",
+      "account_key": "exa",
+      "board_url": "https://jobs.ashbyhq.com/exa",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "tavily",
+      "company_name": "Tavily",
+      "provider": "ashby",
+      "account_key": "tavily",
+      "board_url": "https://jobs.ashbyhq.com/tavily",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "cohere",
+      "company_name": "Cohere",
+      "provider": "ashby",
+      "account_key": "cohere",
+      "board_url": "https://jobs.ashbyhq.com/cohere",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "neo4j",
+      "company_name": "Neo4j",
+      "provider": "greenhouse",
+      "account_key": "neo4j",
+      "board_url": "https://job-boards.greenhouse.io/neo4j",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "fal",
+      "company_name": "fal",
+      "provider": "ashby",
+      "account_key": "fal-ai",
+      "board_url": "https://jobs.ashbyhq.com/fal-ai",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "baseten",
+      "company_name": "Baseten",
+      "provider": "ashby",
+      "account_key": "baseten",
+      "board_url": "https://jobs.ashbyhq.com/baseten",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "sofi",
+      "company_name": "SoFi",
+      "provider": "greenhouse",
+      "account_key": "sofi",
+      "board_url": "https://job-boards.greenhouse.io/sofi",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "runpod",
+      "company_name": "Runpod",
+      "provider": "ashby",
+      "account_key": "runpod",
+      "board_url": "https://jobs.ashbyhq.com/runpod",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "lambda",
+      "company_name": "Lambda",
+      "provider": "ashby",
+      "account_key": "lambda",
+      "board_url": "https://jobs.ashbyhq.com/lambda",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "crusoe",
+      "company_name": "Crusoe",
+      "provider": "ashby",
+      "account_key": "crusoe",
+      "board_url": "https://jobs.ashbyhq.com/crusoe",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "adyen",
+      "company_name": "Adyen",
+      "provider": "greenhouse",
+      "account_key": "adyen",
+      "board_url": "https://job-boards.greenhouse.io/adyen",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "fluidstack",
+      "company_name": "Fluidstack",
+      "provider": "ashby",
+      "account_key": "fluidstack",
+      "board_url": "https://jobs.ashbyhq.com/fluidstack",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "forter",
+      "company_name": "Forter",
+      "provider": "greenhouse",
+      "account_key": "forter",
+      "board_url": "https://job-boards.greenhouse.io/forter",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "tensorwave",
+      "company_name": "TensorWave",
+      "provider": "ashby",
+      "account_key": "tensorwave",
+      "board_url": "https://jobs.ashbyhq.com/tensorwave",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "riskified",
+      "company_name": "Riskified",
+      "provider": "greenhouse",
+      "account_key": "riskified",
+      "board_url": "https://job-boards.greenhouse.io/riskified",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "cerebras",
+      "company_name": "Cerebras",
+      "provider": "ashby",
+      "account_key": "cerebras",
+      "board_url": "https://jobs.ashbyhq.com/cerebras",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "etched",
+      "company_name": "Etched",
+      "provider": "ashby",
+      "account_key": "etched",
+      "board_url": "https://jobs.ashbyhq.com/etched",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "mercury",
+      "company_name": "Mercury",
+      "provider": "greenhouse",
+      "account_key": "mercury",
+      "board_url": "https://job-boards.greenhouse.io/mercury",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "d-matrix",
+      "company_name": "d-Matrix",
+      "provider": "ashby",
+      "account_key": "d-matrix",
+      "board_url": "https://jobs.ashbyhq.com/d-matrix",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "betterment",
+      "company_name": "Betterment",
+      "provider": "greenhouse",
+      "account_key": "betterment",
+      "board_url": "https://job-boards.greenhouse.io/betterment",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "miro",
+      "company_name": "Miro",
+      "provider": "ashby",
+      "account_key": "miro",
+      "board_url": "https://jobs.ashbyhq.com/miro",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "gamma",
+      "company_name": "Gamma",
+      "provider": "ashby",
+      "account_key": "gamma",
+      "board_url": "https://jobs.ashbyhq.com/gamma",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "public",
+      "company_name": "Public",
+      "provider": "greenhouse",
+      "account_key": "public",
+      "board_url": "https://job-boards.greenhouse.io/public",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "fireblocks",
+      "company_name": "Fireblocks",
+      "provider": "greenhouse",
+      "account_key": "fireblocks",
+      "board_url": "https://job-boards.greenhouse.io/fireblocks",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "synthesia",
+      "company_name": "Synthesia",
+      "provider": "ashby",
+      "account_key": "synthesia",
+      "board_url": "https://jobs.ashbyhq.com/synthesia",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "runway",
+      "company_name": "Runway",
+      "provider": "ashby",
+      "account_key": "runway",
+      "board_url": "https://jobs.ashbyhq.com/runway",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "pika",
+      "company_name": "Pika",
+      "provider": "ashby",
+      "account_key": "pika",
+      "board_url": "https://jobs.ashbyhq.com/pika",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "luma-ai",
+      "company_name": "Luma AI",
+      "provider": "ashby",
+      "account_key": "lumaai",
+      "board_url": "https://jobs.ashbyhq.com/lumaai",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "krea",
+      "company_name": "Krea",
+      "provider": "ashby",
+      "account_key": "krea",
+      "board_url": "https://jobs.ashbyhq.com/krea",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "midjourney",
+      "company_name": "Midjourney",
+      "provider": "ashby",
+      "account_key": "midjourney",
+      "board_url": "https://jobs.ashbyhq.com/midjourney",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "ideogram",
+      "company_name": "Ideogram",
+      "provider": "ashby",
+      "account_key": "ideogram",
+      "board_url": "https://jobs.ashbyhq.com/ideogram",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "suno",
+      "company_name": "Suno",
+      "provider": "ashby",
+      "account_key": "suno",
+      "board_url": "https://jobs.ashbyhq.com/suno",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "roblox",
+      "company_name": "Roblox",
+      "provider": "greenhouse",
+      "account_key": "roblox",
+      "board_url": "https://job-boards.greenhouse.io/roblox",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "bungie",
+      "company_name": "Bungie",
+      "provider": "greenhouse",
+      "account_key": "bungie",
+      "board_url": "https://job-boards.greenhouse.io/bungie",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "riot-games",
+      "company_name": "Riot Games",
+      "provider": "greenhouse",
+      "account_key": "riotgames",
+      "board_url": "https://job-boards.greenhouse.io/riotgames",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "2k",
+      "company_name": "2K",
+      "provider": "greenhouse",
+      "account_key": "2k",
+      "board_url": "https://job-boards.greenhouse.io/2k",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "opusclip",
+      "company_name": "OpusClip",
+      "provider": "ashby",
+      "account_key": "opusclip",
+      "board_url": "https://jobs.ashbyhq.com/opusclip",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "scopely",
+      "company_name": "Scopely",
+      "provider": "greenhouse",
+      "account_key": "scopely",
+      "board_url": "https://job-boards.greenhouse.io/scopely",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "twitch",
+      "company_name": "Twitch",
+      "provider": "greenhouse",
+      "account_key": "twitch",
+      "board_url": "https://job-boards.greenhouse.io/twitch",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "wistia",
+      "company_name": "Wistia",
+      "provider": "ashby",
+      "account_key": "wistia",
+      "board_url": "https://jobs.ashbyhq.com/wistia",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "pinterest",
+      "company_name": "Pinterest",
+      "provider": "greenhouse",
+      "account_key": "pinterest",
+      "board_url": "https://job-boards.greenhouse.io/pinterest",
+      "verification_status": "supported",
+      "enabled": true,
+      "provenance": "catalog_seed"
+    },
+    {
+      "company_key": "greenhouse-figma",
+      "company_name": "Figma",
+      "provider": "greenhouse",
+      "account_key": "figma",
+      "board_url": "https://job-boards.greenhouse.io/figma",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-vercel",
+      "company_name": "Vercel",
+      "provider": "greenhouse",
+      "account_key": "vercel",
+      "board_url": "https://job-boards.greenhouse.io/vercel",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-webflow",
+      "company_name": "Webflow",
+      "provider": "greenhouse",
+      "account_key": "webflow",
+      "board_url": "https://job-boards.greenhouse.io/webflow",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-asana",
+      "company_name": "Asana",
+      "provider": "greenhouse",
+      "account_key": "asana",
+      "board_url": "https://job-boards.greenhouse.io/asana",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-duolingo",
+      "company_name": "Duolingo",
+      "provider": "greenhouse",
+      "account_key": "duolingo",
+      "board_url": "https://job-boards.greenhouse.io/duolingo",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-anthropic",
+      "company_name": "Anthropic",
+      "provider": "greenhouse",
+      "account_key": "anthropic",
+      "board_url": "https://job-boards.greenhouse.io/anthropic",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-scaleai",
+      "company_name": "Scaleai",
+      "provider": "greenhouse",
+      "account_key": "scaleai",
+      "board_url": "https://job-boards.greenhouse.io/scaleai",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-datadog",
+      "company_name": "Datadog",
+      "provider": "greenhouse",
+      "account_key": "datadog",
+      "board_url": "https://job-boards.greenhouse.io/datadog",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-elastic",
+      "company_name": "Elastic",
+      "provider": "greenhouse",
+      "account_key": "elastic",
+      "board_url": "https://job-boards.greenhouse.io/elastic",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-instacart",
+      "company_name": "Instacart",
+      "provider": "greenhouse",
+      "account_key": "instacart",
+      "board_url": "https://job-boards.greenhouse.io/instacart",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-robinhood",
+      "company_name": "Robinhood",
+      "provider": "greenhouse",
+      "account_key": "robinhood",
+      "board_url": "https://job-boards.greenhouse.io/robinhood",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-affirm",
+      "company_name": "Affirm",
+      "provider": "greenhouse",
+      "account_key": "affirm",
+      "board_url": "https://job-boards.greenhouse.io/affirm",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-brex",
+      "company_name": "Brex",
+      "provider": "greenhouse",
+      "account_key": "brex",
+      "board_url": "https://job-boards.greenhouse.io/brex",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-reddit",
+      "company_name": "Reddit",
+      "provider": "greenhouse",
+      "account_key": "reddit",
+      "board_url": "https://job-boards.greenhouse.io/reddit",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-mongodb",
+      "company_name": "Mongodb",
+      "provider": "greenhouse",
+      "account_key": "mongodb",
+      "board_url": "https://job-boards.greenhouse.io/mongodb",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-gusto",
+      "company_name": "Gusto",
+      "provider": "greenhouse",
+      "account_key": "gusto",
+      "board_url": "https://job-boards.greenhouse.io/gusto",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-carta",
+      "company_name": "Carta",
+      "provider": "greenhouse",
+      "account_key": "carta",
+      "board_url": "https://job-boards.greenhouse.io/carta",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "greenhouse-checkr",
+      "company_name": "Checkr",
+      "provider": "greenhouse",
+      "account_key": "checkr",
+      "board_url": "https://job-boards.greenhouse.io/checkr",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-palantir",
+      "company_name": "Palantir",
+      "provider": "lever",
+      "account_key": "palantir",
+      "board_url": "https://jobs.lever.co/palantir",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-spotify",
+      "company_name": "Spotify",
+      "provider": "lever",
+      "account_key": "spotify",
+      "board_url": "https://jobs.lever.co/spotify",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-sysdig",
+      "company_name": "Sysdig",
+      "provider": "lever",
+      "account_key": "sysdig",
+      "board_url": "https://jobs.lever.co/sysdig",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-brightedge",
+      "company_name": "Brightedge",
+      "provider": "lever",
+      "account_key": "brightedge",
+      "board_url": "https://jobs.lever.co/brightedge",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-brilliant",
+      "company_name": "Brilliant",
+      "provider": "lever",
+      "account_key": "brilliant",
+      "board_url": "https://jobs.lever.co/brilliant",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-360learning",
+      "company_name": "360learning",
+      "provider": "lever",
+      "account_key": "360learning",
+      "board_url": "https://jobs.lever.co/360learning",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-parallelwireless",
+      "company_name": "Parallelwireless",
+      "provider": "lever",
+      "account_key": "parallelwireless",
+      "board_url": "https://jobs.lever.co/parallelwireless",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-lever",
+      "company_name": "Lever",
+      "provider": "lever",
+      "account_key": "lever",
+      "board_url": "https://jobs.lever.co/lever",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-paralleldomain",
+      "company_name": "Paralleldomain",
+      "provider": "lever",
+      "account_key": "paralleldomain",
+      "board_url": "https://jobs.lever.co/paralleldomain",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-kepler",
+      "company_name": "Kepler",
+      "provider": "lever",
+      "account_key": "kepler",
+      "board_url": "https://jobs.lever.co/kepler",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-scanifly",
+      "company_name": "Scanifly",
+      "provider": "lever",
+      "account_key": "scanifly",
+      "board_url": "https://jobs.lever.co/scanifly",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-lyrahealth",
+      "company_name": "Lyrahealth",
+      "provider": "lever",
+      "account_key": "lyrahealth",
+      "board_url": "https://jobs.lever.co/lyrahealth",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-ekimetrics",
+      "company_name": "Ekimetrics",
+      "provider": "lever",
+      "account_key": "ekimetrics",
+      "board_url": "https://jobs.lever.co/ekimetrics",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "lever-lwolf",
+      "company_name": "Lwolf",
+      "provider": "lever",
+      "account_key": "lwolf",
+      "board_url": "https://jobs.lever.co/lwolf",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "ashby-supabase",
+      "company_name": "Supabase",
+      "provider": "ashby",
+      "account_key": "supabase",
+      "board_url": "https://jobs.ashbyhq.com/supabase",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "ashby-linear",
+      "company_name": "Linear",
+      "provider": "ashby",
+      "account_key": "linear",
+      "board_url": "https://jobs.ashbyhq.com/linear",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "ashby-notion",
+      "company_name": "Notion",
+      "provider": "ashby",
+      "account_key": "notion",
+      "board_url": "https://jobs.ashbyhq.com/notion",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "ashby-perplexity",
+      "company_name": "Perplexity",
+      "provider": "ashby",
+      "account_key": "perplexity",
+      "board_url": "https://jobs.ashbyhq.com/perplexity",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "ashby-cursor",
+      "company_name": "Cursor",
+      "provider": "ashby",
+      "account_key": "cursor",
+      "board_url": "https://jobs.ashbyhq.com/cursor",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    },
+    {
+      "company_key": "ashby-ashby",
+      "company_name": "Ashby",
+      "provider": "ashby",
+      "account_key": "ashby",
+      "board_url": "https://jobs.ashbyhq.com/ashby",
+      "verification_status": "unverified",
+      "enabled": true,
+      "provenance": "provider_default"
+    }
+  ]
+}

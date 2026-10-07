@@ -2,16 +2,19 @@
 
 import asyncio
 from contextlib import AsyncExitStack, asynccontextmanager
+from functools import partial
 
 from sqlalchemy import text
 
 from job_scrapper.config import get_settings
+from job_scrapper.companies.bootstrap import initialize_company_catalog
 from job_scrapper.execution.contracts import RunCapacity, RunControl
 from job_scrapper.execution.memory import MemoryTaskTransport
 from job_scrapper.execution.service import ExecutionService
 from job_scrapper.execution.worker import WorkerPool
 from job_scrapper.runner import run_scrape
 from job_scrapper.storage.postgres.runs import PostgresRunStore, host_ownership
+from job_scrapper.storage.postgres.companies import PostgresCompanyTargetRepository
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
 from job_scrapper.storage.postgres.sink import PostgresJobSink
 from job_scrapper.utils.http_client import ResilientHttpClient
@@ -25,6 +28,7 @@ async def execution_runtime(manager: DatabaseSessionManager, *, worker_host: boo
     async with AsyncExitStack() as stack:
         if settings.scrape_executor == 'memory' and worker_host:
             raise ValueError('The worker command requires SCRAPE_EXECUTOR=broker.')
+        await initialize_company_catalog(manager)
         embedded = settings.scrape_executor == 'memory'
         ownership = None
         if embedded or worker_host:
@@ -45,7 +49,8 @@ async def execution_runtime(manager: DatabaseSessionManager, *, worker_host: boo
                 await transport.prepare_consumer()
             client = ResilientHttpClient()
             stack.push_async_callback(client.close)
-            worker = WorkerPool(store, transport, run_scrape, PostgresJobSink(manager), client, capacity.active)
+            pipeline = partial(run_scrape, company_repository=PostgresCompanyTargetRepository(manager))
+            worker = WorkerPool(store, transport, pipeline, PostgresJobSink(manager), client, capacity.active)
         service: RunControl = ExecutionService(store, transport, capacity, worker, stop_pending_on_close=embedded)
         service.start()
         stack.push_async_callback(service.aclose)

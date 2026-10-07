@@ -3,29 +3,11 @@
 import asyncio
 from typing import Any
 from job_scrapper.connectors.base import BaseConnector
-from job_scrapper.connectors.company_sources import load_company_sources
+from job_scrapper.companies.contracts import CompanyTarget, validate_targets
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.cleaner import clean_html_to_text
 from job_scrapper.pipeline.date_parser import parse_to_utc
 from job_scrapper.storage.base import JobSink
-
-DEFAULT_LEVER_COMPANIES = [
-    "palantir",
-    "spotify",
-    "sysdig",
-    "brightedge",
-    "brilliant",
-    "360learning",
-    "parallelwireless",
-    "lever",
-    "paralleldomain",
-    "kepler",
-    "scanifly",
-    "lyrahealth",
-    "ekimetrics",
-    "lwolf",
-]
-
 
 class LeverConnector(BaseConnector):
     name: str = "lever"
@@ -33,15 +15,11 @@ class LeverConnector(BaseConnector):
     PAGE_SIZE: int = 100
     MAX_PAGES: int = 500
 
-    def __init__(self, companies: list[str] | None = None, **kwargs: Any) -> None:
+    def __init__(self, targets: tuple[CompanyTarget, ...], **kwargs: Any) -> None:
+        validate_targets(targets, self.name)
         super().__init__(**kwargs)
-        sources = [
-            source for source in load_company_sources(self.name)
-            if source.status == "supported" and source.account_key
-        ]
-        self.company_names = {source.account_key: source.company_name for source in sources}
-        defaults = list(dict.fromkeys([*DEFAULT_LEVER_COMPANIES, *self.company_names]))
-        self.companies = companies if companies is not None else defaults
+        self.company_names = {target.account_key: target.company_name for target in targets}
+        self.companies = list(self.company_names)
 
     async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
         stats = self.new_stats()

@@ -6,10 +6,12 @@ import {
   ChevronRight,
   Building2,
   Loader2,
+  ExternalLink,
 } from "lucide-react";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import { fetchApi } from "../../services/api";
 import { formatDate, formatRelativeTime } from "../../utils/date";
+import { safeSourceUrl } from "../../utils/sourceUrl";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
@@ -322,7 +324,19 @@ export default function JobsExplorer() {
                     >
                       <td className="py-4 px-6">
                         <div className="font-semibold text-text-main group-hover:text-accent transition-colors leading-snug">
-                          {job.title}
+                          {safeSourceUrl(job.source_url) ? (
+                            <a
+                              href={safeSourceUrl(job.source_url)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(event) => event.stopPropagation()}
+                              aria-label={`Open ${job.title} on ${job.source} (new tab)`}
+                              className="inline-flex items-center gap-2 min-h-[44px] text-accent underline underline-offset-4 decoration-accent/40 hover:decoration-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus rounded-sm"
+                            >
+                              {job.title}
+                              <ExternalLink className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                            </a>
+                          ) : job.title}
                         </div>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-text-muted mt-1">
                           <span className="inline-flex items-center gap-1.5">

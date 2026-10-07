@@ -1,31 +1,21 @@
-FROM python:3.13-slim
+FROM python:3.13-slim@sha256:bf44cdfcb76cd3b41e879bc058fc37ec5872002ccfde7fcb765e218cde0cd79c AS base
 WORKDIR /app
-
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    UV_SYSTEM_PYTHON=1
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install uv package manager
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /bin/uv
-
-# Copy project specification and install Python dependencies
-COPY pyproject.toml uv.lock ./
-RUN uv pip install --system -r pyproject.toml --extra web --extra broker
-
-# Copy source code, migrations, and readme
-COPY readme.md alembic.ini ./
+COPY --from=ghcr.io/astral-sh/uv:0.12.22@sha256:f513a91fc62fe7c17567eee97230dd198e43edb8a9fbecca843714a4358fe1bc /uv /bin/uv
+ENV PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 UV_PYTHON_DOWNLOADS=never UV_LINK_MODE=copy PATH="/app/.venv/bin:$PATH"
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 10001 app && useradd --uid 10001 --gid app --create-home app \
+    && mkdir /app/data && chown app:app /app/data
+COPY pyproject.toml uv.lock readme.md LICENSE alembic.ini ./
 COPY migrations ./migrations
 COPY src ./src
-
-# Install package in editable/system mode
-RUN uv pip install --system -e . --no-deps
-
 EXPOSE 8000
+CMD ["job-scrapper", "api", "--host", "0.0.0.0", "--port", "8000"]
 
-CMD ["job-scrapper", "web", "--host", "0.0.0.0", "--port", "8000"]
+FROM base AS development
+RUN uv sync --frozen --extra web --extra broker --extra export
+USER app
+
+FROM base AS production
+RUN uv sync --frozen --no-dev --no-editable --extra web --extra broker --extra export
+USER app

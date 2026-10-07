@@ -4,55 +4,21 @@ import asyncio
 import html
 from typing import Any
 from job_scrapper.connectors.base import BaseConnector
-from job_scrapper.connectors.company_sources import load_company_sources
+from job_scrapper.companies.contracts import CompanyTarget, validate_targets
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.cleaner import clean_html_to_text
 from job_scrapper.pipeline.date_parser import parse_to_utc
 from job_scrapper.storage.base import JobSink
 
-# Curated list of prominent companies using Greenhouse
-DEFAULT_GREENHOUSE_COMPANIES = [
-    "gitlab",
-    "figma",
-    "vercel",
-    "webflow",
-    "cloudflare",
-    "airbnb",
-    "databricks",
-    "asana",
-    "duolingo",
-    "anthropic",
-    "scaleai",
-    "datadog",
-    "elastic",
-    "stripe",
-    "coinbase",
-    "dropbox",
-    "instacart",
-    "robinhood",
-    "affirm",
-    "brex",
-    "reddit",
-    "mongodb",
-    "gusto",
-    "carta",
-    "checkr",
-]
-
-
 class GreenhouseConnector(BaseConnector):
     name: str = "greenhouse"
     BASE_URL: str = "https://boards-api.greenhouse.io/v1/boards"
 
-    def __init__(self, companies: list[str] | None = None, **kwargs: Any) -> None:
+    def __init__(self, targets: tuple[CompanyTarget, ...], **kwargs: Any) -> None:
+        validate_targets(targets, self.name)
         super().__init__(**kwargs)
-        sources = [
-            source for source in load_company_sources(self.name)
-            if source.status == "supported" and source.account_key
-        ]
-        self.company_names = {source.account_key: source.company_name for source in sources}
-        defaults = list(dict.fromkeys([*DEFAULT_GREENHOUSE_COMPANIES, *self.company_names]))
-        self.companies = companies if companies is not None else defaults
+        self.company_names = {target.account_key: target.company_name for target in targets}
+        self.companies = list(self.company_names)
 
     async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
         stats = self.new_stats()

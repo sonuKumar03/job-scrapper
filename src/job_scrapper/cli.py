@@ -3,14 +3,14 @@
 import asyncio
 import signal
 from uuid import UUID
-from collections import Counter
 from importlib.util import find_spec
 from rich.console import Console
 from rich.table import Table
 from sqlalchemy import func, select, text
 import typer
 from job_scrapper.connectors.registry import list_connectors
-from job_scrapper.connectors.company_sources import load_company_sources
+from job_scrapper.companies.contracts import CompanyCatalogUnavailable
+from job_scrapper.storage.postgres.companies import PostgresCompanyTargetRepository
 from job_scrapper.exporters.jsonl import export_jobs_to_jsonl
 from job_scrapper.exporters.parquet import export_jobs_to_parquet
 from job_scrapper.storage.postgres.models import JobModel
@@ -98,14 +98,14 @@ async def _run_scrape(sources: list[str], days: int, include_catalog_status: boo
 
         console.print(table)
         if include_catalog_status:
-            totals = Counter(source.status for source in load_company_sources())
-            console.print("Company catalog: " + ", ".join(
-                f"{status}={totals[status]}" for status in
-                ("supported", "needs_review", "unavailable", "blocked", "unsupported")
-            ))
+            try:
+                totals = await PostgresCompanyTargetRepository(session_manager).status_counts()
+                console.print('Company catalog: ' + ', '.join(f'{key}={value}' for key, value in totals.items()))
+            except CompanyCatalogUnavailable:
+                console.print('[yellow]Company catalog summary unavailable; saved scrape results are unchanged.[/yellow]')
         total_jobs = await PostgresJobSink(session_manager).count()
         console.print(f"\n[bold green]Total jobs stored in database: {total_jobs}[/bold green]")
-    except (RunConflict, ValueError) as error:
+    except (RunConflict, ValueError, CompanyCatalogUnavailable) as error:
         console.print(f"[red]{error}[/red]")
         return True
     finally:
@@ -250,10 +250,11 @@ def serve_api(
         raise typer.BadParameter("API server requires: uv run --extra web job-scrapper api")
     import uvicorn
     if reload:
-        uvicorn.run("job_scrapper.web:create_app", factory=True, host=host, port=port, reload=True)
+        uvicorn.run("job_scrapper.web:create_app", factory=True, host=host, port=port, reload=True,
+                    timeout_graceful_shutdown=5)
     else:
         from job_scrapper.web import create_app
-        uvicorn.run(create_app(), host=host, port=port, workers=1)
+        uvicorn.run(create_app(), host=host, port=port, workers=1, timeout_graceful_shutdown=5)
 
 
 @app.command()

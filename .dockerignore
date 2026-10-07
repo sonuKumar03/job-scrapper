@@ -17,3 +17,10 @@ data/
 .pytest_cache
 .coverage
 htmlcov
+.env*
+!.env.example
+.superpowers
+.impeccable
+.ruff_cache
+frontend/dist
+dist

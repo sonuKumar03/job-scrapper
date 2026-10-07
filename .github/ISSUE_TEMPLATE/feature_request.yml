@@ -1,0 +1,14 @@
+name: Feature request
+description: Propose an improvement to the scraping workflow
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and desired outcome
+      description: Who needs this, and what would become easier or more reliable?
+    validations:
+      required: true
+  - type: textarea
+    id: approach
+    attributes:
+      label: Suggested approach and alternatives

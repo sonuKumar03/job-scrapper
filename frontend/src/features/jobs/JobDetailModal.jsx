@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from "react";
+import { ExternalLink } from "lucide-react";
 import { formatDate } from "../../utils/date";
+import { safeSourceUrl } from "../../utils/sourceUrl";
 import Button from "../../components/ui/Button";
 import Badge from "../../components/ui/Badge";
 
@@ -16,11 +18,7 @@ export default function JobDetailModal({ job, onClose }) {
       if (previousFocus?.isConnected) previousFocus.focus();
     };
   }, []);
-  let safeUrl = null;
-  try {
-    const url = new URL(job.source_url);
-    if (["http:", "https:"].includes(url.protocol)) safeUrl = url.href;
-  } catch { /* Missing or invalid source URLs are shown as unavailable. */ }
+  const safeUrl = safeSourceUrl(job.source_url);
   const metadata = Object.entries(job).filter(([key]) => !["title", "company_name", "description_text", "attributes", "sightings"].includes(key));
   const display = (value) => value == null ? "Not stored" : typeof value === "object" ? JSON.stringify(value) : String(value);
   return (
@@ -35,7 +33,17 @@ export default function JobDetailModal({ job, onClose }) {
             <p className="text-text-muted mt-1">{job.company_name}</p>
             <p className="text-sm text-text-muted mt-2">Posted {formatDate(job.posted_at)} · Collected {formatDate(job.scraped_at)}</p>
           </div>
-          <Button onClick={onClose}>Back to postings</Button>
+          <div className="flex flex-wrap items-center gap-3">
+            {safeUrl ? (
+              <a href={safeUrl} target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 min-h-[44px] px-4 py-2 rounded-md bg-accent text-accent-foreground font-semibold text-xs hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus focus-visible:ring-offset-2 focus-visible:ring-offset-bg-surface">
+                Open source listing
+                <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                <span className="sr-only"> (new tab)</span>
+              </a>
+            ) : <p className="text-sm text-text-muted">Source link unavailable</p>}
+            <Button onClick={onClose}>Back to postings</Button>
+          </div>
         </header>
         <section className="space-y-2">
           <h3 className="font-semibold">Dataset record</h3>
@@ -46,7 +54,6 @@ export default function JobDetailModal({ job, onClose }) {
               <dd className="font-mono break-all py-2 border-t border-border-subtle">{display(value)}</dd>
             </React.Fragment>)}
           </dl>
-          {safeUrl ? <a href={safeUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center min-h-[44px] text-accent underline">Open source listing ↗</a> : <p className="text-sm text-text-muted">Source link unavailable</p>}
         </section>
         <section className="space-y-2">
           <h3 className="font-semibold">Full description</h3>

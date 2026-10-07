@@ -5,7 +5,7 @@ from typing import Any
 from urllib.parse import urlsplit
 
 from job_scrapper.connectors.base import BaseConnector
-from job_scrapper.connectors.company_sources import load_company_sources
+from job_scrapper.companies.contracts import CompanyTarget, validate_targets
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.cleaner import clean_html_to_text
 from job_scrapper.pipeline.date_parser import parse_to_utc
@@ -17,14 +17,11 @@ class WorkdayConnector(BaseConnector):
     PAGE_SIZE = 20
     MAX_PAGES = 500
 
-    def __init__(self, companies: dict[str, str] | None = None, **kwargs: Any) -> None:
+    def __init__(self, targets: tuple[CompanyTarget, ...], **kwargs: Any) -> None:
+        validate_targets(targets, self.name)
         super().__init__(**kwargs)
-        sources = [source for source in load_company_sources(self.name)
-                   if source.status == "supported" and source.account_key]
-        self.companies = companies if companies is not None else {
-            source.account_key: source.company_name for source in sources
-        }
-        self.source_urls = {source.account_key: source.board_url or source.source_url for source in sources}
+        self.companies = {target.account_key: target.company_name for target in targets}
+        self.source_urls = {target.account_key: target.board_url for target in targets}
 
     async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
         stats = self.new_stats()

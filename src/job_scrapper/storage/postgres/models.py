@@ -3,13 +3,45 @@
 from datetime import datetime, timezone
 from typing import Any
 import uuid
-from sqlalchemy import BigInteger, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
     pass
+
+
+class CompanyModel(Base):
+    __tablename__ = 'companies'
+
+    company_key: Mapped[str] = mapped_column(String(256), primary_key=True)
+    company_name: Mapped[str] = mapped_column(Text, nullable=False)
+    source_url: Mapped[str] = mapped_column(Text, nullable=False)
+    directory_status: Mapped[str] = mapped_column(String(32), nullable=False)
+
+
+class CompanyTargetModel(Base):
+    __tablename__ = 'company_targets'
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_key: Mapped[str] = mapped_column(String(256), ForeignKey('companies.company_key', ondelete='CASCADE'), nullable=False)
+    provider: Mapped[str] = mapped_column(String(32), nullable=False)
+    account_key: Mapped[str] = mapped_column(String(256), nullable=False)
+    board_url: Mapped[str] = mapped_column(Text, nullable=False)
+    verification_status: Mapped[str] = mapped_column(String(32), nullable=False)
+    enabled: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    provenance: Mapped[str] = mapped_column(Text, nullable=False)
+    checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    succeeded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    __table_args__ = (
+        UniqueConstraint('provider', 'account_key', name='uq_company_targets_provider_account'),
+        CheckConstraint("provider IN ('greenhouse', 'lever', 'ashby', 'workday', 'workable')", name='ck_company_targets_provider'),
+        CheckConstraint("verification_status IN ('supported', 'needs_review', 'unsupported', 'unavailable', 'blocked', 'unverified')", name='ck_company_targets_status'),
+        Index('ix_company_targets_provider_enabled', 'provider', 'enabled'),
+    )
 
 
 class JobModel(Base):

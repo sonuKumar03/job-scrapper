@@ -4,7 +4,7 @@ import asyncio
 from typing import Any
 
 from job_scrapper.connectors.base import BaseConnector
-from job_scrapper.connectors.company_sources import load_company_sources
+from job_scrapper.companies.contracts import CompanyTarget, validate_targets
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.cleaner import clean_html_to_text
 from job_scrapper.pipeline.date_parser import parse_to_utc
@@ -15,13 +15,10 @@ class WorkableConnector(BaseConnector):
     name = "workable"
     BASE_URL = "https://apply.workable.com/api/v1/widget/accounts"
 
-    def __init__(self, companies: dict[str, str] | None = None, **kwargs: Any) -> None:
+    def __init__(self, targets: tuple[CompanyTarget, ...], **kwargs: Any) -> None:
+        validate_targets(targets, self.name)
         super().__init__(**kwargs)
-        self.companies = companies if companies is not None else {
-            source.account_key: source.company_name
-            for source in load_company_sources(self.name)
-            if source.status == "supported" and source.account_key
-        }
+        self.companies = {target.account_key: target.company_name for target in targets}
 
     async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
         stats = self.new_stats()

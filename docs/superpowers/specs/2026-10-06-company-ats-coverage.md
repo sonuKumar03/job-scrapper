@@ -1,5 +1,7 @@
 # Company ATS Coverage Design
 
+> Historical runtime design: as of 2026-10-07, PostgreSQL supplies company targets. The packaged directory and provider defaults have moved to initialization-only `company_seed.json`; see the dynamic-company coverage design. Verification snapshots below remain historical evidence, not current inventory guarantees.
+
 ## Goal
 
 Collect every currently listed posting from companies in the moreThanFAANGM directory and additional verified employers when their public job boards are supported, regardless of posting age, and make coverage gaps visible so more companies can be added through shared ATS adapters.

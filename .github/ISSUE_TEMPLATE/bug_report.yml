@@ -1,0 +1,24 @@
+name: Bug report
+description: Report a reproducible collection, storage, or UI problem
+body:
+  - type: markdown
+    attributes:
+      value: Do not include credentials, environment files, datasets, or sensitive vulnerability details. See SECURITY.md for security reports.
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Include source, day window, execution mode, command, and bounded diagnostic steps.
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and sanitized evidence
+      description: Commit/version, OS, Python/Node/Docker versions, and relevant sanitized errors.
