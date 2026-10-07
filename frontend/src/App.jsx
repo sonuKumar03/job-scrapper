@@ -89,19 +89,6 @@ export default function App() {
             </span>
           </div>
 
-          {/* Ambient Ingestion Status (Visible anywhere in app) */}
-          {activeRuns.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setTab("runs")}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-status-running-bg border border-status-running-border text-status-running text-xs font-semibold cursor-pointer shrink-0"
-              title="View active and queued scrape runs"
-            >
-              <span className="w-2 h-2 rounded-full bg-status-running" />
-              <span>{runningCount} active{queuedCount > 0 ? ` · ${queuedCount} queued` : ''}</span>
-            </button>
-          )}
-
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Navigation Tabs */}
             <nav className="flex items-center gap-1 bg-bg-surface-elevated p-1 rounded-xl border border-border-subtle">
@@ -143,7 +130,14 @@ export default function App() {
               >
                 <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span>Runs</span>
-                <span className="hidden md:inline">Controller</span>
+                {activeRuns.length > 0 && (
+                  <span className="inline-flex items-center gap-1.5 tabular-nums"
+                    aria-label={`${runningCount} active, ${queuedCount} queued`}
+                    title={`${runningCount} active · ${queuedCount} queued`}>
+                    <span className="w-1.5 h-1.5 rounded-full bg-current" aria-hidden="true" />
+                    {activeRuns.length}
+                  </span>
+                )}
               </button>
             </nav>
 
