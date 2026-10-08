@@ -15,11 +15,51 @@ EMPLOYMENT_TYPES = {
     "internship": "internship", "volunteer": "volunteer", "perdiem": "per_diem",
     "other": "other",
 }
-EXPERIENCE = re.compile(
-    r"\b(?:requires?|required|minimum(?: of)?|at least)\s+"
-    r"(\d+(?:\.\d+)?)(?:\s*[-–]\s*(\d+(?:\.\d+)?))?"
-    r"\s*(\+)?\s*years?\s+(?:of\s+)?experience\b", re.IGNORECASE,
+YEARS = re.compile(
+    r"(?<![\w.\-])(\d+(?:\.\d+)?)(?:\s*[-–—]\s*(\d+(?:\.\d+)?))?"
+    r"\s*(\+)?\s*years?\b", re.IGNORECASE,
 )
+EXPERIENCE = re.compile(
+    YEARS.pattern + r"\s+(?:(?:of\s+)?(?:[\w/-]+\s+){0,6}experience\b|"
+    r"(?:in|building|developing|managing|leading|working)\b)",
+    re.IGNORECASE,
+)
+QUALIFICATIONS = re.compile(
+    r"^(?:qualifications|requirements|what (?:we['’]re looking for|you(?:['’]ll| will) bring)|"
+    r"(?:required|minimum) qualifications|what you bring|who you are)\s*:?$", re.IGNORECASE,
+)
+REQUIRED = re.compile(r"\b(?:requires?|required|minimum(?: of)?|at least|you have|you bring)\b", re.IGNORECASE)
+
+
+def _experience_requirement(description: str) -> tuple[float, float | None, str] | None:
+    """Accept explicit requirements; never collapse differing specialty bounds."""
+    in_qualifications = False
+    candidates: list[tuple[float, float | None, str]] = []
+    for line in description.splitlines():
+        text = line.strip().strip("# ")
+        if QUALIFICATIONS.fullmatch(text):
+            in_qualifications = True
+            continue
+        if text and not YEARS.search(text) and len(text.split()) <= 8 and not text.startswith(("-", "•")):
+            in_qualifications = False
+        if not (in_qualifications or REQUIRED.search(text)):
+            continue
+        matches = list(EXPERIENCE.finditer(text))
+        if not matches:
+            continue
+        if re.search(r"\b(?:preferred|nice[- ]to[- ]have|ideally|optional)\b", text, re.IGNORECASE):
+            return None
+        mentions = list(YEARS.finditer(text))
+        bounds = {(float(m[1]), float(m[2]) if m[2] else None) for m in mentions}
+        if len(bounds) != 1 or any(m[2] and m[3] for m in mentions):
+            return None
+        low, high = bounds.pop()
+        if high is not None and low > high:
+            return None
+        candidates.append((low, high, matches[0][0]))
+    if len({(low, high) for low, high, _ in candidates}) == 1:
+        return candidates[0]
+    return None
 
 
 def _label(value: Any, aliases: dict[str, str]) -> str:
@@ -83,17 +123,12 @@ def normalize_attributes(attributes: dict[str, Any], description: str = "") -> d
             assign(field, None, attributes[field], "source")
     # Never combine a description range with partial or invalid source bounds.
     if not any(field in attributes for field in (minimum, maximum)):
-        matches = list(EXPERIENCE.finditer(description))
-        ranges = {(float(m[1]), float(m[2]) if m[2] else None) for m in matches}
-        mentions = re.findall(r"(\d+(?:\.\d+)?)(?:\s*[-–]\s*(\d+(?:\.\d+)?))?\s*\+?\s*years?\s+(?:of\s+)?experience\b", description, re.IGNORECASE)
-        all_ranges = {(float(low), float(high) if high else None) for low, high in mentions}
-        if len(ranges) == 1 and ranges == all_ranges:
-            low, high = ranges.pop()
-            if high is None or low <= high:
-                match = matches[0]
-                assign(minimum, _years(low), match[0], "description")
-                if high is not None:
-                    assign(maximum, _years(high), match[0], "description")
+        requirement = _experience_requirement(description)
+        if requirement is not None:
+            low, high, text = requirement
+            assign(minimum, _years(low), text, "description")
+            if high is not None:
+                assign(maximum, _years(high), text, "description")
     if evidence:
         result["_attribute_evidence"] = evidence
     return result
