@@ -10,7 +10,6 @@ from job_scrapper.connectors.greenhouse import GreenhouseConnector
 from job_scrapper.connectors.hackernews import HackerNewsConnector
 from job_scrapper.connectors.hirist import HiristConnector
 from job_scrapper.connectors.himalayas import HimalayasConnector
-from job_scrapper.connectors.indeed import IndeedConnector
 from job_scrapper.connectors.instahyre import InstahyreConnector
 from job_scrapper.connectors.jobicy import JobicyConnector
 from job_scrapper.connectors.lever import LeverConnector
@@ -24,7 +23,6 @@ from job_scrapper.execution.contracts import HttpClient
 
 CONNECTORS: dict[str, Type[BaseConnector]] = {
     HimalayasConnector.name: HimalayasConnector,
-    IndeedConnector.name: IndeedConnector,
     InstahyreConnector.name: InstahyreConnector,
     JobicyConnector.name: JobicyConnector,
     ArbeitnowConnector.name: ArbeitnowConnector,
