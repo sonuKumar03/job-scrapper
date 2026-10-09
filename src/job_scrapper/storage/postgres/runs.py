@@ -11,7 +11,7 @@ from sqlalchemy import func, select, text, update
 
 from job_scrapper.execution.contracts import (
     ACTIVE_STATUSES, AmbiguousRunSelection, OwnershipLost, RunCapacity, RunClaim,
-    RunConflict, RunResult, RunSnapshot, ScrapeTask, StartScrapeCommand,
+    RunConflict, RunResult, RunSnapshot, ScrapeTask, StartScrapeCommand, TERMINAL_STATUSES,
 )
 from job_scrapper.storage.postgres.models import ScrapeDispatchModel, ScrapeExecutionModel
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
@@ -23,6 +23,15 @@ CONTROL_LOCK_KEY = 726384104
 
 def now() -> datetime:
     return datetime.now(timezone.utc)
+
+
+def settle_source_results(results: dict[str, Any], status: str) -> dict[str, Any]:
+    """Preserve finished sources and counters when an attempt ends externally."""
+    source_status = 'pending' if status == 'queued' else 'failed' if status == 'partial' else status
+    return {
+        source: {**stats, 'status': source_status} if stats.get('status') in ('pending', 'running') else stats
+        for source, stats in results.items()
+    }
 
 
 def snapshot(row: ScrapeExecutionModel) -> RunSnapshot:
@@ -131,7 +140,7 @@ class PostgresRunStore:
             row = rows[0]
             if row.status == 'queued':
                 row.status, row.finished_at = 'stopped', now()
-                row.results = {source: {**stats, 'status': 'stopped'} for source, stats in row.results.items()}
+                row.results = settle_source_results(row.results, row.status)
             else:
                 row.status = 'stopping'
             await session.commit()
@@ -208,7 +217,8 @@ class PostgresRunStore:
             if row is None or self.ownership_lost.is_set():
                 raise OwnershipLost('Execution attempt is no longer owned.')
             row.status = 'stopped' if row.status == 'stopping' else result.status
-            row.results, row.error_message = result.results, result.error_message
+            row.results = settle_source_results(result.results, row.status)
+            row.error_message = result.error_message
             row.finished_at, row.attempt_token = now(), None
             await session.commit()
             return snapshot(row)
@@ -227,6 +237,7 @@ class PostgresRunStore:
                 dispatch = await session.get(ScrapeDispatchModel, row.id)
                 dispatch.generation += 1
                 dispatch.available_at = now() + timedelta(seconds=delay_seconds)
+            row.results = settle_source_results(row.results, row.status)
             await session.commit()
 
     async def dispatch_pending(self, publish: Callable[[ScrapeTask], Awaitable[None]], limit: int) -> int:
@@ -279,4 +290,6 @@ class PostgresRunStore:
                         dispatch.generation += 1
                         dispatch.available_at = now() + timedelta(seconds=5 if row.attempts == 1 else 30)
                 row.attempt_token = None
+                if row.status in TERMINAL_STATUSES or row.status == 'queued':
+                    row.results = settle_source_results(row.results, row.status)
             await session.commit()
