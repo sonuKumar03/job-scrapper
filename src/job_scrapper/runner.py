@@ -16,6 +16,8 @@ async def run_scrape(
     claim: RunClaim, store: RunStore, sink: JobSink, client: HttpClient,
     source_limit: asyncio.Semaphore, stop_event: asyncio.Event,
     *, company_repository: CompanyTargetRepository,
+    source_timeout_seconds: float = 900,
+    source_timeouts: dict[str, int] | None = None,
 ) -> RunResult:
     results = {source: {'status': 'pending'} for source in claim.command.sources}
     state_lock = asyncio.Lock()
@@ -37,6 +39,18 @@ async def run_scrape(
                     await persist()
                 return
             connector = None
+            source_stop = asyncio.Event()
+            timeout_seconds = (source_timeouts or {}).get(source, source_timeout_seconds)
+            timed_out = False
+
+            async def watch_source() -> None:
+                nonlocal timed_out
+                try:
+                    await asyncio.wait_for(stop_event.wait(), timeout=timeout_seconds)
+                except TimeoutError:
+                    timed_out = True
+                source_stop.set()
+
             source_stats: dict[int, dict[str, Any]] = {}
 
             async def report_progress(stats: dict[str, Any]) -> None:
@@ -58,9 +72,10 @@ async def run_scrape(
                         raise StorageUnavailable(type(error).__name__) from error
 
             async with state_lock:
-                results[source] = {'status': 'running'}
+                results[source] = {**BaseConnector.new_stats(), 'status': 'running'}
                 await persist()
-            stop_token = request_stop_event.set(stop_event)
+            stop_token = request_stop_event.set(source_stop)
+            source_watcher = asyncio.create_task(watch_source())
             try:
                 targets = await company_repository.list_enabled(source) if source in ATS_PROVIDERS else None
                 if targets == ():
@@ -71,9 +86,19 @@ async def run_scrape(
                         await persist()
                     return
                 connector = get_connector(source, http_client=client, company_targets=targets)
-                connector.stop_event = stop_event
+                connector.stop_event = source_stop
                 connector.on_progress = report_progress
-                stats = await connector.scrape(sink=sink, max_days=claim.command.days)
+                # Allow current requests and buffered saves to settle after the deadline.
+                try:
+                    stats = await asyncio.wait_for(connector.scrape(sink=sink, max_days=claim.command.days),
+                                                   timeout=timeout_seconds + 60)
+                except TimeoutError:
+                    timed_out = True
+                    stats = deepcopy(results[source])
+                if timed_out:
+                    stats['truncated'] = True
+                    stats['timed_out'] = True
+                    stats['errors'].append(f'Source deadline reached ({timeout_seconds:g} seconds); collection incomplete')
                 stats = {**stats, 'status': 'stopped' if stop_event.is_set() else
                          'failed' if stats['errors'] or stats['truncated'] else 'completed'}
             except (StorageUnavailable, CompanyCatalogUnavailable, OwnershipLost):
@@ -81,6 +106,8 @@ async def run_scrape(
             except Exception as error:
                 stats = {'status': 'failed', 'errors': [type(error).__name__], 'truncated': True}
             finally:
+                source_watcher.cancel()
+                await asyncio.gather(source_watcher, return_exceptions=True)
                 request_stop_event.reset(stop_token)
                 if connector is not None:
                     await connector.close()

@@ -129,6 +129,14 @@ The API accepts runs with HTTP 202 and status `queued`. `/api/runs/active` retur
 
 ## Source coverage limits
 
+Every source has a runtime budget of 900 seconds after acquiring a source slot.
+Set `SOURCE_TIMEOUT_SECONDS` to change the default, or use JSON overrides such as
+`SOURCE_TIMEOUTS={"himalayas":1800,"hirist":900}` in `.env`. The budget includes
+HTTP queue waits, pacing and retries. On expiry, queued requests stop and current
+requests/buffered saves get up to 60 seconds to settle. Saved jobs remain available;
+the source reports `timed_out`, incomplete coverage and a failed source status.
+Manual Stop still takes precedence over the overall run status.
+
 The scrape CLI reports errors and incomplete coverage, then exits with status 1.
 
 Current collection uses public JSON APIs (Himalayas, Jobicy, Arbeitnow, RemoteOK, Greenhouse, Lever, Hacker News search, and Ashby), We Work Remotely RSS, and Built In HTML pages. The Built In connector checks known IDs before fetching job pages and reads their published dates and descriptions from JobPosting metadata. Its detail requests make it slower than feed-based sources.

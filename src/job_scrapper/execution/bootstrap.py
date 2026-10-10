@@ -49,7 +49,9 @@ async def execution_runtime(manager: DatabaseSessionManager, *, worker_host: boo
                 await transport.prepare_consumer()
             client = ResilientHttpClient()
             stack.push_async_callback(client.close)
-            pipeline = partial(run_scrape, company_repository=PostgresCompanyTargetRepository(manager))
+            pipeline = partial(run_scrape, company_repository=PostgresCompanyTargetRepository(manager),
+                               source_timeout_seconds=settings.source_timeout_seconds,
+                               source_timeouts=settings.source_timeouts)
             worker = WorkerPool(store, transport, pipeline, PostgresJobSink(manager), client, capacity.active)
         service: RunControl = ExecutionService(store, transport, capacity, worker, stop_pending_on_close=embedded)
         service.start()

@@ -48,6 +48,8 @@ services:
       - SCRAPE_BROKER_URL=redis://redis:6379/0
       - SCRAPE_MAX_ACTIVE_RUNS=${SCRAPE_MAX_ACTIVE_RUNS:-3}
       - SCRAPE_MAX_QUEUED_RUNS=${SCRAPE_MAX_QUEUED_RUNS:-20}
+      - SOURCE_TIMEOUT_SECONDS=${SOURCE_TIMEOUT_SECONDS:-900}
+      - SOURCE_TIMEOUTS=${SOURCE_TIMEOUTS:-{}}
     volumes:
       - ./src:/app/src
       - ./migrations:/app/migrations
@@ -105,6 +107,8 @@ services:
       - SCRAPE_BROKER_URL=redis://redis:6379/0
       - SCRAPE_MAX_ACTIVE_RUNS=${SCRAPE_MAX_ACTIVE_RUNS:-3}
       - SCRAPE_MAX_QUEUED_RUNS=${SCRAPE_MAX_QUEUED_RUNS:-20}
+      - SOURCE_TIMEOUT_SECONDS=${SOURCE_TIMEOUT_SECONDS:-900}
+      - SOURCE_TIMEOUTS=${SOURCE_TIMEOUTS:-{}}
     volumes:
       - ./src:/app/src
       - ./migrations:/app/migrations

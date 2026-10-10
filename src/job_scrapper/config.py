@@ -28,6 +28,8 @@ class Settings(BaseSettings):
     min_request_delay_seconds: float = Field(default=1.0, ge=1.0, le=3.0)
     max_request_delay_seconds: float = Field(default=3.0, ge=1.0, le=3.0)
     request_timeout_seconds: int = Field(default=30, gt=0)
+    source_timeout_seconds: int = Field(default=900, gt=0)
+    source_timeouts: dict[str, int] = Field(default_factory=dict)
     http_proxy: str | None = None
     scrape_executor: Literal['memory', 'broker'] = 'memory'
     scrape_broker_url: str | None = Field(default=None, repr=False)
@@ -45,6 +47,14 @@ class Settings(BaseSettings):
         if not hosts or any(not host or any(char in host for char in '*/:@?# \t\n') for host in hosts):
             raise ValueError('API_ALLOWED_HOSTS must contain explicit hostnames without ports or wildcards')
         return [host.lower() for host in hosts]
+
+    @field_validator('source_timeouts')
+    @classmethod
+    def validate_source_timeouts(cls, values: dict[str, int]) -> dict[str, int]:
+        from job_scrapper.connectors.registry import list_connectors
+        if set(values) - set(list_connectors()) or any(value <= 0 for value in values.values()):
+            raise ValueError('SOURCE_TIMEOUTS must map registered sources to positive seconds')
+        return values
 
     @field_validator('api_allowed_origins')
     @classmethod
