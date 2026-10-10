@@ -129,6 +129,12 @@ The API accepts runs with HTTP 202 and status `queued`. `/api/runs/active` retur
 
 ## Source coverage limits
 
+Naukri needs the browser extra and Chromium: `uv sync --extra browser`, then
+`uv run playwright install --with-deps chromium`. Both Docker targets include
+these dependencies and run bundled Chromium headlessly. The worker checks the
+package and browser executable before starting collection and reports missing
+prerequisites explicitly. Rebuild the worker/API images to pick up browser changes.
+
 Every source has a runtime budget of 900 seconds after acquiring a source slot.
 Set `SOURCE_TIMEOUT_SECONDS` to change the default, or use JSON overrides such as
 `SOURCE_TIMEOUTS={"himalayas":1800,"hirist":900}` in `.env`. The budget includes

@@ -7,7 +7,7 @@ from job_scrapper.companies.contracts import ATS_PROVIDERS, CompanyCatalogUnavai
 
 from job_scrapper.connectors.base import BaseConnector
 from job_scrapper.connectors.registry import get_connector
-from job_scrapper.execution.contracts import HttpClient, OwnershipLost, RunClaim, RunResult, RunStore
+from job_scrapper.execution.contracts import HttpClient, OwnershipLost, RunClaim, RunResult, RunStore, SourceUnavailable
 from job_scrapper.storage.base import JobSink, StorageUnavailable
 from job_scrapper.execution.cancellation import request_stop_event
 
@@ -76,7 +76,7 @@ async def run_scrape(
                         raise StorageUnavailable(type(error).__name__) from error
 
             async with state_lock:
-                results[source] = {**BaseConnector.new_stats(), 'status': 'running'}
+                results[source] = {**BaseConnector.new_stats(), 'status': 'pending'}
                 await persist()
             stop_token = request_stop_event.set(source_stop)
             source_watcher = asyncio.create_task(watch_source())
@@ -94,8 +94,12 @@ async def run_scrape(
                 connector.on_progress = report_progress
                 # Allow current requests and buffered saves to settle after the deadline.
                 try:
-                    stats = await asyncio.wait_for(connector.scrape(sink=sink, max_days=claim.command.days),
-                                                   timeout=timeout_seconds + 60)
+                    async with asyncio.timeout(timeout_seconds + 60):
+                        await connector.check_prerequisites()
+                        async with state_lock:
+                            results[source]['status'] = 'running'
+                            await persist()
+                        stats = await connector.scrape(sink=sink, max_days=claim.command.days)
                 except TimeoutError:
                     timed_out = True
                     stats = deepcopy(results[source])
@@ -107,6 +111,9 @@ async def run_scrape(
                          'failed' if stats['errors'] else 'partial' if stats['truncated'] else 'completed'}
             except (StorageUnavailable, CompanyCatalogUnavailable, OwnershipLost):
                 raise
+            except SourceUnavailable as error:
+                stats = {**BaseConnector.new_stats(), 'status': 'failed',
+                         'errors': [str(error)], 'truncated': True}
             except Exception as error:
                 stats = {'status': 'failed', 'errors': [type(error).__name__], 'truncated': True}
             finally:

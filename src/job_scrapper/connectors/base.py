@@ -32,6 +32,9 @@ class BaseConnector(ABC):
         if self._owns_http_client:
             await self.http_client.close()
 
+    async def check_prerequisites(self) -> None:
+        """Fail before collection when an optional source dependency is unavailable."""
+
     @abstractmethod
     async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
         """Execute the scrape run for this connector.

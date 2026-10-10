@@ -25,6 +25,10 @@ class OwnershipLost(Exception):
     """A worker may no longer write progress for its attempt."""
 
 
+class SourceUnavailable(RuntimeError):
+    """A source prerequisite is missing before collection can start."""
+
+
 class TaskFormatError(Exception):
     """Unsupported or malformed task payload."""
 

@@ -2,6 +2,7 @@
 
 import asyncio
 import random
+from pathlib import Path
 from typing import Any
 from urllib.parse import urljoin
 
@@ -10,12 +11,27 @@ from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.cleaner import clean_html_to_text
 from job_scrapper.pipeline.date_parser import is_within_days, parse_to_utc
 from job_scrapper.storage.base import JobSink
+from job_scrapper.execution.contracts import SourceUnavailable
 
 
 class NaukriConnector(BaseConnector):
     name = "naukri"
     BASE_URL = "https://www.naukri.com"
     MAX_PAGES = 2000
+
+    async def check_prerequisites(self) -> None:
+        try:
+            from playwright.async_api import async_playwright
+        except ImportError:
+            raise SourceUnavailable('Naukri requires: uv sync --extra browser; then uv run playwright install --with-deps chromium') from None
+        async with async_playwright() as playwright:
+            if not Path(playwright.chromium.executable_path).is_file():
+                raise SourceUnavailable('Naukri Chromium is missing: uv run --extra browser playwright install --with-deps chromium')
+            try:
+                browser = await playwright.chromium.launch(headless=True)
+                await browser.close()
+            except Exception as error:
+                raise SourceUnavailable(f'Naukri Chromium cannot start ({type(error).__name__}); rebuild the worker or run playwright install --with-deps chromium') from None
 
     async def _fetch_job(self, page: Any, listing: dict[str, Any], posted_at: Any,
                          stats: dict[str, Any]) -> JobPosting | None:
@@ -82,8 +98,7 @@ class NaukriConnector(BaseConnector):
         try:
             async with async_playwright() as playwright:
                 browser = await playwright.chromium.launch(
-                    headless=False,
-                    channel="chrome",
+                    headless=True,
                     args=["--disable-blink-features=AutomationControlled"],
                 )
                 try:
