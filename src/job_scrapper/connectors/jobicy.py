@@ -23,7 +23,8 @@ class JobicyConnector(BaseConnector):
 
         if max_days > 7:
             stats["truncated"] = True
-            stats["errors"].append("Jobicy only exposes postings from the last 7 days")
+            stats['warnings'] = ['Jobicy only exposes postings from the last 7 days; requested history is incomplete']
+            stats['coverage'] = {'requested_days': max_days, 'available_days': 7}
 
         for page in range(self.MAX_PAGES):
             if self.stop_requested:

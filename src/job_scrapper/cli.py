@@ -28,13 +28,15 @@ console = Console()
 async def _run_scrape(sources: list[str], days: int, include_catalog_status: bool = False,
                       separate_runs: bool = False) -> bool:
     session_manager = DatabaseSessionManager()
-    table = Table(title=f"Scrape Results (general-board cutoff: Last {days} Days)")
+    table = Table(title=f"Scrape Results (posting window: Last {days} Days)")
     table.add_column("Source", style="cyan")
     table.add_column("Found", justify="right")
     table.add_column("New Inserted", justify="right", style="green")
     table.add_column("Skipped / Duplicate", justify="right", style="dim")
     table.add_column("Errors", style="red")
     table.add_column("Truncated", style="yellow")
+    if 'jobicy' in sources and days > 7:
+        console.print('[yellow]Jobicy supplies only the latest 7 days; requested history will be incomplete.[/yellow]')
     stop_event = asyncio.Event()
     loop = asyncio.get_running_loop()
     previous_handlers = {sig: signal.getsignal(sig) for sig in (signal.SIGINT, signal.SIGTERM)}
@@ -76,6 +78,8 @@ async def _run_scrape(sources: list[str], days: int, include_catalog_status: boo
                    for run in executions for source_name, stats in run.results.items()]
         failed = any(run.status != 'completed' for run in executions)
         for source_name, stats in results:
+            for warning in stats.get('warnings', []):
+                console.print(f'[yellow]{source_name}: {warning}[/yellow]')
             if "found" not in stats:
                 failed = True
                 table.add_row(source_name, "—", "—", "—", "; ".join(stats.get("errors", [])), "yes")

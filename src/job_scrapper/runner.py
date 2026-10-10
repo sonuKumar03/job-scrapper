@@ -65,6 +65,8 @@ async def run_scrape(
                         row['truncated'] |= part['truncated']
                         if 'coverage' in part:
                             row['coverage'] = deepcopy(part['coverage'])
+                        if 'warnings' in part:
+                            row.setdefault('warnings', []).extend(part['warnings'])
                     results[source] = {**row, 'status': 'running'}
                     try:
                         await persist()
@@ -102,7 +104,7 @@ async def run_scrape(
                     stats['timed_out'] = True
                     stats['errors'].append(f'Source deadline reached ({timeout_seconds:g} seconds); collection incomplete')
                 stats = {**stats, 'status': 'stopped' if stop_event.is_set() else
-                         'failed' if stats['errors'] or stats['truncated'] else 'completed'}
+                         'failed' if stats['errors'] else 'partial' if stats['truncated'] else 'completed'}
             except (StorageUnavailable, CompanyCatalogUnavailable, OwnershipLost):
                 raise
             except Exception as error:
@@ -128,7 +130,8 @@ async def run_scrape(
         if await store.stop_requested(claim):
             stop_event.set()
         failures = sum(stats['status'] == 'failed' for stats in results.values())
-        status = 'stopped' if stop_event.is_set() else 'completed' if not failures else (
+        incomplete = any(stats['status'] == 'partial' for stats in results.values())
+        status = 'stopped' if stop_event.is_set() else 'completed' if not failures and not incomplete else (
             'failed' if failures == len(results) else 'partial'
         )
         return RunResult(status=status, results=results)

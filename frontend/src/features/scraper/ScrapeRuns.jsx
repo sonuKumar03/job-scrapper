@@ -167,7 +167,7 @@ export default function ScrapeRuns() {
           {sessionQuery.isPending && <p role="status" className="text-sm text-text-muted">Loading sources…</p>}
           {[
             { label: "Job boards", hint: "Use the posting date window below.", sources: availableSources.filter((source) => !ATS_SOURCES.includes(source)) },
-            { label: "Company ATS", hint: "Collect all open jobs, regardless of date.", sources: availableSources.filter((source) => ATS_SOURCES.includes(source)) },
+            { label: "Company ATS", hint: "Greenhouse, Ashby and Lever use the date window. Workday and Workable collect all listed jobs.", sources: availableSources.filter((source) => ATS_SOURCES.includes(source)) },
           ].map((group) => (
             <fieldset key={group.label} className="min-w-0 space-y-2">
               <legend className="text-sm font-semibold text-text-main">{group.label}</legend>
@@ -187,6 +187,9 @@ export default function ScrapeRuns() {
         </div>
 
         {/* Form Actions */}
+        {selectedSources.includes("jobicy") && Number(days) > 7 && (
+          <p role="status" className="text-xs text-text-muted">Jobicy can supply only the latest 7 days. Other sources will use your requested window.</p>
+        )}
         <div className="flex flex-col gap-4 pt-4 border-t border-border-subtle">
           <div className="space-y-2">
             <div>
@@ -365,6 +368,12 @@ export default function ScrapeRuns() {
                             <span>{err}</span>
                           </div>
                         ))}
+                      </div>
+                    )}
+
+                    {stats.warnings?.length > 0 && (
+                      <div className="text-xs text-text-muted space-y-1">
+                        {stats.warnings.map((warning, i) => <p key={i}>{warning}</p>)}
                       </div>
                     )}
 
