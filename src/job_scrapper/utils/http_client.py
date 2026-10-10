@@ -95,7 +95,9 @@ class ResilientHttpClient:
                 async with domain.semaphore:
                     async with domain.start_lock:
                         loop = asyncio.get_running_loop()
-                        await wait_before_request(max(0.0, domain.next_start - loop.time()))
+                        while domain.next_start > loop.time():
+                            await wait_before_request(domain.next_start - loop.time())
+                        await wait_before_request(0)
                         domain.next_start = loop.time() + random.uniform(self.min_delay, self.max_delay)
                     response = await session.request(method, url, **kwargs)
                 if response.status_code not in {429, 500, 502, 503, 504}:
@@ -104,7 +106,10 @@ class ResilientHttpClient:
                     return response
                 retry_after = self._retry_after(response.headers.get("Retry-After"))
                 if retry_after is None:
-                    retry_after = float(attempt + 1)
+                    retry_after = float(15 * 2**attempt if response.status_code == 429 else attempt + 1)
+                if response.status_code == 429:
+                    # Cool down every queued request on this host, not just this retry.
+                    domain.next_start = max(domain.next_start, asyncio.get_running_loop().time() + retry_after)
                 if retry_after > 120:
                     raise RequestError(url, "retry deferred by server", response.status_code)
             except (RequestError, RequestStopped):

@@ -139,6 +139,12 @@ Manual Stop still takes precedence over the overall run status.
 
 The scrape CLI reports errors and incomplete coverage, then exits with status 1.
 
+HTTP 429 responses pause queued requests for the entire host using `Retry-After`.
+Without that header, cooldowns are 15, 30 and 60 seconds across the three attempts.
+Stop and source deadlines interrupt cooldown waits. Exhausted retries retain saved
+jobs and report the page and HTTP status as incomplete collection; in-flight
+requests remain bounded by their request timeout.
+
 Current collection uses public JSON APIs (Himalayas, Jobicy, Arbeitnow, RemoteOK, Greenhouse, Lever, Hacker News search, and Ashby), We Work Remotely RSS, and Built In HTML pages. The Built In connector checks known IDs before fetching job pages and reads their published dates and descriptions from JobPosting metadata. Its detail requests make it slower than feed-based sources.
 
 **Provider limits:** [Jobicy exposes a rolling seven-day feed](https://jobicy.com/jobs-rss-feed), so requests for more than seven days are incomplete. [Hacker News search uses Algolia pagination](https://hn.algolia.com/api); its index exposes at most 1,000 results per query by default. Company ATS connectors include all currently listed jobs regardless of the day window; unknown publication dates are reported as incomplete coverage.
