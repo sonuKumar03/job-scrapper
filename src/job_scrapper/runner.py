@@ -63,6 +63,8 @@ async def run_scrape(
                             row[key] += part[key]
                         row['errors'].extend(part['errors'])
                         row['truncated'] |= part['truncated']
+                        if 'coverage' in part:
+                            row['coverage'] = deepcopy(part['coverage'])
                     results[source] = {**row, 'status': 'running'}
                     try:
                         await persist()

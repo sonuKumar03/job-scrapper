@@ -47,6 +47,10 @@ class HimalayasConnector(BaseConnector):
         unknown_dates = 0
         total_count: int | None = None
         scanned_count = 0
+        oldest_seen = None
+        newest_seen = None
+        stats['coverage'] = {'pages_scanned': 0, 'listings_scanned': 0, 'total_available': None,
+                             'oldest_seen': None, 'newest_seen': None, 'requested_days': max_days}
         for page in range(self.MAX_PAGES):
             if self.stop_requested:
                 break
@@ -77,6 +81,9 @@ class HimalayasConnector(BaseConnector):
                     unknown_dates += 1
                     stats["skipped"] += 1
                     continue
+
+                oldest_seen = min(oldest_seen, pub_date) if oldest_seen else pub_date
+                newest_seen = max(newest_seen, pub_date) if newest_seen else pub_date
 
                 if not is_within_days(pub_date, max_days=max_days):
                     stats["skipped"] += 1
@@ -114,6 +121,10 @@ class HimalayasConnector(BaseConnector):
                 )
                 batch.append(job)
 
+            stats['coverage'].update(pages_scanned=page + 1, listings_scanned=scanned_count,
+                                     total_available=total_count,
+                                     oldest_seen=oldest_seen.isoformat() if oldest_seen else None,
+                                     newest_seen=newest_seen.isoformat() if newest_seen else None)
             await self.save_jobs(sink, batch, stats)
 
             if next_cursor is None:
@@ -123,7 +134,12 @@ class HimalayasConnector(BaseConnector):
             cursor = next_cursor
         else:
             stats["truncated"] = True
-            stats["errors"].append(f"page safety limit reached ({self.MAX_PAGES} pages)")
+            stats["errors"].append(
+                f"page safety limit reached ({self.MAX_PAGES} pages); scanned {scanned_count} of "
+                f"{total_count} advertised listings; observed publication dates "
+                f"{stats['coverage']['oldest_seen']} to {stats['coverage']['newest_seen']}; "
+                f"requested {max_days}-day coverage is incomplete"
+            )
 
         self.record_unknown_dates(stats, "feed", unknown_dates)
 

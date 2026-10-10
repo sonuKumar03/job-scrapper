@@ -146,6 +146,12 @@ Current collection uses public JSON APIs (Himalayas, Jobicy, Arbeitnow, RemoteOK
 **Scraper safety ceilings:** These are implementation choices to bound one run, not provider limits. The current caps are 500 pages for Himalayas, 500 pages for Lever, 50 pages for Arbeitnow, 500 pages for Jobicy, and 500 listing pages for Built In. If a cap is reached, the CLI marks that source incomplete. Himalayas uses the documented cursor and 20-job page size; [Lever supports `skip` and `limit`](https://github.com/lever/postings-api); [Jobicy supports cursor pagination](https://jobicy.com/jobs-rss-feed). Ashby uses its [public job-posting API](https://developers.ashbyhq.com/docs/public-job-posting-api).
 
 ### 2. Scraping Jobs
+
+Himalayas records pages/listings scanned, the advertised total and observed
+publication-date bounds under each source result's `coverage`. These dates describe
+the traversed listings, not proof of complete date-window coverage. Its browse API
+has no documented date filter or ordering guarantee, so old dates alone do not stop
+pagination. Page-cap and deadline exits explicitly report incomplete collection.
 ```bash
 make cli-scrape
 ```
