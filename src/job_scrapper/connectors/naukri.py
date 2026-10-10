@@ -4,7 +4,7 @@ import asyncio
 import random
 from pathlib import Path
 from typing import Any
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlsplit
 
 from job_scrapper.connectors.base import BaseConnector
 from job_scrapper.domain.models import JobPosting
@@ -12,12 +12,14 @@ from job_scrapper.pipeline.cleaner import clean_html_to_text
 from job_scrapper.pipeline.date_parser import is_within_days, parse_to_utc
 from job_scrapper.storage.base import JobSink
 from job_scrapper.execution.contracts import SourceUnavailable
+from job_scrapper.utils.http_client import RequestError
 
 
 class NaukriConnector(BaseConnector):
     name = "naukri"
     BASE_URL = "https://www.naukri.com"
     MAX_PAGES = 2000
+    SEARCH_TIMEOUT_MS = 60000
 
     async def check_prerequisites(self) -> None:
         try:
@@ -28,10 +30,17 @@ class NaukriConnector(BaseConnector):
             if not Path(playwright.chromium.executable_path).is_file():
                 raise SourceUnavailable('Naukri Chromium is missing: uv run --extra browser playwright install --with-deps chromium')
             try:
-                browser = await playwright.chromium.launch(headless=True)
+                browser = await playwright.chromium.launch(headless=True, channel='chromium')
                 await browser.close()
             except Exception as error:
                 raise SourceUnavailable(f'Naukri Chromium cannot start ({type(error).__name__}); rebuild the worker or run playwright install --with-deps chromium') from None
+
+    @staticmethod
+    async def _navigate_page(page: Any, url: str, timeout: int) -> Any:
+        response = await page.goto(url, wait_until='domcontentloaded', timeout=timeout)
+        if response is not None and response.status >= 400:
+            raise RequestError(url, 'browser navigation rejected', response.status)
+        return response
 
     async def _fetch_job(self, page: Any, listing: dict[str, Any], posted_at: Any,
                          stats: dict[str, Any]) -> JobPosting | None:
@@ -46,8 +55,7 @@ class NaukriConnector(BaseConnector):
                 lambda response: f"/jobapi/v4/job/{source_id}" in response.url,
                 timeout=30000,
             ) as response_info:
-                await page.goto(urljoin(self.BASE_URL, listing["jdURL"]),
-                                wait_until="domcontentloaded", timeout=30000)
+                await self._navigate_page(page, urljoin(self.BASE_URL, listing["jdURL"]), 30000)
             response = await response_info.value
             if response.status != 200:
                 raise ValueError(f"job detail HTTP {response.status}")
@@ -89,7 +97,7 @@ class NaukriConnector(BaseConnector):
         stats = self.new_stats()
         seen_ids: set[str] = set()
         try:
-            from playwright.async_api import async_playwright
+            from playwright.async_api import TimeoutError as BrowserTimeoutError, async_playwright
         except ImportError as exc:
             self.record_error(stats, "browser", exc)
             stats["errors"].append("install the browser extra with uv sync --extra browser")
@@ -99,28 +107,43 @@ class NaukriConnector(BaseConnector):
             async with async_playwright() as playwright:
                 browser = await playwright.chromium.launch(
                     headless=True,
+                    channel='chromium',
                     args=["--disable-blink-features=AutomationControlled"],
                 )
                 try:
-                    context = await browser.new_context()
+                    # Use full Chromium with a normal UA; HeadlessChrome search navigation is denied.
+                    context = await browser.new_context(user_agent=(
+                        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 '
+                        f'(KHTML, like Gecko) Chrome/{browser.version} Safari/537.36'
+                    ))
                     search_page = await context.new_page()
                     detail_page = await context.new_page()
+                    failed_requests: list[str] = []
+
+                    def record_failed_request(request: Any) -> None:
+                        if request.resource_type in ('document', 'script', 'xhr', 'fetch') and len(failed_requests) < 5:
+                            parsed = urlsplit(request.url)
+                            failed_requests.append(f'{parsed.netloc}{parsed.path}: {request.failure}')
+
+                    search_page.on('requestfailed', record_failed_request)
                     for page_number in range(self.MAX_PAGES):
                         if self.stop_requested:
                             break
                         url = (f"{self.BASE_URL}/software-engineer-jobs"
                                f"{'-' + str(page_number + 1) if page_number else ''}"
                                f"?k=software%20engineer&jobAge={max_days}")
+                        navigation_response = None
+                        failed_requests.clear()
                         try:
                             await asyncio.sleep(random.uniform(1, 3))
                             if self.stop_requested:
                                 break
                             async with search_page.expect_response(
                                 lambda response: "/jobapi/v3/search" in response.url,
-                                timeout=30000,
+                                timeout=self.SEARCH_TIMEOUT_MS,
                             ) as response_info:
-                                await search_page.goto(url, wait_until="domcontentloaded",
-                                                       timeout=30000)
+                                navigation_response = await self._navigate_page(
+                                    search_page, url, self.SEARCH_TIMEOUT_MS)
                             response = await response_info.value
                             if response.status != 200:
                                 raise ValueError(f"job search HTTP {response.status}")
@@ -128,15 +151,35 @@ class NaukriConnector(BaseConnector):
                             listings = data.get("jobDetails")
                             if not isinstance(listings, list) or (page_number == 0 and not listings):
                                 raise ValueError("no job search results")
-                            fresh = [job for job in listings if isinstance(job, dict)
-                                     and isinstance(job.get("jobId"), str)
-                                     and isinstance(job.get("jdURL"), str)
-                                     and job["jobId"] not in seen_ids]
+                            valid = [job for job in listings if isinstance(job, dict)
+                                     and isinstance(job.get("jobId"), str) and job["jobId"].strip()
+                                     and isinstance(job.get("jdURL"), str) and job["jdURL"].strip()]
+                            invalid = len(listings) - len(valid)
+                            if invalid:
+                                stats["found"] += invalid
+                                stats["skipped"] += invalid
+                                self.record_error(stats, f"page {page_number + 1}: {invalid} listings lacked valid identities",
+                                                  ValueError("invalid jobId or jdURL"))
+                            fresh = [job for job in valid if job["jobId"] not in seen_ids]
                             seen_ids.update(job["jobId"] for job in fresh)
                         except Exception as exc:
                             self.record_error(stats, f"page {page_number + 1}", exc)
+                            if isinstance(exc, BrowserTimeoutError):
+                                stats['errors'][-1] = f'page {page_number + 1}: {type(exc).__name__}: {exc}'
+                                try:
+                                    title = await asyncio.wait_for(search_page.title(), timeout=2)
+                                except Exception:
+                                    title = 'unavailable'
+                                status = navigation_response.status if navigation_response is not None else 'unknown'
+                                stats['errors'].append(
+                                    f'page {page_number + 1} diagnostics: URL={search_page.url}; title={title}; '
+                                    f'document HTTP={status}; failed requests={"; ".join(failed_requests) or "none observed"}'
+                                )
                             break
                         if not fresh:
+                            if valid:
+                                stats["truncated"] = True
+                                stats["errors"].append(f"page {page_number + 1}: repeated listings; coverage incomplete")
                             break
 
                         stats["found"] += len(fresh)

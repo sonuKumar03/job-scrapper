@@ -18,6 +18,9 @@ def test_job_posting_rejects_blank_required_text() -> None:
     for field in ("source", "source_job_id", "source_url", "title", "company_name", "description_text"):
         with pytest.raises(ValidationError):
             JobPosting(**{**values, field: "  "})
+    for field, limit in (("source", 64), ("source_job_id", 256)):
+        with pytest.raises(ValidationError):
+            JobPosting(**{**values, field: "x" * (limit + 1)})
 
 
 def test_job_posting_decodes_html_entities_in_title() -> None:

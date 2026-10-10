@@ -44,7 +44,8 @@ class ArbeitnowConnector(BaseConnector):
                 break
 
             known_ids = await sink.contains_many(
-                self.name, [str(item["slug"]) for item in items if item.get("slug")]
+                self.name, [item["slug"] for item in items
+                            if isinstance(item.get("slug"), str) and item["slug"].strip()]
             )
 
             batch: list[JobPosting] = []
@@ -53,8 +54,9 @@ class ArbeitnowConnector(BaseConnector):
             for item in items:
                 stats["found"] += 1
                 slug = item.get("slug")
-                if not slug:
+                if not isinstance(slug, str) or not slug.strip():
                     stats["skipped"] += 1
+                    self.record_error(stats, f"page {page} listing", ValueError("missing or invalid slug"))
                     continue
 
                 created_at = item.get("created_at")
@@ -72,28 +74,32 @@ class ArbeitnowConnector(BaseConnector):
                     stats["skipped"] += 1
                     continue
 
-                clean_desc = clean_html_to_text(item.get("description") or "")
-                is_remote = item.get("remote", False)
-                work_arrangement = "remote" if is_remote else "in-office"
+                try:
+                    clean_desc = clean_html_to_text(item.get("description") or "")
+                    is_remote = item.get("remote", False)
+                    work_arrangement = "remote" if is_remote else "in-office"
 
-                attributes: dict[str, Any] = {
-                    "work_arrangement": work_arrangement,
-                    "location": item.get("location") or "Worldwide",
-                    "tech_stack": item.get("tags") or [],
-                    "employment_type": ", ".join(item.get("job_types", [])) if item.get("job_types") else None,
-                }
+                    attributes: dict[str, Any] = {
+                        "work_arrangement": work_arrangement,
+                        "location": item.get("location") or "Worldwide",
+                        "tech_stack": item.get("tags") or [],
+                        "employment_type": ", ".join(item.get("job_types", [])) if item.get("job_types") else None,
+                    }
 
-                job = JobPosting(
-                    source=self.name,
-                    source_job_id=slug,
-                    source_url=item.get("url") or f"https://www.arbeitnow.com/jobs/{slug}",
-                    title=item.get("title") or "Untitled",
-                    company_name=item.get("company_name") or "Unknown Company",
-                    description_text=clean_desc,
-                    posted_at=pub_date,
-                    attributes=attributes,
-                )
-                batch.append(job)
+                    job = JobPosting(
+                        source=self.name,
+                        source_job_id=slug,
+                        source_url=item.get("url") or f"https://www.arbeitnow.com/jobs/{slug}",
+                        title=item.get("title") or "Untitled",
+                        company_name=item.get("company_name") or "Unknown Company",
+                        description_text=clean_desc,
+                        posted_at=pub_date,
+                        attributes=attributes,
+                    )
+                    batch.append(job)
+                except (ValueError, TypeError, AttributeError) as exc:
+                    stats["skipped"] += 1
+                    self.record_error(stats, f"listing {slug}", exc)
 
             await self.save_jobs(sink, batch, stats)
             self.record_unknown_dates(stats, f"page {page}", unknown_dates)

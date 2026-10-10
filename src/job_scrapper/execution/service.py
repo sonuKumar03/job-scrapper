@@ -56,6 +56,9 @@ class ExecutionService:
     async def request_stop(self, run_id: UUID | None = None) -> RunSnapshot | None:
         return await self.store.request_stop(run_id)
 
+    async def request_source_stop(self, run_id: UUID, source: str) -> RunSnapshot | None:
+        return await self.store.request_source_stop(run_id, source)
+
     async def get(self, run_id: UUID) -> RunSnapshot | None:
         return await self.store.get(run_id)
 

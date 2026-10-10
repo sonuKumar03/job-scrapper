@@ -8,7 +8,7 @@ from job_scrapper.connectors.base import BaseConnector
 from job_scrapper.companies.contracts import CompanyTarget, validate_targets
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.cleaner import clean_html_to_text
-from job_scrapper.pipeline.date_parser import parse_to_utc
+from job_scrapper.pipeline.date_parser import is_within_days, parse_to_utc
 from job_scrapper.storage.base import JobSink
 
 
@@ -34,6 +34,7 @@ class WorkdayConnector(BaseConnector):
                 tenant, site = account.split(":", 1)
                 base_url = f"https://{host}/wday/cxs/{tenant}/{site}"
                 offset = 0
+                cap_reported = False
                 for page in range(self.MAX_PAGES):
                     if self.stop_requested:
                         break
@@ -59,10 +60,10 @@ class WorkdayConnector(BaseConnector):
                             if isinstance(count, int):
                                 largest_facet = max(largest_facet, count)
                             facets.extend(facet.get("values") or [])
-                    if largest_facet > total:
+                    if largest_facet > total and not cap_reported:
                         row["errors"].append(f"listing results capped at {total}; a facet reports {largest_facet} jobs")
                         row["truncated"] = True
-                        break
+                        cap_reported = True
                     row["found"] += len(jobs)
                     ids = [f"{account}:{job['externalPath']}" for job in jobs
                            if isinstance(job.get("externalPath"), str)]
@@ -96,9 +97,11 @@ class WorkdayConnector(BaseConnector):
                                 raise ValueError("response jobPostingInfo must be an object")
                             title = detail.get("title") or item.get("title")
                             description = clean_html_to_text(detail.get("jobDescription") or "")
-                            posted = parse_to_utc(item.get("postedOn")) or parse_to_utc(detail.get("startDate"))
+                            posted = parse_to_utc(detail.get("startDate")) or parse_to_utc(item.get("postedOn"))
                             if not posted:
                                 raise ValueError("unknown or invalid publication date")
+                            if not is_within_days(posted, max_days):
+                                return None, None
                             if not title or not description:
                                 raise ValueError("detail missing title or description")
                             return JobPosting(
@@ -124,6 +127,8 @@ class WorkdayConnector(BaseConnector):
                                 self.record_error(row, f"detail {raw_id}", error)
                         elif job is not None:
                             batch.append(job)
+                        else:
+                            row["skipped"] += 1
                     await self.save_jobs(sink, batch, row)
                     self.record_unknown_dates(row, f"page {page + 1}", missing_dates)
                     if offset + len(jobs) >= total:

@@ -59,33 +59,37 @@ class AshbyConnector(BaseConnector):
                         account_stats["skipped"] += 1
                         continue
 
-                    description = item.get("descriptionPlain") or clean_html_to_text(item.get("descriptionHtml") or "")
-                    if not all(isinstance(value, str) and value.strip() for value in
-                               (source_id, item.get("jobUrl"), item.get("title"), description)):
-                        invalid += 1
-                        account_stats["skipped"] += 1
-                        continue
+                    try:
+                        description = item.get("descriptionPlain") or clean_html_to_text(item.get("descriptionHtml") or "")
+                        if not all(isinstance(value, str) and value.strip() for value in
+                                   (source_id, item.get("jobUrl"), item.get("title"), description)):
+                            invalid += 1
+                            account_stats["skipped"] += 1
+                            continue
 
-                    arrangement = (item.get("workplaceType") or "unknown").lower()
-                    if arrangement == "onsite":
-                        arrangement = "in-office"
-                    batch.append(JobPosting(
-                        source=self.name,
-                        source_job_id=source_id,
-                        source_url=item["jobUrl"],
-                        title=item["title"],
-                        company_name=company_name,
-                        description_text=description,
-                        posted_at=pub_date,
-                        attributes={
-                            "work_arrangement": arrangement,
-                            "location": item.get("location"),
-                            "department": item.get("department"),
-                            "team": item.get("team"),
-                            "employment_type": item.get("employmentType"),
-                            "company_slug": slug,
-                        },
-                    ))
+                        arrangement = (item.get("workplaceType") or "unknown").lower()
+                        if arrangement == "onsite":
+                            arrangement = "in-office"
+                        batch.append(JobPosting(
+                            source=self.name,
+                            source_job_id=source_id,
+                            source_url=item["jobUrl"],
+                            title=item["title"],
+                            company_name=company_name,
+                            description_text=description,
+                            posted_at=pub_date,
+                            attributes={
+                                "work_arrangement": arrangement,
+                                "location": item.get("location"),
+                                "department": item.get("department"),
+                                "team": item.get("team"),
+                                "employment_type": item.get("employmentType"),
+                                "company_slug": slug,
+                            },
+                        ))
+                    except (ValueError, TypeError, AttributeError) as exc:
+                        account_stats["skipped"] += 1
+                        self.record_error(account_stats, f"listing {source_id}", exc)
 
                 await self.save_jobs(sink, batch, account_stats)
                 self.record_unknown_dates(account_stats, "listing", unknown_dates)

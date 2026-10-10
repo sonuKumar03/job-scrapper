@@ -138,6 +138,7 @@ class ScrapeExecutionModel(Base):
     attempt_token: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), nullable=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     results: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False)
+    stopped_sources: Mapped[list[str]] = mapped_column(JSONB, nullable=False, default=list, server_default='[]')
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 

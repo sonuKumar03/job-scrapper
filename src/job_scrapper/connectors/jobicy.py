@@ -74,27 +74,31 @@ class JobicyConnector(BaseConnector):
                     stats["skipped"] += 1
                     continue
 
-                raw_desc = item.get("jobDescription") or item.get("jobExcerpt") or ""
-                attributes: dict[str, Any] = {
-                    "seniority": item.get("jobLevel"),
-                    "work_arrangement": "remote",
-                    "location": item.get("jobGeo"),
-                    "salary_min": item.get("salaryMin"),
-                    "salary_max": item.get("salaryMax"),
-                    "currency": item.get("salaryCurrency"),
-                    "tech_stack": [item.get("jobIndustry")] if item.get("jobIndustry") else [],
-                    "employment_type": item.get("jobType"),
-                }
-                batch.append(JobPosting(
-                    source=self.name,
-                    source_job_id=source_id,
-                    source_url=item.get("url") or "",
-                    title=item.get("jobTitle") or "Untitled",
-                    company_name=item.get("companyName") or "Unknown Company",
-                    description_text=clean_html_to_text(raw_desc),
-                    posted_at=pub_date,
-                    attributes=attributes,
-                ))
+                try:
+                    raw_desc = item.get("jobDescription") or item.get("jobExcerpt") or ""
+                    attributes: dict[str, Any] = {
+                        "seniority": item.get("jobLevel"),
+                        "work_arrangement": "remote",
+                        "location": item.get("jobGeo"),
+                        "salary_min": item.get("salaryMin"),
+                        "salary_max": item.get("salaryMax"),
+                        "currency": item.get("salaryCurrency"),
+                        "tech_stack": [item.get("jobIndustry")] if item.get("jobIndustry") else [],
+                        "employment_type": item.get("jobType"),
+                    }
+                    batch.append(JobPosting(
+                        source=self.name,
+                        source_job_id=source_id,
+                        source_url=item.get("url") or "",
+                        title=item.get("jobTitle") or "Untitled",
+                        company_name=item.get("companyName") or "Unknown Company",
+                        description_text=clean_html_to_text(raw_desc),
+                        posted_at=pub_date,
+                        attributes=attributes,
+                    ))
+                except (ValueError, TypeError, AttributeError) as exc:
+                    stats["skipped"] += 1
+                    self.record_error(stats, f"listing {source_id}", exc)
 
             await self.save_jobs(sink, batch, stats)
             cursor = data.get("nextCursor")

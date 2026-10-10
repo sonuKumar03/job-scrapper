@@ -18,7 +18,7 @@ The API image starts on `0.0.0.0:8000`; configure the hosting service to route t
 
 Set `API_ALLOWED_HOSTS` and `API_ALLOWED_ORIGINS` explicitly as JSON arrays matching the deployed domains. Avoid wildcards. The frontend can use `VITE_API_URL` pointing to the API, or a Vercel external rewrite for `/api` to keep browser requests on the frontend origin. `VITE_API_URL` is build-time configuration and must never contain credentials.
 
-The backend image includes web, Redis, and Parquet support. Naukri's browser fallback additionally needs the browser extra, Chromium, and OS dependencies; it is not provided by the current image. Inspect per-source results rather than assuming complete coverage.
+The backend image includes web, Redis, Parquet, and browser support, including Chromium and its OS dependencies for Naukri. Native Naukri collection requires the browser extra and an installed Chromium browser. Inspect per-source results rather than assuming complete coverage.
 
 ## Initialization and upgrades
 

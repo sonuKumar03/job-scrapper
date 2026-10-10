@@ -25,6 +25,7 @@ class RemoteOKConnector(BaseConnector):
             return stats
 
         batch: list[JobPosting] = []
+        unknown_dates = 0
         known_ids = await sink.contains_many(
             self.name, [str(item["id"]) for item in data if item.get("id") is not None]
         )
@@ -38,7 +39,11 @@ class RemoteOKConnector(BaseConnector):
             source_id = str(item.get("id"))
 
             pub_date = parse_to_utc(item.get("date"))
-            if not pub_date or not is_within_days(pub_date, max_days=max_days):
+            if not pub_date:
+                unknown_dates += 1
+                stats["skipped"] += 1
+                continue
+            if not is_within_days(pub_date, max_days=max_days):
                 stats["skipped"] += 1
                 continue
 
@@ -46,31 +51,36 @@ class RemoteOKConnector(BaseConnector):
                 stats["skipped"] += 1
                 continue
 
-            clean_desc = clean_html_to_text(item.get("description") or "")
-            tags = item.get("tags") or []
+            try:
+                clean_desc = clean_html_to_text(item.get("description") or "")
+                tags = item.get("tags") or []
 
-            attributes: dict[str, Any] = {
-                "work_arrangement": "remote",
-                "location": item.get("location") or "Remote Worldwide",
-                "salary_min": item.get("salary_min"),
-                "salary_max": item.get("salary_max"),
-                "currency": "USD" if item.get("salary_min") or item.get("salary_max") else None,
-                "tech_stack": tags,
-                "apply_url": item.get("apply_url"),
-            }
+                attributes: dict[str, Any] = {
+                    "work_arrangement": "remote",
+                    "location": item.get("location") or "Remote Worldwide",
+                    "salary_min": item.get("salary_min"),
+                    "salary_max": item.get("salary_max"),
+                    "currency": "USD" if item.get("salary_min") or item.get("salary_max") else None,
+                    "tech_stack": tags,
+                    "apply_url": item.get("apply_url"),
+                }
 
-            job = JobPosting(
-                source=self.name,
-                source_job_id=source_id,
-                source_url=item.get("url") or f"https://remoteok.com/remote-jobs/{source_id}",
-                title=item.get("position") or "Untitled",
-                company_name=item.get("company") or "Unknown Company",
-                description_text=clean_desc,
-                posted_at=pub_date,
-                attributes=attributes,
-            )
-            batch.append(job)
+                job = JobPosting(
+                    source=self.name,
+                    source_job_id=source_id,
+                    source_url=item.get("url") or f"https://remoteok.com/remote-jobs/{source_id}",
+                    title=item.get("position") or "Untitled",
+                    company_name=item.get("company") or "Unknown Company",
+                    description_text=clean_desc,
+                    posted_at=pub_date,
+                    attributes=attributes,
+                )
+                batch.append(job)
+            except (ValueError, TypeError, AttributeError) as exc:
+                stats["skipped"] += 1
+                self.record_error(stats, f"listing {source_id}", exc)
 
         await self.save_jobs(sink, batch, stats)
+        self.record_unknown_dates(stats, "feed", unknown_dates)
 
         return stats

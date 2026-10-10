@@ -28,6 +28,7 @@ class WeWorkRemotelyConnector(BaseConnector):
                 continue
 
             batch: list[JobPosting] = []
+            unknown_dates = 0
             identities = []
             for item in items:
                 guid = item.findtext("guid")
@@ -51,7 +52,11 @@ class WeWorkRemotelyConnector(BaseConnector):
                 source_url = link_node.text.strip() if link_node is not None and link_node.text else ""
 
                 pub_date = parse_to_utc(raw_pubdate)
-                if not pub_date or not is_within_days(pub_date, max_days=max_days):
+                if not pub_date:
+                    unknown_dates += 1
+                    stats["skipped"] += 1
+                    continue
+                if not is_within_days(pub_date, max_days=max_days):
                     stats["skipped"] += 1
                     continue
 
@@ -59,34 +64,39 @@ class WeWorkRemotelyConnector(BaseConnector):
                     stats["skipped"] += 1
                     continue
 
-                # Parse company name and clean title: format usually "Company: Title"
-                company_name = "Unknown Company"
-                title = raw_title
-                if ": " in raw_title:
-                    parts = raw_title.split(": ", 1)
-                    company_name = parts[0].strip()
-                    title = parts[1].strip()
+                try:
+                    # Parse company name and clean title: format usually "Company: Title"
+                    company_name = "Unknown Company"
+                    title = raw_title
+                    if ": " in raw_title:
+                        parts = raw_title.split(": ", 1)
+                        company_name = parts[0].strip()
+                        title = parts[1].strip()
 
-                clean_desc = clean_html_to_text(raw_desc)
+                    clean_desc = clean_html_to_text(raw_desc)
 
-                attributes: dict[str, Any] = {
-                    "work_arrangement": "remote",
-                    "location": "Remote Worldwide",
-                    "feed_url": feed_url,
-                }
+                    attributes: dict[str, Any] = {
+                        "work_arrangement": "remote",
+                        "location": "Remote Worldwide",
+                        "feed_url": feed_url,
+                    }
 
-                job = JobPosting(
-                    source=self.name,
-                    source_job_id=source_id or source_url,
-                    source_url=source_url,
-                    title=title,
-                    company_name=company_name,
-                    description_text=clean_desc,
-                    posted_at=pub_date,
-                    attributes=attributes,
-                )
-                batch.append(job)
+                    job = JobPosting(
+                        source=self.name,
+                        source_job_id=source_id or source_url,
+                        source_url=source_url,
+                        title=title,
+                        company_name=company_name,
+                        description_text=clean_desc,
+                        posted_at=pub_date,
+                        attributes=attributes,
+                    )
+                    batch.append(job)
+                except (ValueError, TypeError, AttributeError) as exc:
+                    stats["skipped"] += 1
+                    self.record_error(stats, f"listing {source_id or source_url}", exc)
 
             await self.save_jobs(sink, batch, stats)
+            self.record_unknown_dates(stats, "feed", unknown_dates)
 
         return stats

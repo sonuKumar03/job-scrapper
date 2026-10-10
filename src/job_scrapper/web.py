@@ -276,6 +276,13 @@ def create_app() -> FastAPI:
             raise HTTPException(409, "This scrape is no longer active. Refresh run history.")
         return {'id': str(run.id), 'status': run.status}
 
+    @app.post('/api/runs/{run_id}/sources/{source}/stop', status_code=202)
+    async def stop_source(run_id: UUID, source: str):
+        run = await app.state.control.request_source_stop(run_id, source)
+        if run is None:
+            raise HTTPException(404, 'Scrape run not found.')
+        return run.model_dump(mode='json')
+
     @app.post("/api/runs", status_code=202)
     async def start_run(body: StartScrape):
         run = await app.state.control.submit(StartScrapeCommand(sources=tuple(body.sources), days=body.days))

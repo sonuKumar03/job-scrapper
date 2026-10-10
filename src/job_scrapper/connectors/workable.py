@@ -7,7 +7,7 @@ from job_scrapper.connectors.base import BaseConnector
 from job_scrapper.companies.contracts import CompanyTarget, validate_targets
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.cleaner import clean_html_to_text
-from job_scrapper.pipeline.date_parser import parse_to_utc
+from job_scrapper.pipeline.date_parser import is_within_days, parse_to_utc
 from job_scrapper.storage.base import JobSink
 
 
@@ -48,25 +48,32 @@ class WorkableConnector(BaseConnector):
                     if source_id in known:
                         row["skipped"] += 1
                         continue
-                    title = item.get("title")
-                    url = item.get("url") or item.get("shortlink") or item.get("application_url")
-                    description = clean_html_to_text(item.get("description") or "")
-                    if not all(isinstance(value, str) and value.strip() for value in (source_id, title, url, description)):
+                    if not is_within_days(posted, max_days):
                         row["skipped"] += 1
-                        row["errors"].append("listing missing required fields")
-                        row["truncated"] = True
                         continue
-                    location = item.get("location")
-                    workplace_type = item.get("workplace_type")
-                    if isinstance(location, dict):
-                        workplace_type = location.get("workplace_type") or workplace_type
-                        location = location.get("location_str")
-                    batch.append(JobPosting(
-                        source=self.name, source_job_id=source_id, source_url=url, title=title,
-                        company_name=name, description_text=description, posted_at=posted,
-                        attributes={"location": location, "work_arrangement": workplace_type,
-                                    "company_slug": account},
-                    ))
+                    try:
+                        title = item.get("title")
+                        url = item.get("url") or item.get("shortlink") or item.get("application_url")
+                        description = clean_html_to_text(item.get("description") or "")
+                        if not all(isinstance(value, str) and value.strip() for value in (source_id, title, url, description)):
+                            row["skipped"] += 1
+                            row["errors"].append("listing missing required fields")
+                            row["truncated"] = True
+                            continue
+                        location = item.get("location")
+                        workplace_type = item.get("workplace_type")
+                        if isinstance(location, dict):
+                            workplace_type = location.get("workplace_type") or workplace_type
+                            location = location.get("location_str")
+                        batch.append(JobPosting(
+                            source=self.name, source_job_id=source_id, source_url=url, title=title,
+                            company_name=name, description_text=description, posted_at=posted,
+                            attributes={"location": location, "work_arrangement": workplace_type,
+                                        "company_slug": account},
+                        ))
+                    except (ValueError, TypeError, AttributeError) as exc:
+                        row["skipped"] += 1
+                        self.record_error(row, f"listing {source_id}", exc)
                 await self.save_jobs(sink, batch, row)
                 self.record_unknown_dates(row, "listing", missing_dates)
             except Exception as exc:

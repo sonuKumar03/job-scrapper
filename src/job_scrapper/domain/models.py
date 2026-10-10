@@ -11,8 +11,8 @@ from job_scrapper.pipeline.attributes import normalize_attributes
 class JobPosting(BaseModel):
     """Normalized job posting contract across all scrapers."""
 
-    source: str
-    source_job_id: str
+    source: str = Field(max_length=64)
+    source_job_id: str = Field(max_length=256)
     source_url: str
     title: str
     company_name: str

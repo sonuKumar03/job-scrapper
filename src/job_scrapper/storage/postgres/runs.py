@@ -38,7 +38,11 @@ def snapshot(row: ScrapeExecutionModel) -> RunSnapshot:
     return RunSnapshot(
         id=row.id, sources=tuple(row.sources), days=row.days, status=row.status,
         queued_at=row.queued_at, started_at=row.started_at, finished_at=row.finished_at,
-        attempts=row.attempts, results=row.results, error_message=row.error_message,
+        attempts=row.attempts, results={
+            source: {**stats, 'status': 'stopped' if row.status == 'queued' else 'stopping'}
+            if source in row.stopped_sources and stats.get('status') in ('pending', 'running') else stats
+            for source, stats in row.results.items()
+        }, error_message=row.error_message,
     )
 
 
@@ -110,6 +114,30 @@ class PostgresRunStore:
             await session.commit()
             return snapshot(row)
 
+    async def request_source_stop(self, run_id: UUID, source: str) -> RunSnapshot | None:
+        async with self.manager.session() as session:
+            row = await session.scalar(select(ScrapeExecutionModel).where(
+                ScrapeExecutionModel.id == run_id
+            ).with_for_update())
+            if row is None:
+                return None
+            if source not in row.sources:
+                raise RunConflict('This source is not part of the scrape run.')
+            if row.status not in ACTIVE_STATUSES:
+                raise RunConflict('This scrape is no longer active. Refresh run history.')
+            if source in row.stopped_sources:
+                return snapshot(row)
+            if row.results.get(source, {}).get('status') not in ('pending', 'running'):
+                raise RunConflict('This source has already finished. Refresh run details.')
+            # Separate control state from worker-owned progress so saves cannot erase a stop.
+            row.stopped_sources = [*row.stopped_sources, source]
+            if row.status == 'queued':
+                row.results = {**row.results, source: {**row.results[source], 'status': 'stopped'}}
+                if set(row.stopped_sources) == set(row.sources):
+                    row.status, row.finished_at = 'stopped', now()
+            await session.commit()
+            return snapshot(row)
+
     async def get(self, run_id: UUID) -> RunSnapshot | None:
         async with self.manager.session() as session:
             row = await session.get(ScrapeExecutionModel, run_id)
@@ -163,7 +191,8 @@ class PostgresRunStore:
                         row.attempts += 1
                         row.attempt_token = uuid4()
                         row.error_message = None
-                        row.results = {source: {'status': 'pending'} for source in row.sources}
+                        row.results = {source: {'status': 'stopped' if source in row.stopped_sources else 'pending'}
+                                       for source in row.sources}
                         claim = RunClaim(run_id=row.id, generation=task.generation, attempt_token=row.attempt_token,
                                          command=StartScrapeCommand(sources=tuple(row.sources), days=row.days), attempt=row.attempts)
                 await session.commit()
@@ -193,14 +222,15 @@ class PostgresRunStore:
                 ScrapeExecutionModel.attempt_token == claim.attempt_token,
                 ScrapeExecutionModel.status.in_(('running', 'stopping')))
 
-    async def stop_requested(self, claim: RunClaim) -> bool:
+    async def stop_requests(self, claim: RunClaim) -> tuple[bool, set[str]]:
         if self.ownership_lost.is_set():
             raise OwnershipLost('Worker ownership was lost.')
         async with self.manager.session() as session:
-            status = await session.scalar(select(ScrapeExecutionModel.status).where(*self._owned(claim)))
-        if status is None:
+            row = (await session.execute(select(ScrapeExecutionModel.status, ScrapeExecutionModel.stopped_sources)
+                                         .where(*self._owned(claim)))).one_or_none()
+        if row is None:
             raise OwnershipLost('Execution attempt is no longer owned.')
-        return status == 'stopping'
+        return row.status == 'stopping', set(row.stopped_sources)
 
     async def save_progress(self, claim: RunClaim, results: dict[str, Any]) -> None:
         if self.ownership_lost.is_set():

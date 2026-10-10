@@ -19,6 +19,15 @@ def test_clean_html_to_text() -> None:
     assert "Python specialist" in clean
     assert "tracking pixel" not in clean
     assert "Menu" not in clean
+    from job_scrapper.pipeline.attributes import normalize_attributes
+    structured = clean_html_to_text(
+        "<h2>Qualifications</h2><ul><li>5+ years building production applications.</li></ul>"
+        "<p>Work arrangement: hybrid</p><p>Employment type: contract</p>"
+    )
+    attributes = normalize_attributes({}, structured)
+    assert attributes["experience_years_min"] == 5
+    assert attributes["work_arrangement"] == "hybrid"
+    assert attributes["employment_type"] == "contract"
 
 
 def test_date_parser_and_recency_filter() -> None:

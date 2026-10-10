@@ -8,7 +8,7 @@ A job scraping engine for collecting recent postings and exporting datasets for 
 
 - **Decoupled collection**: Connectors pass `JobPosting` records through the `JobSink` protocol. PostgreSQL stores jobs; an in-memory sink supports local checks.
 - **Polite requests**: `curl_cffi` uses Chrome 120 TLS impersonation, request spacing, and a limit of three concurrent requests per domain. Sites can still block requests.
-- **Publication window**: General boards, Greenhouse, Ashby and Lever filter publication dates by a configurable cutoff (default: 7 days). Workday and Workable currently collect all listed jobs regardless of the cutoff.
+- **Publication window**: All connectors filter publication dates by a configurable cutoff (default: 7 days), including Workday and Workable.
 - **Company coverage**: PostgreSQL supplies runtime targets for Greenhouse, Lever, Ashby, Workday, and Workable. Initialization restores 200 verified catalog mappings plus 38 previously enabled provider defaults; those defaults are not newly verified. Per-account results report failures, missing dates, and incomplete collection.
 - **Extensible Classification Schema**:
   - Core canonical fields (`title`, `company_name`, `description_text`, `posted_at`) paired with a flexible `attributes` JSON payload (`seniority`, `work_arrangement`, `location`, `salary_min`, `salary_max`, `experience_years_min`, `experience_years_max`, `tech_stack`).
@@ -49,6 +49,7 @@ make down               # Stop services; keep volumes
 ```
 
 This is a development stack with source mounts and API reload. Stop it before running native servers on the same ports or changing modes.
+Published development ports bind to `127.0.0.1` so the dashboard, API, and database remain local to this machine.
 
 ### Native development
 
@@ -87,7 +88,7 @@ Structured source values take priority. Missing fields may use explicitly labele
 
 ## Dashboard and REST API
 
-The dashboard supports debounced search, source/company filters, pagination, job details, and per-run start/stop controls. Both native and development-container frontends use port 3000. Native/development API documentation is at http://127.0.0.1:8000/docs.
+The dashboard supports debounced search, source/company filters, pagination, job details, and per-run start/stop controls. Run details also offer **Stop source** for pending or running connectors: pending sources are skipped, running sources settle current requests and save collected jobs, and other sources continue. Stopping some sources produces a partial run; stopping every source produces a stopped run. Both native and development-container frontends use port 3000. Native/development API documentation is at http://127.0.0.1:8000/docs.
 
 The API includes `/api/jobs`, `/api/jobs/count`, `/api/jobs/{id}`, `/api/runs`, `/api/runs/active`, `/api/session`, and `/api/filters`. TanStack Query shares cached data; counts/history poll every five seconds and active runs every two seconds. `/health` checks liveness; `/ready` checks PostgreSQL and local execution admission. Broker API readiness does not certify Redis or the external worker. The frontend supports `VITE_API_URL` for a separate API, or same-origin `/api` requests through a hosting rewrite.
 
@@ -127,13 +128,27 @@ Infrastructure interruptions retry up to three attempts, waiting 5 then 30 secon
 
 The API accepts runs with HTTP 202 and status `queued`. `/api/runs/active` returns all queued/running/stopping runs plus configured capacity, independently of history pagination. The dashboard polls that endpoint every two seconds and displays per-run controls.
 
+`POST /api/runs/{run_id}/sources/{source}/stop` accepts a per-source stop with HTTP 202 and returns the updated run. It uses the same JSON body and `X-Scrape-Token` boundary as whole-run Stop. Repeated requests are safe while the run remains active. Source-stop requests persist independently of progress updates and survive retries. Apply `make migrate` and restart the API/worker before using new source controls; finish active scrapes before restarting the worker.
+
 ## Source coverage limits
+
+LinkedIn rotates software engineer/developer, frontend, backend, full stack,
+DevOps, data, QA, mobile, and site reliability searches in India, without a
+seniority restriction. Job IDs are deduplicated across searches before detail
+requests. Each search allows up to 40 pages within the shared source runtime
+budget; repeated listing pages report incomplete coverage. The date window
+limits job age and does not guarantee exhaustive LinkedIn coverage.
 
 Naukri needs the browser extra and Chromium: `uv sync --extra browser`, then
 `uv run playwright install --with-deps chromium`. Both Docker targets include
 these dependencies and run bundled Chromium headlessly. The worker checks the
 package and browser executable before starting collection and reports missing
 prerequisites explicitly. Rebuild the worker/API images to pick up browser changes.
+Naukri uses full Chromium with a normal browser user agent because its search page
+rejects the default headless browser. Rejected navigation fails immediately.
+Search-page navigation and the search API response each have a 60-second timeout.
+Timeout results include the full error, page URL/title, document status, and up to
+five failed requests to distinguish slow loading from missing search responses.
 
 Every source has a runtime budget of 900 seconds after acquiring a source slot.
 Set `SOURCE_TIMEOUT_SECONDS` to change the default, or use JSON overrides such as
@@ -153,7 +168,7 @@ requests remain bounded by their request timeout.
 
 Current collection uses public JSON APIs (Himalayas, Jobicy, Arbeitnow, RemoteOK, Greenhouse, Lever, Hacker News search, and Ashby), We Work Remotely RSS, and Built In HTML pages. The Built In connector checks known IDs before fetching job pages and reads their published dates and descriptions from JobPosting metadata. Its detail requests make it slower than feed-based sources.
 
-**Provider limits:** [Jobicy exposes a rolling seven-day feed](https://jobicy.com/jobs-rss-feed), so requests for more than seven days show a warning before collection and finish with partial coverage, rather than a source failure, if no actual errors occur. [Hacker News search uses Algolia pagination](https://hn.algolia.com/api); its index exposes at most 1,000 results per query by default. Greenhouse, Ashby and Lever enforce the day window; Workday and Workable include all listed jobs. Unknown publication dates are reported as incomplete coverage.
+**Provider limits:** [Jobicy exposes a rolling seven-day feed](https://jobicy.com/jobs-rss-feed), so requests for more than seven days show a warning before collection and finish with partial coverage, rather than a source failure, if no actual errors occur. [Hacker News search uses Algolia pagination](https://hn.algolia.com/api); its index exposes at most 1,000 results per query by default. Hiring-thread discovery looks back 31 days beyond the requested window to find recent comments in older monthly threads; comments still use the requested cutoff. All ATS connectors enforce the day window. Unknown publication dates are reported as incomplete coverage.
 
 **Scraper safety ceilings:** These are implementation choices to bound one run, not provider limits. The current caps are 500 pages for Himalayas, 500 pages for Lever, 50 pages for Arbeitnow, 500 pages for Jobicy, and 500 listing pages for Built In. If a cap is reached, the CLI marks that source incomplete. Himalayas uses the documented cursor and 20-job page size; [Lever supports `skip` and `limit`](https://github.com/lever/postings-api); [Jobicy supports cursor pagination](https://jobicy.com/jobs-rss-feed). Ashby uses its [public job-posting API](https://developers.ashbyhq.com/docs/public-job-posting-api).
 

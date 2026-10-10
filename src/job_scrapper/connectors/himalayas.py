@@ -93,33 +93,37 @@ class HimalayasConnector(BaseConnector):
                     stats["skipped"] += 1
                     continue
 
-                clean_desc = clean_html_to_text(item.get("description") or item.get("excerpt") or "")
-                location_list = item.get("locationRestrictions") or []
-                location_str = ", ".join(location_list) if isinstance(location_list, list) else str(location_list)
-                categories = item.get("categories") or []
+                try:
+                    clean_desc = clean_html_to_text(item.get("description") or item.get("excerpt") or "")
+                    location_list = item.get("locationRestrictions") or []
+                    location_str = ", ".join(location_list) if isinstance(location_list, list) else str(location_list)
+                    categories = item.get("categories") or []
 
-                attributes: dict[str, Any] = {
-                    "seniority": item.get("seniority"),
-                    "work_arrangement": "remote",
-                    "location": location_str or "Remote Worldwide",
-                    "salary_min": item.get("minSalary"),
-                    "salary_max": item.get("maxSalary"),
-                    "currency": item.get("currency"),
-                    "tech_stack": categories,
-                    "employment_type": item.get("employmentType"),
-                }
+                    attributes: dict[str, Any] = {
+                        "seniority": item.get("seniority"),
+                        "work_arrangement": "remote",
+                        "location": location_str or "Remote Worldwide",
+                        "salary_min": item.get("minSalary"),
+                        "salary_max": item.get("maxSalary"),
+                        "currency": item.get("currency"),
+                        "tech_stack": categories,
+                        "employment_type": item.get("employmentType"),
+                    }
 
-                job = JobPosting(
-                    source=self.name,
-                    source_job_id=source_id,
-                    source_url=item.get("applicationLink") or f"https://himalayas.app/companies/{item.get('companySlug')}",
-                    title=item.get("title") or "Untitled",
-                    company_name=item.get("companyName") or "Unknown Company",
-                    description_text=clean_desc,
-                    posted_at=pub_date,
-                    attributes=attributes,
-                )
-                batch.append(job)
+                    job = JobPosting(
+                        source=self.name,
+                        source_job_id=source_id,
+                        source_url=item.get("applicationLink") or f"https://himalayas.app/companies/{item.get('companySlug')}",
+                        title=item.get("title") or "Untitled",
+                        company_name=item.get("companyName") or "Unknown Company",
+                        description_text=clean_desc,
+                        posted_at=pub_date,
+                        attributes=attributes,
+                    )
+                    batch.append(job)
+                except (ValueError, TypeError, AttributeError) as exc:
+                    stats["skipped"] += 1
+                    self.record_error(stats, f"listing {source_id}", exc)
 
             stats['coverage'].update(pages_scanned=page + 1, listings_scanned=scanned_count,
                                      total_available=total_count,

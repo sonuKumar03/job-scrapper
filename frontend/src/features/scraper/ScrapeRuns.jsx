@@ -4,6 +4,7 @@ import {
   AlertCircle,
   RefreshCw,
   AlertTriangle,
+  ChevronRight,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useSession, useRuns, useActiveRuns } from "../../services/queries";
@@ -30,6 +31,10 @@ export default function ScrapeRuns() {
   const capacity = activeQuery.data?.capacity;
   const queueFull = capacity && activeRuns.length >= capacity.queued;
   const runs = runsQuery.data?.items || [];
+  const totalPages = Math.max(1, Math.ceil((runsQuery.data?.total || 0) / 25));
+  useEffect(() => {
+    if (runsQuery.isSuccess && page > totalPages) setPage(totalPages);
+  }, [runsQuery.isSuccess, page, totalPages]);
   const loadingRuns = runsQuery.isFetching;
   const [selectedRunId, setSelectedRunId] = useState(null);
   const detailQuery = useQuery({
@@ -51,6 +56,13 @@ export default function ScrapeRuns() {
   const stopMutation = useMutation({
     mutationFn: (id) => fetchApi(`runs/${id}/stop`, { method: "POST", body: "{}" }),
     onSuccess: invalidateScrapeData,
+  });
+  const stopSourceMutation = useMutation({
+    mutationFn: ({ runId, source }) => fetchApi(`runs/${runId}/sources/${encodeURIComponent(source)}/stop`, { method: "POST", body: "{}" }),
+    onSuccess: (run) => {
+      queryClient.setQueryData(["runs", "detail", run.id], run);
+      return invalidateScrapeData();
+    },
   });
   const isSubmitting = startMutation.isPending;
   const [statusMessage, setStatusMessage] = useState("");
@@ -127,6 +139,19 @@ export default function ScrapeRuns() {
     return "error";
   };
 
+  const stopSource = async (runId, source) => {
+    try {
+      const run = await stopSourceMutation.mutateAsync({ runId, source });
+      setStatusMessage(run.results[source].status === "stopped"
+        ? `${source} stopped. Saved jobs are kept.`
+        : `Stop requested for ${source}. Other sources will continue.`);
+      setStatusError(false);
+    } catch (err) {
+      setStatusMessage(err.message || `Could not stop ${source}. Try again.`);
+      setStatusError(true);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 xl:grid-cols-[420px_minmax(0,1fr)] gap-6 items-start">
       <h1 className="sr-only">Scrape runs</h1>
@@ -167,7 +192,7 @@ export default function ScrapeRuns() {
           {sessionQuery.isPending && <p role="status" className="text-sm text-text-muted">Loading sources…</p>}
           {[
             { label: "Job boards", hint: "Use the posting date window below.", sources: availableSources.filter((source) => !ATS_SOURCES.includes(source)) },
-            { label: "Company ATS", hint: "Greenhouse, Ashby and Lever use the date window. Workday and Workable collect all listed jobs.", sources: availableSources.filter((source) => ATS_SOURCES.includes(source)) },
+            { label: "Company ATS", hint: "Collect jobs from configured company boards within the posting date window.", sources: availableSources.filter((source) => ATS_SOURCES.includes(source)) },
           ].map((group) => (
             <fieldset key={group.label} className="min-w-0 space-y-2">
               <legend className="text-sm font-semibold text-text-main">{group.label}</legend>
@@ -210,7 +235,7 @@ export default function ScrapeRuns() {
               />
             </div>
             <div className="text-xs text-text-muted">
-              General job boards filter postings created in the last {days} {days == 1 ? "day" : "days"}.
+              Filter postings created in the last {days} {days == 1 ? "day" : "days"}.
             </div>
           </div>
 
@@ -345,20 +370,35 @@ export default function ScrapeRuns() {
                         )}
                       </div>
 
-                      {stats.found !== undefined && (
-                        <div className="text-xs text-text-muted flex items-center gap-3">
-                          <span className="text-text-main font-semibold">
-                            {stats.found.toLocaleString()} found
-                          </span>
-                          <span className="text-accent font-semibold">
-                            {(stats.inserted ?? 0).toLocaleString()} inserted
-                          </span>
-                          <span className="text-text-dim">
-                            {(stats.skipped ?? 0).toLocaleString()} skipped
-                          </span>
-                        </div>
-                      )}
+                      <div className="flex flex-wrap items-center gap-3">
+                        {stats.found !== undefined && (
+                          <div className="text-xs text-text-muted flex items-center gap-3">
+                            <span className="text-text-main font-semibold">
+                              {stats.found.toLocaleString()} found
+                            </span>
+                            <span className="text-accent font-semibold">
+                              {(stats.inserted ?? 0).toLocaleString()} inserted
+                            </span>
+                            <span className="text-text-dim">
+                              {(stats.skipped ?? 0).toLocaleString()} skipped
+                            </span>
+                          </div>
+                        )}
+                        {["queued", "running", "stopping"].includes(selectedRun.status) && ["pending", "running", "stopping"].includes(stats.status) && (
+                          <Button variant="danger" size="sm"
+                            aria-label={`Stop ${sourceName} in run ${selectedRun.id}`}
+                            loading={stopSourceMutation.isPending && stopSourceMutation.variables?.runId === selectedRun.id && stopSourceMutation.variables?.source === sourceName}
+                            disabled={selectedRun.status === "stopping" || stats.status === "stopping" || stopSourceMutation.isPending}
+                            onClick={() => stopSource(selectedRun.id, sourceName)}>
+                            {stats.status === "stopping" || selectedRun.status === "stopping" ? "Stopping…" : "Stop source"}
+                          </Button>
+                        )}
+                      </div>
                     </div>
+
+                    {stopSourceMutation.isError && stopSourceMutation.variables?.runId === selectedRun.id && stopSourceMutation.variables?.source === sourceName && (
+                      <p role="alert" className="text-sm text-status-danger">{stopSourceMutation.error.message}</p>
+                    )}
 
                     {stats.errors && stats.errors.length > 0 && (
                       <div className="p-2.5 rounded bg-status-danger-bg border border-status-danger-border text-xs text-status-danger space-y-1">
@@ -378,11 +418,12 @@ export default function ScrapeRuns() {
                     )}
 
                     {stats.accounts && Object.keys(stats.accounts).length > 0 && (
-                      <div className="pl-3 border-l-2 border-border-subtle mt-2 space-y-2">
-                        <span className="text-[11px] font-semibold text-text-dim uppercase">
-                          Sub-account breakdown
-                        </span>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                      <details className="group mt-2">
+                        <summary className="flex items-center gap-2 min-h-[44px] cursor-pointer list-none text-sm font-semibold text-text-muted rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus [&::-webkit-details-marker]:hidden">
+                          <ChevronRight aria-hidden="true" className="w-4 h-4 shrink-0 group-open:rotate-90" />
+                          Company breakdown · {Object.keys(stats.accounts).length} companies
+                        </summary>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 mt-2">
                           {Object.entries(stats.accounts).map(([accName, accStats]) => (
                             <div
                               key={accName}
@@ -397,7 +438,7 @@ export default function ScrapeRuns() {
                             </div>
                           ))}
                         </div>
-                      </div>
+                      </details>
                     )}
                   </div>
                 ))}
@@ -490,6 +531,15 @@ export default function ScrapeRuns() {
             </table>
           </div>
         )}
+        {runs.length > 0 && <div className="flex flex-wrap items-center justify-between gap-3 p-4 border-t border-border-subtle">
+          <span className="text-xs text-text-muted">Page {page} of {totalPages}</span>
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" disabled={page <= 1 || loadingRuns}
+              onClick={() => loadRuns(page - 1)}>Previous</Button>
+            <Button variant="secondary" size="sm" disabled={page >= totalPages || loadingRuns}
+              onClick={() => loadRuns(page + 1)}>Next</Button>
+          </div>
+        </div>}
       </Card>
       </div>
     </div>

@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: postgrespassword
       POSTGRES_DB: job_scrapper
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -41,7 +41,7 @@ services:
     container_name: job_scrapper_api
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     environment:
       - DATABASE_URL=postgresql+psycopg://postgres:postgrespassword@db:5432/job_scrapper
       - SCRAPE_EXECUTOR=${SCRAPE_EXECUTOR:-memory}
@@ -67,7 +67,7 @@ services:
     container_name: job_scrapper_web
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       - VITE_API_PROXY_TARGET=http://api:8000
     volumes:

@@ -40,6 +40,8 @@ class HackerNewsConnector(BaseConnector):
         stats = self.new_stats()
         cutoff = datetime.now(timezone.utc) - timedelta(days=max_days)
         numeric_filter = f"created_at_i>{int(cutoff.timestamp())}"
+        # Include the monthly thread preceding the comment window, even in a 31-day month.
+        story_cutoff = cutoff - timedelta(days=31)
         stories: list[dict[str, Any]] = []
         story_ids: set[str] = set()
         story_pages = 0
@@ -51,7 +53,7 @@ class HackerNewsConnector(BaseConnector):
                 {
                     "tags": "ask_hn",
                     "query": "Who is hiring",
-                    "numericFilters": numeric_filter,
+                    "numericFilters": f"created_at_i>{int(story_cutoff.timestamp())}",
                     "hitsPerPage": self.HITS_PER_PAGE,
                     "page": page,
                 },

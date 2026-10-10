@@ -1,7 +1,6 @@
 """Instahyre's public job search API and public job pages."""
 
 import asyncio
-import json
 from typing import Any
 
 from selectolax.lexbor import LexborHTMLParser
@@ -10,6 +9,7 @@ from job_scrapper.connectors.base import BaseConnector
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.cleaner import clean_html_to_text
 from job_scrapper.pipeline.date_parser import is_within_days, parse_to_utc
+from job_scrapper.pipeline.job_metadata import parse_job_metadata
 from job_scrapper.storage.base import JobSink
 
 
@@ -25,11 +25,7 @@ class InstahyreConnector(BaseConnector):
             url = listing["public_url"]
             response = await self.http_client.get(url)
             page = LexborHTMLParser(response.text)
-            item = next(
-                value for script in page.css('script[type="application/ld+json"]')
-                if isinstance((value := json.loads(script.text())), dict)
-                and value.get("@type") == "JobPosting"
-            )
+            item = parse_job_metadata(script.text() for script in page.css('script[type="application/ld+json"]'))
             posted_at = parse_to_utc(item.get("datePosted"))
             if posted_at is None:
                 self.record_unknown_dates(stats, f"job {source_id}", 1)

@@ -1,6 +1,8 @@
 """Shared scraping pipeline; persistence and networking arrive through ports."""
 
 import asyncio
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from copy import deepcopy
 from typing import Any
 from job_scrapper.companies.contracts import ATS_PROVIDERS, CompanyCatalogUnavailable, CompanyTargetRepository
@@ -21,32 +23,56 @@ async def run_scrape(
 ) -> RunResult:
     results = {source: {'status': 'pending'} for source in claim.command.sources}
     state_lock = asyncio.Lock()
+    source_stops = {source: asyncio.Event() for source in claim.command.sources}
+    stopped_sources: set[str] = set()
 
     async def persist() -> None:
         await store.save_progress(claim, deepcopy(results))
 
+    async def read_stop_requests() -> None:
+        stop_run, sources = await store.stop_requests(claim)
+        if stop_run:
+            stop_event.set()
+        stopped_sources.update(sources)
+        for source, event in source_stops.items():
+            if stop_event.is_set() or source in stopped_sources:
+                event.set()
+
     async def watch_stop() -> None:
         while True:
-            if await store.stop_requested(claim):
-                stop_event.set()
+            await read_stop_requests()
             await asyncio.sleep(0.5)
 
+    @asynccontextmanager
+    async def source_slot(source: str) -> AsyncIterator[bool]:
+        acquire = asyncio.create_task(source_limit.acquire())
+        stopped = asyncio.create_task(source_stops[source].wait())
+        try:
+            await asyncio.wait((acquire, stopped), return_when=asyncio.FIRST_COMPLETED)
+            yield not source_stops[source].is_set()
+        finally:
+            acquire.cancel()
+            stopped.cancel()
+            await asyncio.gather(acquire, stopped, return_exceptions=True)
+            if not acquire.cancelled() and acquire.result():
+                source_limit.release()
+
     async def scrape_one(source: str) -> None:
-        async with source_limit:
-            if stop_event.is_set():
+        async with source_slot(source) as acquired:
+            if not acquired or stop_event.is_set() or source in stopped_sources:
                 async with state_lock:
                     results[source] = {**BaseConnector.new_stats(), 'status': 'stopped'}
                     await persist()
                 return
             connector = None
-            source_stop = asyncio.Event()
+            source_stop = source_stops[source]
             timeout_seconds = (source_timeouts or {}).get(source, source_timeout_seconds)
             timed_out = False
 
             async def watch_source() -> None:
                 nonlocal timed_out
                 try:
-                    await asyncio.wait_for(stop_event.wait(), timeout=timeout_seconds)
+                    await asyncio.wait_for(source_stop.wait(), timeout=timeout_seconds)
                 except TimeoutError:
                     timed_out = True
                 source_stop.set()
@@ -96,18 +122,22 @@ async def run_scrape(
                 try:
                     async with asyncio.timeout(timeout_seconds + 60):
                         await connector.check_prerequisites()
-                        async with state_lock:
-                            results[source]['status'] = 'running'
-                            await persist()
-                        stats = await connector.scrape(sink=sink, max_days=claim.command.days)
+                        if source_stop.is_set():
+                            stats = BaseConnector.new_stats()
+                        else:
+                            async with state_lock:
+                                results[source]['status'] = 'running'
+                                await persist()
+                            stats = await connector.scrape(sink=sink, max_days=claim.command.days)
                 except TimeoutError:
                     timed_out = True
                     stats = deepcopy(results[source])
-                if timed_out:
+                manually_stopped = stop_event.is_set() or source in stopped_sources
+                if timed_out and not manually_stopped:
                     stats['truncated'] = True
                     stats['timed_out'] = True
                     stats['errors'].append(f'Source deadline reached ({timeout_seconds:g} seconds); collection incomplete')
-                stats = {**stats, 'status': 'stopped' if stop_event.is_set() else
+                stats = {**stats, 'status': 'stopped' if manually_stopped else
                          'failed' if stats['errors'] else 'partial' if stats['truncated'] else 'completed'}
             except (StorageUnavailable, CompanyCatalogUnavailable, OwnershipLost):
                 raise
@@ -126,6 +156,7 @@ async def run_scrape(
                 results[source] = stats
                 await persist()
 
+    await read_stop_requests()
     watcher = asyncio.create_task(watch_stop())
     tasks = [asyncio.create_task(scrape_one(source)) for source in claim.command.sources]
     work = asyncio.gather(*tasks)
@@ -134,11 +165,11 @@ async def run_scrape(
         if watcher in done:
             await watcher
         await work
-        if await store.stop_requested(claim):
-            stop_event.set()
+        await read_stop_requests()
         failures = sum(stats['status'] == 'failed' for stats in results.values())
-        incomplete = any(stats['status'] == 'partial' for stats in results.values())
-        status = 'stopped' if stop_event.is_set() else 'completed' if not failures and not incomplete else (
+        incomplete = any(stats['status'] in ('partial', 'stopped') for stats in results.values())
+        all_stopped = all(stats['status'] == 'stopped' for stats in results.values())
+        status = 'stopped' if stop_event.is_set() or all_stopped else 'completed' if not failures and not incomplete else (
             'failed' if failures == len(results) else 'partial'
         )
         return RunResult(status=status, results=results)
