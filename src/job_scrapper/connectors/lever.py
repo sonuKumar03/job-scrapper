@@ -6,7 +6,7 @@ from job_scrapper.connectors.base import BaseConnector
 from job_scrapper.companies.contracts import CompanyTarget, validate_targets
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.cleaner import clean_html_to_text
-from job_scrapper.pipeline.date_parser import parse_to_utc
+from job_scrapper.pipeline.date_parser import is_within_days, parse_to_utc
 from job_scrapper.storage.base import JobSink
 
 class LeverConnector(BaseConnector):
@@ -61,6 +61,9 @@ class LeverConnector(BaseConnector):
                         pub_date = parse_to_utc(item.get("createdAt"))
                         if not pub_date:
                             unknown_dates += 1
+                            account_stats["skipped"] += 1
+                            continue
+                        if not is_within_days(pub_date, max_days):
                             account_stats["skipped"] += 1
                             continue
                         if source_id in stored_ids:
