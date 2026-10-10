@@ -9,6 +9,7 @@ from typing import Any
 from urllib.parse import urlsplit, urlunsplit
 from curl_cffi.requests import AsyncSession, Response
 from job_scrapper.config import Settings, get_settings
+from job_scrapper.execution.cancellation import RequestStopped, request_stop_event, wait_before_request
 
 
 class RequestError(RuntimeError):
@@ -88,11 +89,13 @@ class ResilientHttpClient:
             )
 
         for attempt in range(3):
+            if (stop := request_stop_event.get()) is not None and stop.is_set():
+                raise RequestStopped()
             try:
                 async with domain.semaphore:
                     async with domain.start_lock:
                         loop = asyncio.get_running_loop()
-                        await asyncio.sleep(max(0.0, domain.next_start - loop.time()))
+                        await wait_before_request(max(0.0, domain.next_start - loop.time()))
                         domain.next_start = loop.time() + random.uniform(self.min_delay, self.max_delay)
                     response = await session.request(method, url, **kwargs)
                 if response.status_code not in {429, 500, 502, 503, 504}:
@@ -104,7 +107,7 @@ class ResilientHttpClient:
                     retry_after = float(attempt + 1)
                 if retry_after > 120:
                     raise RequestError(url, "retry deferred by server", response.status_code)
-            except RequestError:
+            except (RequestError, RequestStopped):
                 raise
             except Exception as exc:
                 if attempt == 2:
@@ -115,7 +118,7 @@ class ResilientHttpClient:
 
             if attempt == 2:
                 raise RequestError(url, "transient HTTP failure after 3 attempts", response.status_code)
-            await asyncio.sleep(retry_after)
+            await wait_before_request(retry_after)
         raise AssertionError("unreachable")
 
     async def get(self, url: str, **kwargs: Any) -> Response:

@@ -19,9 +19,13 @@ class NaukriConnector(BaseConnector):
 
     async def _fetch_job(self, page: Any, listing: dict[str, Any], posted_at: Any,
                          stats: dict[str, Any]) -> JobPosting | None:
+        if self.stop_requested:
+            return None
         source_id = listing["jobId"]
         try:
             await asyncio.sleep(random.uniform(1, 3))
+            if self.stop_requested:
+                return None
             async with page.expect_response(
                 lambda response: f"/jobapi/v4/job/{source_id}" in response.url,
                 timeout=30000,
@@ -94,6 +98,8 @@ class NaukriConnector(BaseConnector):
                                f"?k=software%20engineer&jobAge={max_days}")
                         try:
                             await asyncio.sleep(random.uniform(1, 3))
+                            if self.stop_requested:
+                                break
                             async with search_page.expect_response(
                                 lambda response: "/jobapi/v3/search" in response.url,
                                 timeout=30000,
@@ -122,6 +128,8 @@ class NaukriConnector(BaseConnector):
                         known_ids = await sink.contains_many(self.name, [job["jobId"] for job in fresh])
                         jobs = []
                         for listing in fresh:
+                            if self.stop_requested:
+                                break
                             if listing["jobId"] in known_ids:
                                 stats["skipped"] += 1
                                 continue

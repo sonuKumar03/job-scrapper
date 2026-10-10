@@ -6,6 +6,7 @@ from typing import Any
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.execution.contracts import HttpClient
 from job_scrapper.storage.base import JobSink, StorageUnavailable
+from job_scrapper.execution.cancellation import RequestStopped
 from job_scrapper.utils.http_client import RequestError, ResilientHttpClient
 
 
@@ -48,6 +49,8 @@ class BaseConnector(ABC):
 
     @staticmethod
     def record_error(stats: dict[str, Any], context: str, error: Exception) -> None:
+        if isinstance(error, RequestStopped):
+            return
         if isinstance(error, StorageUnavailable):
             raise error
         reason = str(error) if isinstance(error, RequestError) else type(error).__name__

@@ -86,6 +86,11 @@ class RunCapacity(FrozenModel):
 
 
 class HttpClient(Protocol):
+    """Honor execution.cancellation.request_stop_event before sending or retrying.
+
+    Raise RequestStopped for unsent work; allow in-flight requests to finish.
+    """
+
     async def get(self, url: str, **kwargs: Any) -> Any: ...
     async def post(self, url: str, **kwargs: Any) -> Any: ...
     async def close(self) -> None: ...

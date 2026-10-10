@@ -8,6 +8,7 @@ from job_scrapper.connectors.base import BaseConnector
 from job_scrapper.connectors.registry import get_connector
 from job_scrapper.execution.contracts import HttpClient, RunClaim, RunResult, RunStore
 from job_scrapper.storage.base import JobSink, StorageUnavailable
+from job_scrapper.execution.cancellation import request_stop_event
 
 
 async def run_scrape(
@@ -38,6 +39,7 @@ async def run_scrape(
             async with state_lock:
                 results[source] = {'status': 'running'}
                 await persist()
+            stop_token = request_stop_event.set(stop_event)
             try:
                 targets = await company_repository.list_enabled(source) if source in ATS_PROVIDERS else None
                 if targets == ():
@@ -57,6 +59,7 @@ async def run_scrape(
             except Exception as error:
                 stats = {'status': 'failed', 'errors': [type(error).__name__], 'truncated': True}
             finally:
+                request_stop_event.reset(stop_token)
                 if connector is not None:
                     await connector.close()
             async with state_lock:

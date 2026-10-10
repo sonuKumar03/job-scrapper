@@ -19,6 +19,8 @@ class HiristConnector(BaseConnector):
 
     async def _fetch_job(self, listing: dict[str, Any], posted_at: Any,
                          stats: dict[str, Any]) -> JobPosting | None:
+        if self.stop_requested:
+            return None
         source_id = str(listing["id"])
         try:
             response = await self.http_client.get(f"{self.BASE_URL}/detail?jobcode={source_id}")
@@ -95,9 +97,14 @@ class HiristConnector(BaseConnector):
                         recent.append((listing, posted_at))
                     else:
                         stats["skipped"] += 1
-                jobs = await asyncio.gather(*(self._fetch_job(job, posted_at, stats)
-                                              for job, posted_at in recent))
-                await self.save_jobs(sink, [job for job in jobs if job is not None], stats)
+                batch: list[JobPosting] = []
+                for start in range(0, len(recent), 3):
+                    if self.stop_requested:
+                        break
+                    jobs = await asyncio.gather(*(self._fetch_job(job, posted_at, stats)
+                                                  for job, posted_at in recent[start:start + 3]))
+                    batch.extend(job for job in jobs if job is not None)
+                await self.save_jobs(sink, batch, stats)
                 if not data.get("hasMore"):
                     break
             else:
