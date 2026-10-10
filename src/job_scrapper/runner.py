@@ -2,11 +2,12 @@
 
 import asyncio
 from copy import deepcopy
+from typing import Any
 from job_scrapper.companies.contracts import ATS_PROVIDERS, CompanyCatalogUnavailable, CompanyTargetRepository
 
 from job_scrapper.connectors.base import BaseConnector
 from job_scrapper.connectors.registry import get_connector
-from job_scrapper.execution.contracts import HttpClient, RunClaim, RunResult, RunStore
+from job_scrapper.execution.contracts import HttpClient, OwnershipLost, RunClaim, RunResult, RunStore
 from job_scrapper.storage.base import JobSink, StorageUnavailable
 from job_scrapper.execution.cancellation import request_stop_event
 
@@ -36,6 +37,26 @@ async def run_scrape(
                     await persist()
                 return
             connector = None
+            source_stats: dict[int, dict[str, Any]] = {}
+
+            async def report_progress(stats: dict[str, Any]) -> None:
+                # Each company has its own cumulative stats; retain identities across batches.
+                async with state_lock:
+                    source_stats[id(stats)] = stats
+                    row = BaseConnector.new_stats()
+                    for part in source_stats.values():
+                        for key in ('found', 'inserted', 'skipped'):
+                            row[key] += part[key]
+                        row['errors'].extend(part['errors'])
+                        row['truncated'] |= part['truncated']
+                    results[source] = {**row, 'status': 'running'}
+                    try:
+                        await persist()
+                    except OwnershipLost:
+                        raise
+                    except Exception as error:
+                        raise StorageUnavailable(type(error).__name__) from error
+
             async with state_lock:
                 results[source] = {'status': 'running'}
                 await persist()
@@ -51,10 +72,11 @@ async def run_scrape(
                     return
                 connector = get_connector(source, http_client=client, company_targets=targets)
                 connector.stop_event = stop_event
+                connector.on_progress = report_progress
                 stats = await connector.scrape(sink=sink, max_days=claim.command.days)
                 stats = {**stats, 'status': 'stopped' if stop_event.is_set() else
                          'failed' if stats['errors'] or stats['truncated'] else 'completed'}
-            except (StorageUnavailable, CompanyCatalogUnavailable):
+            except (StorageUnavailable, CompanyCatalogUnavailable, OwnershipLost):
                 raise
             except Exception as error:
                 stats = {'status': 'failed', 'errors': [type(error).__name__], 'truncated': True}

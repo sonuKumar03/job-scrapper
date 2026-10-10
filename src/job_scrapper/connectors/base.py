@@ -2,9 +2,10 @@
 
 import asyncio
 from abc import ABC, abstractmethod
+from collections.abc import Awaitable, Callable
 from typing import Any
 from job_scrapper.domain.models import JobPosting
-from job_scrapper.execution.contracts import HttpClient
+from job_scrapper.execution.contracts import HttpClient, OwnershipLost
 from job_scrapper.storage.base import JobSink, StorageUnavailable
 from job_scrapper.execution.cancellation import RequestStopped
 from job_scrapper.utils.http_client import RequestError, ResilientHttpClient
@@ -17,6 +18,7 @@ class BaseConnector(ABC):
 
     def __init__(self, http_client: HttpClient | None = None) -> None:
         self.stop_event: asyncio.Event | None = None
+        self.on_progress: Callable[[dict[str, Any]], Awaitable[None]] | None = None
         self._owns_http_client = http_client is None
         self.http_client = http_client if http_client is not None else ResilientHttpClient()
 
@@ -51,7 +53,7 @@ class BaseConnector(ABC):
     def record_error(stats: dict[str, Any], context: str, error: Exception) -> None:
         if isinstance(error, RequestStopped):
             return
-        if isinstance(error, StorageUnavailable):
+        if isinstance(error, (StorageUnavailable, OwnershipLost)):
             raise error
         reason = str(error) if isinstance(error, RequestError) else type(error).__name__
         stats["errors"].append(f"{context}: {reason}")
@@ -84,10 +86,13 @@ class BaseConnector(ABC):
         )
         aggregate["truncated"] |= account_row["truncated"]
 
-    @staticmethod
-    async def save_jobs(sink: JobSink, jobs: list[JobPosting], stats: dict[str, Any]) -> None:
+    async def save_jobs(self, sink: JobSink, jobs: list[JobPosting], stats: dict[str, Any]) -> None:
         for start in range(0, len(jobs), 500):
             batch = jobs[start:start + 500]
             inserted = await sink.save_batch(batch)
             stats["inserted"] += inserted
             stats["skipped"] += len(batch) - inserted
+            if self.on_progress is not None:
+                await self.on_progress(stats)
+        if not jobs and self.on_progress is not None:
+            await self.on_progress(stats)
