@@ -123,3 +123,17 @@ def test_attributes_normalize_at_the_shared_job_contract() -> None:
     assert raw["work_arrangement"] == "OnSite"
     assert job.attributes["_attribute_evidence"]["work_arrangement"]["value"] == "OnSite"
     assert JobPosting.model_validate(job.model_dump()).attributes == job.attributes
+
+
+def test_read_filter_contract():
+    from job_scrapper.storage.postgres.job_filters import JobFilters
+    from pydantic import ValidationError
+    import pytest
+
+    assert JobFilters(experience_min=0, experience_max=5).experience_min == 0
+    assert JobFilters(work_arrangement='unknown').work_arrangement == 'unknown'
+    for invalid in ({'experience_min': -1}, {'experience_min': 5, 'experience_max': 2},
+                    {'experience_max': float('nan')}, {'experience_min': float('inf')},
+                    {'work_arrangement': 'anywhere'}, {'employment_type': 'permanent'}, {'q': 'x' * 201}):
+        with pytest.raises(ValidationError):
+            JobFilters(**invalid)

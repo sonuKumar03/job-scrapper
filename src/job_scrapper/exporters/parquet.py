@@ -8,6 +8,7 @@ import tempfile
 
 from job_scrapper.exporters._rows import iter_job_batches, record_from_row
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
+from job_scrapper.storage.postgres.job_filters import JobFilters
 
 
 async def export_jobs_to_parquet(
@@ -15,6 +16,7 @@ async def export_jobs_to_parquet(
     output_path: str | Path,
     max_days: int | None = 7,
     limit: int | None = None,
+    filters: JobFilters | None = None,
 ) -> int:
     """Export jobs in 500-row groups; labels are UTF-8 JSON strings."""
     try:
@@ -41,7 +43,7 @@ async def export_jobs_to_parquet(
     count = 0
     try:
         with pq.ParquetWriter(temp_name, schema=schema) as writer:
-            async with aclosing(iter_job_batches(session_manager, max_days, limit)) as batches:
+            async with aclosing(iter_job_batches(session_manager, max_days, limit, filters)) as batches:
                 async for batch in batches:
                     records = [record_from_row(row) for row in batch]
                     columns = {

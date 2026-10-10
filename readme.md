@@ -151,6 +151,29 @@ make cli-status
 
 Parquet stores `labels` as a UTF-8 JSON string so postings with different attribute keys share one schema. JSONL keeps `labels` as a JSON object. Both exports write 500-row batches and replace the destination only after a successful write.
 
+Post-ingestion filters never change collected jobs. The dashboard and `GET /api/jobs`
+accept `q` (literal title/company substring), `source`, `company`, `work_arrangement`,
+`employment_type`, `experience_min`, and `experience_max`. Experience ranges are
+inclusive and match overlapping requirements; records with no numeric experience
+are excluded when a range is selected. `unknown` work arrangement or employment
+type includes missing values. Location, seniority, and technology filters are not
+yet exposed because their source values are not consistently normalized.
+
+`GET /api/filters` accepts the same filters and returns `facets` with value/count
+pairs. Each facet ignores its own selection while respecting the other filters,
+allowing users to switch values. The existing `sources` and `companies` lists
+remain available. Experience bounds ignore the selected experience range.
+
+The same filters apply to either export format, in addition to its posting-date window:
+
+```sh
+make cli-export days=7 out=data/remote-jobs.jsonl export_args='--work-arrangement remote --employment-type full_time --experience-min 2 --experience-max 5'
+```
+
+Run `make migrate` to install the search/attribute indexes. The migration requires
+permission to enable PostgreSQL's `pg_trgm` extension. Numeric indexes safely ignore
+non-numeric JSON values; stored attributes and descriptions are not rewritten.
+
 ---
 
 ## Repository Structure

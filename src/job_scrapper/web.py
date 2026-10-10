@@ -7,12 +7,12 @@ from contextlib import asynccontextmanager
 from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -23,11 +23,23 @@ from job_scrapper.execution.bootstrap import execution_runtime
 from job_scrapper.execution.contracts import RunConflict, StartScrapeCommand
 from job_scrapper.storage.postgres.models import JobModel, ScrapeExecutionModel
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
+from job_scrapper.storage.postgres.job_filters import JobFilters, job_predicates
+from job_scrapper.storage.postgres.models import WORK_ARRANGEMENT, EMPLOYMENT_TYPE, EXPERIENCE_MIN, EXPERIENCE_MAX
 
 logger = logging.getLogger(__name__)
 
 Page = Annotated[int, Query(ge=1, le=1_000_000)]
 PageSize = Annotated[int, Query(ge=1, le=100)]
+
+
+def read_job_filters(q: str = '', source: str = '', company: str = '',
+                     work_arrangement: str = '', employment_type: str = '',
+                     experience_min: float | None = None, experience_max: float | None = None) -> JobFilters:
+    try:
+        return JobFilters(q=q, source=source, company=company, work_arrangement=work_arrangement,
+                          employment_type=employment_type, experience_min=experience_min, experience_max=experience_max)
+    except ValueError as error:
+        raise HTTPException(422, str(error)) from None
 
 
 class StartScrape(BaseModel):
@@ -159,35 +171,29 @@ def create_app() -> FastAPI:
         return {"token": app.state.token, "sources": list_connectors()}
 
     @app.get("/api/filters")
-    async def filters():
+    async def filters(filters: Annotated[JobFilters, Depends(read_job_filters)]):
+        facets = {}
         async with app.state.manager.session() as session:
-            sources = (await session.scalars(select(JobModel.source).distinct().order_by(JobModel.source))).all()
-            companies = (await session.scalars(select(JobModel.company_name).distinct().order_by(JobModel.company_name))).all()
-        return {"sources": sources, "companies": companies}
+            for field, column in (('source', JobModel.source), ('company', JobModel.company_name),
+                                  ('work_arrangement', WORK_ARRANGEMENT), ('employment_type', EMPLOYMENT_TYPE)):
+                rows = await session.execute(select(column, func.count()).select_from(JobModel)
+                    .where(*job_predicates(filters, exclude=field)).group_by(column).order_by(column))
+                facets[field] = [{'value': value, 'count': count} for value, count in rows]
+            bounds = (await session.execute(select(func.min(EXPERIENCE_MIN), func.max(EXPERIENCE_MAX))
+                .select_from(JobModel).where(*job_predicates(filters, exclude='experience')))).one()
+        return {'sources': [r['value'] for r in facets['source']],
+                'companies': [r['value'] for r in facets['company']], 'facets': facets,
+                'experience': {'min': bounds[0], 'max': bounds[1]}}
 
     @app.get("/api/jobs")
     async def jobs(
         page: Page = 1,
         page_size: PageSize = 25,
-        q: Annotated[str, Query(max_length=200)] = "",
-        source: Annotated[str, Query(max_length=64)] = "",
-        company: Annotated[str, Query(max_length=500)] = "",
+        filters: Annotated[JobFilters, Depends(read_job_filters)] = None,
     ):
         if page_size not in {25, 50, 100}:
             raise HTTPException(422, "Rows per page must be 25, 50, or 100.")
-        predicates = []
-        if q.strip():
-            literal = q.strip().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-            predicates.append(
-                or_(
-                    JobModel.title.ilike(f"%{literal}%", escape="\\"),
-                    JobModel.company_name.ilike(f"%{literal}%", escape="\\"),
-                )
-            )
-        if source:
-            predicates.append(JobModel.source == source)
-        if company:
-            predicates.append(JobModel.company_name == company)
+        predicates = job_predicates(filters)
         statement = select(
             JobModel.id,
             JobModel.title,

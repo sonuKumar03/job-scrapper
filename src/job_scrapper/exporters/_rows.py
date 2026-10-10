@@ -9,10 +9,11 @@ from sqlalchemy.engine import Row
 
 from job_scrapper.storage.postgres.models import JobModel
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
+from job_scrapper.storage.postgres.job_filters import JobFilters, job_predicates
 
 
 async def iter_job_batches(
-    session_manager: DatabaseSessionManager, max_days: int | None, limit: int | None
+    session_manager: DatabaseSessionManager, max_days: int | None, limit: int | None, filters: JobFilters | None = None
 ) -> AsyncIterator[list[Row[Any]]]:
     if max_days is not None and max_days < 1:
         raise ValueError("max_days must be positive")
@@ -23,7 +24,7 @@ async def iter_job_batches(
         JobModel.id, JobModel.source, JobModel.source_url, JobModel.title,
         JobModel.company_name, JobModel.description_text, JobModel.posted_at,
         JobModel.scraped_at, JobModel.attributes,
-    ).where(JobModel.posted_at <= now)
+    ).where(JobModel.posted_at <= now, *job_predicates(filters or JobFilters()))
     if max_days is not None:
         stmt = stmt.where(JobModel.posted_at >= now - timedelta(days=max_days))
     stmt = stmt.order_by(JobModel.posted_at.desc(), JobModel.id)

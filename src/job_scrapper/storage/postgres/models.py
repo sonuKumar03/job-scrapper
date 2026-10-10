@@ -3,13 +3,19 @@
 from datetime import datetime, timezone
 from typing import Any
 import uuid
-from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import BigInteger, Boolean, CheckConstraint, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint, func, literal_column
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
     pass
+
+
+WORK_ARRANGEMENT = literal_column("coalesce(nullif(attributes ->> 'work_arrangement', ''), 'unknown')", String())
+EMPLOYMENT_TYPE = literal_column("coalesce(nullif(attributes ->> 'employment_type', ''), 'unknown')", String())
+EXPERIENCE_MIN = literal_column("(CASE WHEN jsonb_typeof(attributes -> 'experience_years_min') = 'number' THEN (attributes ->> 'experience_years_min')::numeric END)")
+EXPERIENCE_MAX = literal_column("(CASE WHEN jsonb_typeof(attributes -> 'experience_years_max') = 'number' THEN (attributes ->> 'experience_years_max')::numeric END)")
 
 
 class CompanyModel(Base):
@@ -69,6 +75,12 @@ class JobModel(Base):
 
     __table_args__ = (
         UniqueConstraint("source", "source_job_id", name="uq_jobs_source_job_id"),
+        Index('ix_jobs_title_trgm', 'title', postgresql_using='gin', postgresql_ops={'title': 'gin_trgm_ops'}),
+        Index('ix_jobs_company_trgm', 'company_name', postgresql_using='gin', postgresql_ops={'company_name': 'gin_trgm_ops'}),
+        Index('ix_jobs_work_arrangement', WORK_ARRANGEMENT),
+        Index('ix_jobs_employment_type', EMPLOYMENT_TYPE),
+        Index('ix_jobs_experience_min', EXPERIENCE_MIN),
+        Index('ix_jobs_experience_max', EXPERIENCE_MAX),
     )
 
 

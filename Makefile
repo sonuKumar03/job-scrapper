@@ -49,8 +49,8 @@ cli-stop: ## Stop one scrape (run_id=...; required when several runs are active)
 cli-worker: ## Start the external Redis worker (broker_url=redis://localhost:6379/0)
 	@SCRAPE_EXECUTOR=broker SCRAPE_BROKER_URL=$(broker_url) uv run --extra broker job-scrapper worker
 
-cli-export: ## Export jobs (format=jsonl|parquet, days=7, out=data/jobs_dataset.<format>)
-	@uv run $(if $(filter parquet,$(format)),--extra export) job-scrapper export --format $(or $(format),jsonl) --days $(or $(days),7) --output $(or $(out),data/jobs_dataset.$(or $(format),jsonl))
+cli-export: ## Export jobs (format=jsonl|parquet, days=7, out=..., export_args='--work-arrangement remote')
+	@uv run $(if $(filter parquet,$(format)),--extra export) job-scrapper export --format $(or $(format),jsonl) --days $(or $(days),7) --output $(or $(out),data/jobs_dataset.$(or $(format),jsonl)) $(export_args)
 
 cli-status: ## Show current database status and job counts
 	@uv run job-scrapper status

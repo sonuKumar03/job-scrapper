@@ -8,6 +8,7 @@ import tempfile
 
 from job_scrapper.exporters._rows import iter_job_batches, record_from_row
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
+from job_scrapper.storage.postgres.job_filters import JobFilters
 
 
 async def export_jobs_to_jsonl(
@@ -15,6 +16,7 @@ async def export_jobs_to_jsonl(
     output_path: str | Path,
     max_days: int | None = 7,
     limit: int | None = None,
+    filters: JobFilters | None = None,
 ) -> int:
     """Export jobs in 500-row batches, replacing the destination on success."""
     path = Path(output_path)
@@ -23,7 +25,7 @@ async def export_jobs_to_jsonl(
     count = 0
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as output:
-            async with aclosing(iter_job_batches(session_manager, max_days, limit)) as batches:
+            async with aclosing(iter_job_batches(session_manager, max_days, limit, filters)) as batches:
                 async for batch in batches:
                     for row in batch:
                         output.write(json.dumps(record_from_row(row), ensure_ascii=False) + "\n")

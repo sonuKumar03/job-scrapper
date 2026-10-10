@@ -8,7 +8,7 @@ import {
   Loader2,
   ExternalLink,
 } from "lucide-react";
-import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchApi } from "../../services/api";
 import { formatDate, formatRelativeTime } from "../../utils/date";
 import { safeSourceUrl } from "../../utils/sourceUrl";
@@ -29,7 +29,6 @@ function jobContext(attributes = {}) {
 }
 
 export default function JobsExplorer() {
-  const queryClient = useQueryClient();
   // Parse initial query params from hash: e.g. #jobs?q=...&source=...&page=...
   const getUrlParams = () => {
     const hash = window.location.hash || "";
@@ -44,20 +43,31 @@ export default function JobsExplorer() {
   const [search, setSearch] = useState(() => initialParams.get("q") || "");
   const [selectedSource, setSelectedSource] = useState(() => initialParams.get("source") || "");
   const [selectedCompany, setSelectedCompany] = useState(() => initialParams.get("company") || "");
+  const readAttributes = (params) => Object.fromEntries(
+    ["work_arrangement", "employment_type", "experience_min", "experience_max"].map((key) => [key, params.get(key) || ""]));
+  const [attributeFilters, setAttributeFilters] = useState(() => readAttributes(initialParams));
+  const [experienceDraft, setExperienceDraft] = useState(() => readAttributes(initialParams));
+  const [rangeError, setRangeError] = useState("");
 
   const [querySearch, setQuerySearch] = useState(search);
   const [selectedJobId, setSelectedJobId] = useState(null);
   const [dismissedDetailError, setDismissedDetailError] = useState(false);
-  const filtersQuery = useQuery({ queryKey: ["filters"], queryFn: ({ signal }) => fetchApi("filters", { signal }) });
-  const availableSources = filtersQuery.data?.sources || [];
-  const availableCompanies = filtersQuery.data?.companies || [];
+  const filterParams = new URLSearchParams();
+  for (const [key, value] of Object.entries({ q: querySearch.trim(), source: selectedSource, company: selectedCompany, ...attributeFilters })) {
+    if (value !== "") filterParams.set(key, value);
+  }
+  const filtersQuery = useQuery({ queryKey: ["filters", filterParams.toString()],
+    queryFn: ({ signal }) => fetchApi(`filters?${filterParams}`, { signal }), placeholderData: keepPreviousData });
+  const facetOptions = (field, selected) => {
+    const values = (filtersQuery.data?.facets?.[field] || []).map(({ value, count }) => ({ value, label: `${value.replaceAll("_", " ")} (${count.toLocaleString()})` }));
+    if (selected && !values.some((item) => item.value === selected)) values.push({ value: selected, label: selected.replaceAll("_", " ") });
+    return values;
+  };
   const jobsQuery = useQuery({
-    queryKey: ["jobs", "list", page, pageSize, querySearch.trim(), selectedSource, selectedCompany],
+    queryKey: ["jobs", "list", page, pageSize, filterParams.toString()],
     queryFn: ({ signal }) => {
-      const params = new URLSearchParams({ page, page_size: pageSize });
-      if (querySearch.trim()) params.set("q", querySearch.trim());
-      if (selectedSource) params.set("source", selectedSource);
-      if (selectedCompany) params.set("company", selectedCompany);
+      const params = new URLSearchParams(filterParams);
+      params.set("page", page); params.set("page_size", pageSize);
       return fetchApi(`jobs?${params}`, { signal });
     },
     placeholderData: keepPreviousData,
@@ -79,13 +89,14 @@ export default function JobsExplorer() {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
   // Sync state changes to URL hash
-  const updateUrlState = useCallback((targetPage, querySearch, src, comp, size, jobId = null) => {
+  const updateUrlState = useCallback((targetPage, querySearch, src, comp, size, attrs, jobId = null) => {
     const params = new URLSearchParams();
     if (targetPage > 1) params.set("page", String(targetPage));
     if (size !== 25) params.set("page_size", String(size));
     if (querySearch) params.set("q", querySearch);
     if (src) params.set("source", src);
     if (comp) params.set("company", comp);
+    for (const [key, value] of Object.entries(attrs)) if (value !== "") params.set(key, value);
     const currentPath = window.location.hash.split("?")[0];
     if (!jobId && currentPath.startsWith("#/jobs/")) jobId = decodeURIComponent(currentPath.slice(7));
     if (!jobId) jobId = getUrlParams().get("job");
@@ -97,16 +108,16 @@ export default function JobsExplorer() {
     }
   }, []);
 
-  const loadJobs = useCallback((targetPage = page, text = search, src = selectedSource, comp = selectedCompany, size = pageSize) => {
+  const loadJobs = useCallback((targetPage = page, text = search, src = selectedSource, comp = selectedCompany, size = pageSize, attrs = attributeFilters) => {
     clearTimeout(searchTimerRef.current);
     setPage(targetPage); setQuerySearch(text); setSelectedSource(src); setSelectedCompany(comp); setPageSize(size);
-    updateUrlState(targetPage, text, src, comp, size);
-    queryClient.invalidateQueries({ queryKey: ["jobs", "list", targetPage, size, text.trim(), src, comp] });
-  }, [page, search, selectedSource, selectedCompany, pageSize, updateUrlState, queryClient]);
+    setAttributeFilters(attrs);
+    updateUrlState(targetPage, text, src, comp, size, attrs);
+  }, [page, search, selectedSource, selectedCompany, pageSize, attributeFilters, updateUrlState]);
 
   useEffect(() => {
-    if (jobsQuery.isSuccess && page > totalPages) loadJobs(totalPages);
-  }, [jobsQuery.isSuccess, page, totalPages, loadJobs]);
+    if (jobsQuery.isSuccess && !jobsQuery.isPlaceholderData && page > totalPages) loadJobs(totalPages);
+  }, [jobsQuery.isSuccess, jobsQuery.isPlaceholderData, page, totalPages, loadJobs]);
 
   useEffect(() => {
     const restoreRoute = () => {
@@ -116,11 +127,13 @@ export default function JobsExplorer() {
       const routePage = Math.max(1, Math.floor(Number(params.get("page")) || 1));
       const routeSize = [25, 50, 100].includes(Number(params.get("page_size"))) ? Number(params.get("page_size")) : 25;
       const q = params.get("q") || "", source = params.get("source") || "", company = params.get("company") || "";
+      const attrs = readAttributes(params);
+      setAttributeFilters(attrs); setExperienceDraft(attrs); setRangeError("");
       setSearch(q); setSelectedSource(source); setSelectedCompany(company); setPage(routePage); setPageSize(routeSize);
       const path = window.location.hash.split("?")[0];
       const jobId = path.startsWith("#/jobs/") ? decodeURIComponent(path.slice(7)) : params.get("job");
       setSelectedJobId(jobId); setDismissedDetailError(false);
-      loadJobs(routePage, q, source, company, routeSize);
+      loadJobs(routePage, q, source, company, routeSize, attrs);
     };
     restoreRoute();
     window.addEventListener("hashchange", restoreRoute);
@@ -167,7 +180,7 @@ export default function JobsExplorer() {
     <div className="space-y-6" aria-busy={loading}>
       <h1 className="sr-only">Job postings</h1>
       {/* Top Filter & Toolbar */}
-      <Card className="jobs-toolbar sticky top-[var(--app-header-height,72px)] z-30 p-5 space-y-4">
+      <Card className="jobs-toolbar lg:sticky top-[var(--app-header-height,72px)] z-30 p-5 space-y-4">
         <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
           {/* Search Input */}
           <div className="relative flex-1">
@@ -197,7 +210,7 @@ export default function JobsExplorer() {
               }}
               options={[
                 { value: "", label: "All Sources" },
-                ...availableSources.map((s) => ({ value: s, label: s })),
+                ...facetOptions("source", selectedSource),
               ]}
               icon={Filter}
               className="w-full sm:w-44"
@@ -213,7 +226,7 @@ export default function JobsExplorer() {
               }}
               options={[
                 { value: "", label: "All Companies" },
-                ...availableCompanies.map((c) => ({ value: c, label: c })),
+                ...facetOptions("company", selectedCompany),
               ]}
               icon={Building2}
               className="w-full sm:w-48"
@@ -240,6 +253,46 @@ export default function JobsExplorer() {
           </div>
         </div>
 
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="space-y-1 text-xs text-text-muted">
+            <span>Work arrangement</span>
+            <CustomSelect aria-label="Filter by work arrangement" className="w-48" value={attributeFilters.work_arrangement}
+              options={[{ value: "", label: "Any arrangement" }, ...facetOptions("work_arrangement", attributeFilters.work_arrangement)]}
+              onChange={(value) => loadJobs(1, search, selectedSource, selectedCompany, pageSize, { ...attributeFilters, work_arrangement: value })} />
+          </div>
+          <div className="space-y-1 text-xs text-text-muted">
+            <span>Employment type</span>
+            <CustomSelect aria-label="Filter by employment type" className="w-48" value={attributeFilters.employment_type}
+              options={[{ value: "", label: "Any employment" }, ...facetOptions("employment_type", attributeFilters.employment_type)]}
+              onChange={(value) => loadJobs(1, search, selectedSource, selectedCompany, pageSize, { ...attributeFilters, employment_type: value })} />
+          </div>
+          <form className="flex flex-wrap items-end gap-2" onSubmit={(event) => {
+            event.preventDefault();
+            const low = experienceDraft.experience_min, high = experienceDraft.experience_max;
+            if (low !== "" && high !== "" && Number(low) > Number(high)) { setRangeError("Minimum must not exceed maximum."); return; }
+            setRangeError("");
+            loadJobs(1, search, selectedSource, selectedCompany, pageSize, { ...attributeFilters, experience_min: low, experience_max: high });
+          }}>
+            {[['experience_min', 'Min years'], ['experience_max', 'Max years']].map(([key, label]) => (
+              <label key={key} className="space-y-1 text-xs text-text-muted">
+                <span>{label}</span>
+                <input type="number" min="0" step="any" aria-label={label} value={experienceDraft[key]}
+                  onChange={(event) => setExperienceDraft({ ...experienceDraft, [key]: event.target.value })}
+                  className="block w-24 min-h-[44px] px-3 bg-bg-surface border border-border-subtle rounded-xl text-sm text-text-main" placeholder="Any" />
+              </label>
+            ))}
+            <Button type="submit" variant="secondary">Apply range</Button>
+          </form>
+          <Button variant="ghost" onClick={() => {
+            const empty = readAttributes(new URLSearchParams());
+            setSearch(""); setExperienceDraft(empty); setRangeError("");
+            loadJobs(1, "", "", "", pageSize, empty);
+          }}>Clear filters</Button>
+        </div>
+        {rangeError && <p role="alert" className="text-xs text-status-danger">{rangeError}</p>}
+        {filtersQuery.isError && <p role="alert" className="text-xs text-status-danger">Could not load filter counts. <button type="button" className="underline" onClick={() => filtersQuery.refetch()}>Try again</button></p>}
+        {(attributeFilters.experience_min !== "" || attributeFilters.experience_max !== "") && <p className="text-xs text-text-muted">Matches overlapping experience requirements. Jobs without experience data are excluded.</p>}
+
         {detailError && (
           <div role="alert" className="p-3 rounded-xl bg-status-danger-bg border border-status-danger-border text-xs text-status-danger flex items-center justify-between">
             <span>{detailError}</span>
@@ -257,7 +310,7 @@ export default function JobsExplorer() {
         <div className="flex items-center justify-between text-xs text-text-muted pt-2 border-t border-border-subtle">
           <div>
             Showing <span className="text-text-main font-semibold">{total.toLocaleString()}</span> total jobs
-            {(search || selectedSource || selectedCompany) && (
+            {(search || selectedSource || selectedCompany || Object.values(attributeFilters).some(Boolean)) && (
               <span className="text-accent ml-1 font-medium">(filtered)</span>
             )}
           </div>
