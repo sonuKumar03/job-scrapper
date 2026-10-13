@@ -34,7 +34,7 @@ Company ATS connectors (`greenhouse`, `lever`, `ashby`, `workable`, `workday`) c
 
 ### Local dashboard
 
-Run `rtk make up`, `rtk make migrate`, then `rtk make web`. Open `http://127.0.0.1:8000`. The `web` extra installs FastAPI and Uvicorn; no Node build is needed. Browsing uses server-side pagination and exposes full descriptions, attributes, sightings, and raw metadata.
+Run `rtk make up`, `rtk make migrate`, then `rtk make web`. The API serves at `http://127.0.0.1:8000` and the React frontend (Vite) at `http://127.0.0.1:3000`. Browsing uses server-side pagination and exposes full descriptions, attributes, sightings, and raw metadata.
 
 Scrapes started by the dashboard run in the background and persist source/account results. Counts appear when a source finishes; while collecting, the UI shows its state and elapsed time. CLI scraping shares this runner. A PostgreSQL advisory lock prevents overlapping managed scrapes and blocks `reset` during collection. Reset also clears execution history. Processes launched before this runner was introduced do not hold its lock; let them finish before starting another scrape or resetting.
 

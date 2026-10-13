@@ -28,6 +28,7 @@ async def export_jobs_to_parquet(
     schema = pa.schema([
         ("id", pa.string()),
         ("source", pa.string()),
+        ("source_job_id", pa.string()),
         ("source_url", pa.string()),
         ("title", pa.string()),
         ("company_name", pa.string()),

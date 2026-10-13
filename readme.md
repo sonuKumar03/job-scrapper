@@ -31,7 +31,7 @@ Job boards → connectors → `JobPosting` → `PostgresJobSink` → PostgreSQL 
 | **Database & ORM** | PostgreSQL 16, SQLAlchemy 2.0, `psycopg[binary]`, Alembic |
 | **Data Contracts** | Pydantic v2 |
 | **HTTP & TLS** | `curl_cffi` (Chrome impersonation) |
-| **HTML Parsing & Text**| `selectolax`, `trafilatura` |
+| **HTML Parsing** | `selectolax` |
 | **CLI Framework** | `typer`, `rich` |
 
 ---
@@ -48,7 +48,7 @@ make up executor=broker # Redis and one external worker
 make down               # Stop services; keep volumes
 ```
 
-This is a development stack with source mounts and API reload. Stop it before running native servers on the same ports or changing modes.
+This is a development stack with source mounts. Stop it before running native servers on the same ports or changing modes.
 Published development ports bind to `127.0.0.1` so the dashboard, API, and database remain local to this machine.
 
 ### Native development
@@ -192,6 +192,12 @@ make cli-status
 
 Parquet stores `labels` as a UTF-8 JSON string so postings with different attribute keys share one schema. JSONL keeps `labels` as a JSON object. Both exports write 500-row batches and replace the destination only after a successful write.
 
+Both formats include the original `source_job_id`, source URL, employer publication date (`posted_at`), and stored collection timestamp (`scraped_at`). These describe the canonical record's primary source; other source identities are retained in the database sightings ledger. Collection timestamps are not ongoing last-seen checks.
+
+LinkedIn detail fetches record `posting_status` (`closed` or `unknown`), `posting_status_checked_at`, and explicit closure text as `posting_status_evidence` inside `labels`. A missing closure banner is not proof that a job is open. Valid recent closed postings remain available for training; already-known jobs skipped by pre-fetch deduplication are not rechecked.
+
+LinkedIn and Jobicy run results also record listing/parse diagnostic counts and warn about empty listing output or entirely invalid parses. Zero inserts from deduplication are not a parser failure. Diagnostics reuse the fetched responses and add no requests; stopped or timed-out sources retain their existing status without health inference.
+
 Post-ingestion filters never change collected jobs. The dashboard and `GET /api/jobs`
 accept `q` (literal title/company substring), `source`, `company`, `work_arrangement`,
 `employment_type`, `experience_min`, and `experience_max`. Experience ranges are
@@ -225,6 +231,7 @@ job-scrapper/
 ├── docker-compose.yml          # Development stack
 ├── alembic.ini                 # Database migrations configuration
 ├── migrations/                 # Alembic migration revisions
+├── frontend/                   # React 19 + Vite + Tailwind dashboard
 ├── src/
 │   └── job_scrapper/
 │       ├── domain/
@@ -237,6 +244,8 @@ job-scrapper/
 │       │   ├── cleaner.py      # HTML to clean text extraction
 │       │   ├── date_parser.py  # UTC normalization & recency filter
 │       │   └── hasher.py       # SHA-256 deduplication hasher
+│       ├── companies/          # Company catalog bootstrap and contracts
+│       ├── execution/          # Run lifecycle, memory/broker transports
 │       ├── utils/
 │       │   └── http_client.py  # Resilient curl_cffi client (jitter, rate limits)
 │       ├── connectors/
@@ -248,6 +257,7 @@ job-scrapper/
 │       ├── exporters/
 │       │   ├── jsonl.py        # Stream database rows to JSONL
 │       │   └── parquet.py      # Stream database rows to Parquet
+│       ├── web.py              # FastAPI REST API
 │       └── cli.py              # Typer CLI application
 └── tests/                      # Minimal contract & normalization tests
 ```

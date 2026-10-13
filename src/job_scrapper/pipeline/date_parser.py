@@ -19,6 +19,19 @@ def parse_to_utc(date_input: Any) -> datetime | None:
                 return None
             timestamp = date_input / 1000 if abs(date_input) > 100_000_000_000 else date_input
             parsed = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+        elif isinstance(date_input, str):
+            stripped = date_input.strip()
+            try:
+                parsed = datetime.fromisoformat(stripped)
+            except ValueError:
+                parsed = dateparser.parse(
+                    stripped,
+                    settings={
+                        "TIMEZONE": "UTC",
+                        "TO_TIMEZONE": "UTC",
+                        "RETURN_AS_TIMEZONE_AWARE": True,
+                    },
+                )
         else:
             parsed = dateparser.parse(
                 str(date_input).strip(),
@@ -41,7 +54,6 @@ def is_within_days(dt: datetime, max_days: int = 7) -> bool:
     """Check if the given datetime is strictly within the last `max_days` days."""
     now_utc = datetime.now(timezone.utc)
     cutoff = now_utc - timedelta(days=max_days)
-    # Ensure dt is timezone aware in UTC
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
     else:

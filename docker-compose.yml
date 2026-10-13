@@ -57,7 +57,7 @@ services:
       migrate:
         condition: service_completed_successfully
     command: >
-      job-scrapper api --host 0.0.0.0 --port 8000 --reload
+      job-scrapper api --host 0.0.0.0 --port 8000
 
   web:
     build:

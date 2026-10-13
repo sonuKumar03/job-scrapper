@@ -21,7 +21,7 @@ async def iter_job_batches(
         raise ValueError("limit must be nonnegative")
     now = datetime.now(timezone.utc)
     stmt = select(
-        JobModel.id, JobModel.source, JobModel.source_url, JobModel.title,
+        JobModel.id, JobModel.source, JobModel.source_job_id, JobModel.source_url, JobModel.title,
         JobModel.company_name, JobModel.description_text, JobModel.posted_at,
         JobModel.scraped_at, JobModel.attributes,
     ).where(JobModel.posted_at <= now, *job_predicates(filters or JobFilters()))
@@ -44,6 +44,7 @@ def record_from_row(row: Row[Any]) -> dict[str, Any]:
     return {
         "id": str(row.id),
         "source": row.source,
+        "source_job_id": row.source_job_id,
         "source_url": row.source_url,
         "title": row.title,
         "company_name": row.company_name,
