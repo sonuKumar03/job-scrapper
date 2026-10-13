@@ -1,6 +1,7 @@
 """Composition root: the only place that chooses execution adapters."""
 
 import asyncio
+import logging
 from contextlib import AsyncExitStack, asynccontextmanager
 from functools import partial
 
@@ -8,7 +9,7 @@ from sqlalchemy import text
 
 from job_scrapper.config import get_settings
 from job_scrapper.companies.bootstrap import initialize_company_catalog
-from job_scrapper.execution.contracts import RunCapacity, RunControl
+from job_scrapper.execution.contracts import RunCapacity, RunConflict, RunControl
 from job_scrapper.execution.memory import MemoryTaskTransport
 from job_scrapper.execution.service import ExecutionService
 from job_scrapper.execution.worker import WorkerPool
@@ -18,6 +19,9 @@ from job_scrapper.storage.postgres.companies import PostgresCompanyTargetReposit
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
 from job_scrapper.storage.postgres.sink import PostgresJobSink
 from job_scrapper.utils.http_client import ResilientHttpClient
+
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -32,9 +36,16 @@ async def execution_runtime(manager: DatabaseSessionManager, *, worker_host: boo
         embedded = settings.scrape_executor == 'memory'
         ownership = None
         if embedded or worker_host:
-            ownership = await stack.enter_async_context(host_ownership(manager))
-            await store.recover_unfinished(requeue=not embedded)
-        if embedded:
+            try:
+                ownership = await stack.enter_async_context(host_ownership(manager))
+            except RunConflict:
+                if worker_host:
+                    raise
+                logger.warning('Another host holds the execution lock; starting in API-only mode')
+                embedded = False
+            else:
+                await store.recover_unfinished(requeue=not embedded)
+        if embedded or ownership is None:
             transport = MemoryTaskTransport(capacity.queued)
         else:
             try:

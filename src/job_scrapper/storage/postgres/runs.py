@@ -81,7 +81,7 @@ async def advisory_guard(manager: DatabaseSessionManager, key: int, *, shared: b
 
 
 def host_ownership(manager: DatabaseSessionManager):
-    return advisory_guard(manager, HOST_LOCK_KEY, wait=True)
+    return advisory_guard(manager, HOST_LOCK_KEY)
 
 
 def reset_guard(manager: DatabaseSessionManager):
