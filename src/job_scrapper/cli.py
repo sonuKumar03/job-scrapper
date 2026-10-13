@@ -1,6 +1,7 @@
 """Typer CLI interface for Job Scrapper."""
 
 import asyncio
+import os
 import signal
 from uuid import UUID
 from importlib.util import find_spec
@@ -124,9 +125,13 @@ async def _run_scrape(sources: list[str], days: int, include_catalog_status: boo
 @app.command()
 def scrape(
     source: str = typer.Option(
-        "all", "--source", "-s", help="Job board source name ('all' or comma-separated, e.g. 'himalayas,jobicy')"
+        os.getenv('SCRAPE_SOURCES', 'all'), "--source", "-s",
+        help="Job board source name ('all' or comma-separated, e.g. 'himalayas,jobicy')"
     ),
-    days: int = typer.Option(7, "--days", "-d", help="Number of days cutoff for recent postings"),
+    days: int = typer.Option(
+        int(os.getenv('SCRAPE_DAYS', '7')), "--days", "-d",
+        help="Number of days cutoff for recent postings"
+    ),
     separate_runs: bool = typer.Option(False, '--separate-runs', help='Submit one independent run per selected source.'),
 ) -> None:
     """Scrape recent jobs from target job boards into PostgreSQL."""
