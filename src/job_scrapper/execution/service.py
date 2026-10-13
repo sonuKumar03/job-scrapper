@@ -62,6 +62,9 @@ class ExecutionService:
     async def get(self, run_id: UUID) -> RunSnapshot | None:
         return await self.store.get(run_id)
 
+    async def list_page(self, *, offset: int, limit: int) -> tuple[int, list[RunSnapshot]]:
+        return await self.store.list_page(offset=offset, limit=limit)
+
     async def list_active(self) -> list[RunSnapshot]:
         return await self.store.list_active()
 

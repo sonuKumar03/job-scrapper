@@ -146,6 +146,18 @@ class PostgresRunStore:
             dispatch = await session.get(ScrapeDispatchModel, run_id)
             return snapshot(row).model_copy(update={'dispatch_error': dispatch.error_message if dispatch else None})
 
+    async def list_page(self, *, offset: int, limit: int) -> tuple[int, list[RunSnapshot]]:
+        async with self.manager.session() as session:
+            total = await session.scalar(select(func.count()).select_from(ScrapeExecutionModel))
+            rows = await session.execute(
+                select(ScrapeExecutionModel, ScrapeDispatchModel.error_message)
+                .outerjoin(ScrapeDispatchModel)
+                .order_by(ScrapeExecutionModel.queued_at.desc(), ScrapeExecutionModel.id.desc())
+                .offset(offset).limit(limit)
+            )
+            items = [snapshot(row).model_copy(update={'dispatch_error': error}) for row, error in rows]
+            return total or 0, items
+
     async def list_active(self) -> list[RunSnapshot]:
         async with self.manager.session() as session:
             rows = await session.execute(select(ScrapeExecutionModel, ScrapeDispatchModel.error_message).outerjoin(ScrapeDispatchModel).where(

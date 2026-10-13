@@ -21,7 +21,7 @@ from job_scrapper.connectors.registry import list_connectors
 from job_scrapper.config import get_settings
 from job_scrapper.execution.bootstrap import execution_runtime
 from job_scrapper.execution.contracts import RunConflict, StartScrapeCommand
-from job_scrapper.storage.postgres.models import JobModel, ScrapeExecutionModel
+from job_scrapper.storage.postgres.models import JobModel
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
 from job_scrapper.storage.postgres.job_filters import JobFilters, job_predicates
 from job_scrapper.storage.postgres.models import WORK_ARRANGEMENT, EMPLOYMENT_TYPE, EXPERIENCE_MIN, EXPERIENCE_MAX
@@ -238,23 +238,11 @@ def create_app() -> FastAPI:
     async def runs(page: Page = 1, page_size: PageSize = 25):
         if page_size not in {25, 50, 100}:
             raise HTTPException(422, "Rows per page must be 25, 50, or 100.")
-        async with app.state.manager.session() as session:
-            total = await session.scalar(select(func.count()).select_from(ScrapeExecutionModel))
-            rows = (
-                await session.scalars(
-                    select(ScrapeExecutionModel)
-                    .order_by(ScrapeExecutionModel.queued_at.desc(), ScrapeExecutionModel.id.desc())
-                    .offset((page - 1) * page_size)
-                    .limit(page_size)
-                )
-            ).all()
-            run_ids = [row.id for row in rows]
-        items = []
-        for run_id in run_ids:
-            run = await app.state.control.get(run_id)
-            if run is not None:
-                items.append(run.model_dump(mode='json', exclude={'results'}))
-        return {"items": items, "total": total, "page": page, "page_size": page_size}
+        total, items = await app.state.control.list_page(
+            offset=(page - 1) * page_size, limit=page_size,
+        )
+        return {"items": [r.model_dump(mode='json', exclude={'results'}) for r in items],
+                "total": total, "page": page, "page_size": page_size}
 
     @app.get('/api/runs/active')
     async def active_runs():
