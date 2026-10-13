@@ -17,6 +17,7 @@ class JobicyConnector(BaseConnector):
 
     async def scrape(self, sink: JobSink, max_days: int = 7) -> dict[str, Any]:
         stats = self.new_stats()
+        stats.update(dict.fromkeys(self.DIAGNOSTIC_COUNTS, 0))
         cursor: str | None = None
         seen_cursors: set[str] = set()
         unknown_dates = 0
@@ -55,6 +56,7 @@ class JobicyConnector(BaseConnector):
                 break
 
             raw_jobs = data["jobs"]
+            stats['listing_pages'] += 1
             known_ids = await sink.contains_many(
                 self.name, [str(item["id"]) for item in raw_jobs if item.get("id") is not None]
             )
@@ -75,6 +77,7 @@ class JobicyConnector(BaseConnector):
                     continue
 
                 try:
+                    stats['detail_attempted'] += 1
                     raw_desc = item.get("jobDescription") or item.get("jobExcerpt") or ""
                     attributes: dict[str, Any] = {
                         "seniority": item.get("jobLevel"),
@@ -90,13 +93,15 @@ class JobicyConnector(BaseConnector):
                         source=self.name,
                         source_job_id=source_id,
                         source_url=item.get("url") or "",
-                        title=item.get("jobTitle") or "Untitled",
-                        company_name=item.get("companyName") or "Unknown Company",
+                        title=item.get("jobTitle") or "",
+                        company_name=item.get("companyName") or "",
                         description_text=clean_html_to_text(raw_desc),
                         posted_at=pub_date,
                         attributes=attributes,
                     ))
+                    stats['detail_valid'] += 1
                 except (ValueError, TypeError, AttributeError) as exc:
+                    stats['detail_invalid'] += 1
                     stats["skipped"] += 1
                     self.record_error(stats, f"listing {source_id}", exc)
 

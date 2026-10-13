@@ -87,6 +87,9 @@ async def run_scrape(
                     for part in source_stats.values():
                         for key in ('found', 'inserted', 'skipped'):
                             row[key] += part[key]
+                        for key in BaseConnector.DIAGNOSTIC_COUNTS:
+                            if key in part:
+                                row[key] = row.get(key, 0) + part[key]
                         row['errors'].extend(part['errors'])
                         row['truncated'] |= part['truncated']
                         if 'coverage' in part:
@@ -133,6 +136,8 @@ async def run_scrape(
                     timed_out = True
                     stats = deepcopy(results[source])
                 manually_stopped = stop_event.is_set() or source in stopped_sources
+                if not manually_stopped and not timed_out:
+                    BaseConnector.finalize_diagnostics(stats)
                 if timed_out and not manually_stopped:
                     stats['truncated'] = True
                     stats['timed_out'] = True

@@ -15,6 +15,7 @@ class BaseConnector(ABC):
     """Abstract base class for all pluggable job board connectors."""
 
     name: str = "base"
+    DIAGNOSTIC_COUNTS = ('listing_pages', 'detail_attempted', 'detail_valid', 'detail_invalid', 'closed')
 
     def __init__(self, http_client: HttpClient | None = None) -> None:
         self.stop_event: asyncio.Event | None = None
@@ -53,6 +54,15 @@ class BaseConnector(ABC):
         return {"found": 0, "inserted": 0, "skipped": 0, "errors": [], "truncated": False}
 
     @staticmethod
+    def finalize_diagnostics(stats: dict[str, Any]) -> None:
+        if stats.get('listing_pages', 0) and stats.get('found') == 0:
+            stats.setdefault('warnings', []).append(
+                'Listing output was empty; source health is unverified, not proven broken')
+        if stats.get('detail_invalid', 0) and stats.get('detail_valid') == 0:
+            stats.setdefault('warnings', []).append(
+                'All attempted posting parses were invalid; parser may be degraded')
+
+    @staticmethod
     def record_error(stats: dict[str, Any], context: str, error: Exception) -> None:
         if isinstance(error, RequestStopped):
             return
@@ -80,6 +90,14 @@ class BaseConnector(ABC):
             "errors": list(account_stats["errors"]),
             "truncated": account_stats["truncated"],
         }
+        for key in BaseConnector.DIAGNOSTIC_COUNTS:
+            if key in account_stats:
+                account_row[key] = account_stats[key]
+                aggregate[key] = aggregate.get(key, 0) + account_stats[key]
+        if account_stats.get('warnings'):
+            account_row['warnings'] = list(account_stats['warnings'])
+            aggregate.setdefault('warnings', []).extend(
+                f'company {account_key}: {warning}' for warning in account_stats['warnings'])
         aggregate.setdefault("accounts", {})[account_key] = account_row
         aggregate["found"] += account_row["found"]
         aggregate["inserted"] += account_row["inserted"]
