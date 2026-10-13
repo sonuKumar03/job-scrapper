@@ -44,8 +44,12 @@ class Settings(BaseSettings):
     @field_validator('api_allowed_hosts')
     @classmethod
     def validate_hosts(cls, hosts: list[str]) -> list[str]:
-        if not hosts or any(not host or any(char in host for char in '*/:@?# \t\n') for host in hosts):
-            raise ValueError('API_ALLOWED_HOSTS must contain explicit hostnames without ports or wildcards')
+        if not hosts:
+            raise ValueError('API_ALLOWED_HOSTS must not be empty')
+        if '*' in hosts:
+            return ['*']
+        if any(not host or any(char in host for char in '/:@?# \t\n') for host in hosts):
+            raise ValueError('API_ALLOWED_HOSTS must contain explicit hostnames without ports')
         return [host.lower() for host in hosts]
 
     @field_validator('source_timeouts')
