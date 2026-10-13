@@ -7,8 +7,9 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useSession, useRuns, useActiveRuns } from "../../services/queries";
+import { useRuns, useActiveRuns } from "../../services/queries";
 import { fetchApi } from "../../services/api";
+import { isAdmin } from "../../services/auth";
 import { formatDate, formatRelativeTime } from "../../utils/date";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
@@ -18,8 +19,14 @@ const ATS_SOURCES = ["greenhouse", "lever", "ashby", "workday", "workable"];
 
 export default function ScrapeRuns() {
   const queryClient = useQueryClient();
-  const sessionQuery = useSession();
-  const availableSources = sessionQuery.data?.sources || [];
+  const admin = isAdmin();
+  const sourcesQuery = useQuery({
+    queryKey: ["sources"],
+    queryFn: ({ signal }) => fetchApi("sources", { signal }),
+    staleTime: Infinity,
+    enabled: admin,
+  });
+  const availableSources = sourcesQuery.data?.sources || [];
   const [selectedSources, setSelectedSources] = useState([]);
   const [days, setDays] = useState(1);
 
@@ -77,14 +84,14 @@ export default function ScrapeRuns() {
     return queryClient.invalidateQueries({ queryKey: ["runs", "detail", runId] });
   };
   useEffect(() => {
-    if (sessionQuery.data?.sources.length) setSelectedSources([sessionQuery.data.sources[0]]);
-  }, [sessionQuery.data]);
+    if (sourcesQuery.data?.sources.length) setSelectedSources([sourcesQuery.data.sources[0]]);
+  }, [sourcesQuery.data]);
   useEffect(() => {
-    if (runsQuery.isError || detailQuery.isError || sessionQuery.isError || activeQuery.isError) {
+    if (runsQuery.isError || detailQuery.isError || sourcesQuery.isError || activeQuery.isError) {
       setStatusMessage("Could not load scraper data. Refresh to try again.");
       setStatusError(true);
     }
-  }, [runsQuery.isError, detailQuery.isError, sessionQuery.isError, activeQuery.isError]);
+  }, [runsQuery.isError, detailQuery.isError, sourcesQuery.isError, activeQuery.isError]);
 
   const startScrape = async () => {
     if (selectedSources.length === 0) {
@@ -153,9 +160,9 @@ export default function ScrapeRuns() {
   };
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-[420px_minmax(0,1fr)] gap-6 items-start">
+    <div className={`grid grid-cols-1 ${admin ? "xl:grid-cols-[420px_minmax(0,1fr)]" : ""} gap-6 items-start`}>
       <h1 className="sr-only">Scrape runs</h1>
-      <div className="min-w-0 space-y-4">
+      {admin && <div className="min-w-0 space-y-4">
       {/* Trigger Scrape Card */}
       <Card className="p-5 space-y-5">
         <div className="flex flex-col gap-3 pb-4 border-b border-border-subtle">
@@ -189,7 +196,7 @@ export default function ScrapeRuns() {
 
         <div className="space-y-5">
           <p className="text-sm text-text-muted">{selectedSources.length} of {availableSources.length} sources selected</p>
-          {sessionQuery.isPending && <p role="status" className="text-sm text-text-muted">Loading sources…</p>}
+          {sourcesQuery.isPending && <p role="status" className="text-sm text-text-muted">Loading sources…</p>}
           {[
             { label: "Job boards", hint: "Use the posting date window below.", sources: availableSources.filter((source) => !ATS_SOURCES.includes(source)) },
             { label: "Company ATS", hint: "Collect jobs from configured company boards within the posting date window.", sources: availableSources.filter((source) => ATS_SOURCES.includes(source)) },
@@ -254,7 +261,7 @@ export default function ScrapeRuns() {
               variant="primary"
               size="lg"
               loading={isSubmitting}
-              disabled={!sessionQuery.data || isSubmitting || queueFull || selectedSources.length === 0}
+              disabled={!sourcesQuery.data || isSubmitting || queueFull || selectedSources.length === 0}
               onClick={startScrape}
             >
               <Play className="w-4 h-4 fill-current" />
@@ -263,7 +270,7 @@ export default function ScrapeRuns() {
           </div>
         </div>
       </Card>
-      </div>
+      </div>}
       <div className="min-w-0 space-y-5">
       {activeRuns.length > 0 && <Card className="p-5 space-y-3" role="region" aria-label="Active scrapes">
         <h2 className="font-semibold">Active runs <span className="text-text-muted font-normal text-sm">{activeRuns.length} in progress{capacity ? ` · ${capacity.active} slots` : ''}</span></h2>
@@ -277,11 +284,11 @@ export default function ScrapeRuns() {
             </div>
             <div className="flex gap-2">
               <Button variant="secondary" onClick={() => refreshSelectedRun(run.id)}>Details</Button>
-              <Button variant="danger" loading={stopMutation.isPending && stopMutation.variables === run.id}
+              {admin && <Button variant="danger" loading={stopMutation.isPending && stopMutation.variables === run.id}
                 disabled={run.status === 'stopping' || (stopMutation.isPending && stopMutation.variables === run.id)}
                 aria-label={`Stop scrape ${run.id}`} onClick={() => stopScrape(run.id)}>
                 {run.status === 'stopping' ? 'Stopping…' : run.status === 'queued' ? 'Stop queued run' : 'Stop scrape'}
-              </Button>
+              </Button>}
             </div>
           </div>)}
         </div>
@@ -384,7 +391,7 @@ export default function ScrapeRuns() {
                             </span>
                           </div>
                         )}
-                        {["queued", "running", "stopping"].includes(selectedRun.status) && ["pending", "running", "stopping"].includes(stats.status) && (
+                        {admin && ["queued", "running", "stopping"].includes(selectedRun.status) && ["pending", "running", "stopping"].includes(stats.status) && (
                           <Button variant="danger" size="sm"
                             aria-label={`Stop ${sourceName} in run ${selectedRun.id}`}
                             loading={stopSourceMutation.isPending && stopSourceMutation.variables?.runId === selectedRun.id && stopSourceMutation.variables?.source === sourceName}

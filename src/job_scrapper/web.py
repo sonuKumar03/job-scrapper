@@ -2,7 +2,6 @@
 
 import asyncio
 import logging
-import secrets
 from contextlib import asynccontextmanager
 from typing import Annotated, Any
 from uuid import UUID
@@ -17,10 +16,13 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import selectinload
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from job_scrapper.auth import CurrentUser, get_current_user, require_admin, seed_admin
 from job_scrapper.connectors.registry import list_connectors
 from job_scrapper.config import get_settings
 from job_scrapper.execution.bootstrap import execution_runtime
 from job_scrapper.execution.contracts import RunConflict, StartScrapeCommand
+from job_scrapper.routes.admin import router as admin_router
+from job_scrapper.routes.auth import router as auth_router
 from job_scrapper.storage.postgres.models import JobModel
 from job_scrapper.storage.postgres.session import DatabaseSessionManager
 from job_scrapper.storage.postgres.job_filters import JobFilters, job_predicates
@@ -82,8 +84,8 @@ def create_app() -> FastAPI:
         nonlocal prune_task
         manager = DatabaseSessionManager()
         app.state.manager = manager
-        app.state.token = secrets.token_urlsafe(32)
         try:
+            await seed_admin(manager)
             async with execution_runtime(manager) as control:
                 app.state.control = control
                 prune_task = asyncio.create_task(_periodic_prune(manager))
@@ -106,27 +108,16 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
     )
 
-    # Enable CORS for decoupled frontends (Vite dev server, standalone react app, etc.)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.api_allowed_origins,
         allow_credentials=False,
         allow_methods=["GET", "POST"],
-        allow_headers=["Content-Type", "X-Scrape-Token"],
+        allow_headers=["Content-Type", "Authorization"],
     )
 
     @app.middleware("http")
-    async def security_and_token_boundary(request: Request, call_next):
-        if request.method not in {"GET", "HEAD", "OPTIONS"}:
-            origin = request.headers.get('origin')
-            if origin is not None and origin not in settings.api_allowed_origins:
-                return JSONResponse({'detail': 'Request origin is not allowed.'}, status_code=403)
-            content_type = request.headers.get("content-type", "").split(";")[0].strip().lower()
-            if content_type != "application/json":
-                return JSONResponse({"detail": "Send application/json."}, status_code=415)
-            token = request.headers.get("x-scrape-token", "")
-            if not token or not secrets.compare_digest(token.encode(), app.state.token.encode()):
-                return JSONResponse({"detail": "Valid X-Scrape-Token header required. Fetch from /api/session first."}, status_code=403)
+    async def security_headers(request: Request, call_next):
         response = await call_next(request)
         response.headers["X-Content-Type-Options"] = "nosniff"
         if request.url.path.startswith("/api/"):
@@ -186,12 +177,15 @@ def create_app() -> FastAPI:
         return JSONResponse({'status': 'ok' if available else 'unavailable', 'components': components},
                             status_code=200 if available else 503)
 
-    @app.get("/api/session")
-    async def session_info():
-        return {"token": app.state.token, "sources": list_connectors()}
+    app.include_router(auth_router)
+    app.include_router(admin_router)
+
+    @app.get("/api/sources")
+    async def sources(_: CurrentUser = Depends(get_current_user)):
+        return {"sources": list_connectors()}
 
     @app.get("/api/filters")
-    async def filters(filters: Annotated[JobFilters, Depends(read_job_filters)]):
+    async def filters(filters: Annotated[JobFilters, Depends(read_job_filters)], _: CurrentUser = Depends(get_current_user)):
         facets = {}
         async with app.state.manager.session() as session:
             for field, column in (('source', JobModel.source), ('company', JobModel.company_name),
@@ -210,6 +204,7 @@ def create_app() -> FastAPI:
         page: Page = 1,
         page_size: PageSize = 25,
         filters: Annotated[JobFilters, Depends(read_job_filters)] = None,
+        _: CurrentUser = Depends(get_current_user),
     ):
         if page_size not in {25, 50, 100}:
             raise HTTPException(422, "Rows per page must be 25, 50, or 100.")
@@ -235,13 +230,13 @@ def create_app() -> FastAPI:
         return jsonable_encoder({"items": items, "total": total, "page": page, "page_size": page_size})
 
     @app.get("/api/jobs/count")
-    async def job_count():
+    async def job_count(_: CurrentUser = Depends(get_current_user)):
         async with app.state.manager.session() as session:
             total = await session.scalar(select(func.count()).select_from(JobModel))
         return {"total": total or 0}
 
     @app.get("/api/jobs/{job_id}")
-    async def job_detail(job_id: UUID):
+    async def job_detail(job_id: UUID, _: CurrentUser = Depends(get_current_user)):
         async with app.state.manager.session() as session:
             job = await session.scalar(
                 select(JobModel).where(JobModel.id == job_id).options(selectinload(JobModel.sightings))
@@ -255,7 +250,7 @@ def create_app() -> FastAPI:
         return jsonable_encoder(data)
 
     @app.get("/api/runs")
-    async def runs(page: Page = 1, page_size: PageSize = 25):
+    async def runs(page: Page = 1, page_size: PageSize = 25, _: CurrentUser = Depends(get_current_user)):
         if page_size not in {25, 50, 100}:
             raise HTTPException(422, "Rows per page must be 25, 50, or 100.")
         total, items = await app.state.control.list_page(
@@ -265,34 +260,34 @@ def create_app() -> FastAPI:
                 "total": total, "page": page, "page_size": page_size}
 
     @app.get('/api/runs/active')
-    async def active_runs():
+    async def active_runs(_: CurrentUser = Depends(get_current_user)):
         control = app.state.control
         return {'items': [run.model_dump(mode='json', exclude={'results'}) for run in await control.list_active()],
                 'capacity': control.capacity.model_dump()}
 
     @app.get("/api/runs/{run_id}")
-    async def run_detail(run_id: UUID):
+    async def run_detail(run_id: UUID, _: CurrentUser = Depends(get_current_user)):
         run = await app.state.control.get(run_id)
         if run is None:
             raise HTTPException(404, 'Scrape run not found.')
         return run.model_dump(mode='json')
 
     @app.post("/api/runs/{run_id}/stop", status_code=202)
-    async def stop_run(run_id: UUID):
+    async def stop_run(run_id: UUID, _: CurrentUser = Depends(require_admin)):
         run = await app.state.control.request_stop(run_id)
         if run is None:
             raise HTTPException(409, "This scrape is no longer active. Refresh run history.")
         return {'id': str(run.id), 'status': run.status}
 
     @app.post('/api/runs/{run_id}/sources/{source}/stop', status_code=202)
-    async def stop_source(run_id: UUID, source: str):
+    async def stop_source(run_id: UUID, source: str, _: CurrentUser = Depends(require_admin)):
         run = await app.state.control.request_source_stop(run_id, source)
         if run is None:
             raise HTTPException(404, 'Scrape run not found.')
         return run.model_dump(mode='json')
 
     @app.post("/api/runs", status_code=202)
-    async def start_run(body: StartScrape):
+    async def start_run(body: StartScrape, _: CurrentUser = Depends(require_admin)):
         run = await app.state.control.submit(StartScrapeCommand(sources=tuple(body.sources), days=body.days))
         return {'id': str(run.id), 'status': run.status}
 

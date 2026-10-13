@@ -1,17 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchApi, setSessionToken } from "./api";
-
-export function useSession() {
-  return useQuery({
-    queryKey: ["session"],
-    queryFn: async ({ signal }) => {
-      const session = await fetchApi("session", { signal });
-      setSessionToken(session.token);
-      return session;
-    },
-    staleTime: Infinity,
-  });
-}
+import { fetchApi } from "./api";
 
 export function useRuns(page = 1, poll = true) {
   return useQuery({

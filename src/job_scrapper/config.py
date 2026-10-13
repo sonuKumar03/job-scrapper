@@ -1,5 +1,6 @@
 """Shared runtime and Alembic settings."""
 
+import secrets
 from functools import lru_cache
 from typing import Literal
 from urllib.parse import urlsplit
@@ -38,6 +39,10 @@ class Settings(BaseSettings):
     scrape_max_queued_runs: int = Field(default=20, ge=1)
     prune_after_days: int = Field(default=30, ge=1, le=365)
     prune_interval_hours: int = Field(default=24, ge=1, le=168)
+    jwt_secret: str = Field(default_factory=lambda: secrets.token_urlsafe(32), repr=False)
+    jwt_expiry_minutes: int = Field(default=480, ge=5)
+    admin_email: str | None = None
+    admin_password: str | None = Field(default=None, repr=False)
     api_allowed_hosts: list[str] = Field(default_factory=lambda: ['localhost', '127.0.0.1', 'api'])
     api_allowed_origins: list[str] = Field(default_factory=lambda: [
         f'http://{host}:{port}' for host in ('localhost', '127.0.0.1') for port in (3000, 5173)

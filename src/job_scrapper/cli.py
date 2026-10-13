@@ -241,6 +241,38 @@ def status() -> None:
     asyncio.run(_status())
 
 
+@app.command("create-admin")
+def create_admin(
+    email: str = typer.Option(..., "--email", "-e", help="Admin email address"),
+    password: str = typer.Option(..., "--password", "-p", prompt=True, hide_input=True, help="Admin password"),
+) -> None:
+    """Create an admin user account."""
+    from job_scrapper.auth import hash_password
+    from job_scrapper.storage.postgres.models import UserModel
+    from sqlalchemy import select
+
+    async def _create() -> None:
+        session_manager = DatabaseSessionManager()
+        try:
+            async with session_manager.session() as session:
+                existing = await session.scalar(select(UserModel).where(UserModel.email == email))
+                if existing:
+                    if existing.role == "admin":
+                        console.print(f"[yellow]Admin user {email} already exists.[/yellow]")
+                        return
+                    existing.role = "admin"
+                    await session.commit()
+                    console.print(f"[green]Promoted {email} to admin.[/green]")
+                    return
+                session.add(UserModel(email=email, password_hash=hash_password(password), role="admin"))
+                await session.commit()
+                console.print(f"[green]Created admin user: {email}[/green]")
+        finally:
+            await session_manager.close()
+
+    asyncio.run(_create())
+
+
 @app.command()
 def prune(
     days: int = typer.Option(

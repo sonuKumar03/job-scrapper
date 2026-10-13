@@ -1,25 +1,45 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Briefcase, Play, Database, Sun, Moon } from "lucide-react";
+import { Briefcase, Play, Database, Sun, Moon, LogOut, Users } from "lucide-react";
 import { fetchApi } from "./services/api";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useSession, useActiveRuns } from "./services/queries";
+import { useActiveRuns } from "./services/queries";
+import { getToken, getUser, isAdmin, logout } from "./services/auth";
 import JobsExplorer from "./features/jobs/JobsExplorer";
 import ScrapeRuns from "./features/scraper/ScrapeRuns";
+import LoginPage from "./features/auth/LoginPage";
+import UsersPanel from "./features/admin/UsersPanel";
 
 export default function App() {
+  const [authed, setAuthed] = useState(() => !!getToken());
   const headerRef = useRef(null);
   const queryClient = useQueryClient();
 
+  if (!authed) {
+    return <LoginPage onLogin={() => setAuthed(true)} />;
+  }
+
+  const user = getUser();
+
+  return <AuthedApp headerRef={headerRef} queryClient={queryClient} user={user} />;
+}
+
+function AuthedApp({ headerRef, queryClient, user }) {
   useEffect(() => {
     const header = headerRef.current;
+    if (!header) return;
     const measure = () => header.parentElement.style.setProperty("--app-header-height", `${header.getBoundingClientRect().height}px`);
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(header);
     return () => observer.disconnect();
   }, []);
-  const [currentTab, setCurrentTab] = useState(() => window.location.hash.replace(/^#\/?/, "").split("?")[0] === "runs" ? "runs" : "jobs");
-  useSession();
+  const admin = user?.role === "admin";
+  const [currentTab, setCurrentTab] = useState(() => {
+    const hash = window.location.hash.replace(/^#\/?/, "").split("?")[0];
+    if (hash === "runs") return "runs";
+    if (hash === "users" && user?.role === "admin") return "users";
+    return "jobs";
+  });
   const countQuery = useQuery({
     queryKey: ["jobs", "count"],
     queryFn: ({ signal }) => fetchApi("jobs/count", { signal }),
@@ -53,6 +73,8 @@ export default function App() {
     const hash = window.location.hash.replace(/^#\/?/, "").split("?")[0];
     if (hash === "runs") {
       setCurrentTab("runs");
+    } else if (hash === "users" && admin) {
+      setCurrentTab("users");
     } else {
       setCurrentTab("jobs");
     }
@@ -71,7 +93,7 @@ export default function App() {
 
   const setTab = (tab) => {
     if (currentTab === "jobs") sessionStorage.setItem("jobs-route", window.location.hash);
-    window.location.hash = tab === "jobs" ? (sessionStorage.getItem("jobs-route") || "jobs") : "runs";
+    window.location.hash = tab === "jobs" ? (sessionStorage.getItem("jobs-route") || "jobs") : tab;
   };
 
   return (
@@ -118,7 +140,7 @@ export default function App() {
                 )}
               </button>
 
-              <button
+              {admin && <button
                 type="button"
                 aria-current={currentTab === "runs" ? "page" : undefined}
                 onClick={() => setTab("runs")}
@@ -138,7 +160,23 @@ export default function App() {
                     {activeRuns.length}
                   </span>
                 )}
-              </button>
+              </button>}
+
+              {admin && (
+                <button
+                  type="button"
+                  aria-current={currentTab === "users" ? "page" : undefined}
+                  onClick={() => setTab("users")}
+                  className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs font-semibold transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus ${
+                    currentTab === "users"
+                      ? "bg-accent text-accent-foreground shadow-xs"
+                      : "text-text-muted hover:text-text-main hover:bg-bg-surface"
+                  }`}
+                >
+                  <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Users</span>
+                </button>
+              )}
             </nav>
 
             {/* Theme Toggle Button */}
@@ -155,13 +193,30 @@ export default function App() {
                 <Moon className="w-4 h-4 text-text-muted" />
               )}
             </button>
+
+            {/* User & Logout */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-text-muted hidden sm:inline">{user?.email}</span>
+              {user?.role === "admin" && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-accent/15 text-accent">admin</span>
+              )}
+              <button
+                type="button"
+                onClick={logout}
+                aria-label="Sign out"
+                title="Sign out"
+                className="p-2 min-h-[44px] min-w-[44px] rounded-xl border border-border-subtle bg-bg-surface hover:bg-bg-surface-elevated text-text-muted hover:text-red-500 transition-all cursor-pointer shadow-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-focus"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="flex-1 w-full lg:w-[92%] mx-auto px-4 lg:px-8 py-6">
-        {currentTab === "jobs" ? <JobsExplorer /> : <ScrapeRuns />}
+        {currentTab === "jobs" ? <JobsExplorer /> : currentTab === "users" && admin ? <UsersPanel /> : <ScrapeRuns />}
       </main>
 
       {/* Footer */}

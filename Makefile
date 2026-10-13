@@ -1,4 +1,4 @@
-.PHONY: help setup up down migrate migration-generate cli-scrape cli-export cli-status cli-stop cli-reset cli-worker api web web-build test check clean
+.PHONY: help setup up down build migrate migration-generate cli-scrape cli-export cli-status cli-stop cli-reset cli-worker api web web-build test check clean
 
 executor ?= memory
 broker_url ?= redis://localhost:6379/0
@@ -13,6 +13,10 @@ setup: ## Install Python dependencies and prepare the local database
 	@docker compose up -d --wait db
 	@$(MAKE) migrate
 	@echo "Environment setup complete!"
+
+build: ## Build all Docker images without starting containers
+	@docker compose $(if $(filter broker,$(executor)),--profile broker) build
+	@echo "All images built."
 
 up: ## Start the app (executor=memory|broker; broker adds Redis and worker)
 	@SCRAPE_EXECUTOR=$(executor) docker compose $(if $(filter broker,$(executor)),--profile broker) up --build -d

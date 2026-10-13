@@ -1,24 +1,17 @@
-let sessionToken = "";
-let sessionRefresh = null;
+import { getToken, clearToken } from "./auth";
 
-export function setSessionToken(token) {
-  sessionToken = token;
-}
-
-export function getSessionToken() {
-  return sessionToken;
-}
-
-export async function fetchApi(path, options = {}, retrySession = true) {
+export async function fetchApi(path, options = {}) {
   const headers = {
     Accept: "application/json",
     ...(options.headers || {}),
   };
 
+  const token = getToken();
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   if (options.method && options.method.toUpperCase() !== "GET" && options.method.toUpperCase() !== "HEAD") {
-    if (sessionToken) {
-      headers["X-Scrape-Token"] = sessionToken;
-    }
     if (!headers["Content-Type"]) {
       headers["Content-Type"] = "application/json";
     }
@@ -32,15 +25,10 @@ export async function fetchApi(path, options = {}, retrySession = true) {
 
   const data = await res.json().catch(() => null);
 
-  if (res.status === 403 && retrySession && headers["X-Scrape-Token"] &&
-      data?.detail === "Valid X-Scrape-Token header required. Fetch from /api/session first.") {
-    if (!sessionRefresh) {
-      sessionRefresh = fetchApi("session")
-        .then((session) => setSessionToken(session.token))
-        .finally(() => { sessionRefresh = null; });
-    }
-    await sessionRefresh;
-    return fetchApi(path, options, false);
+  if (res.status === 401) {
+    clearToken();
+    window.location.reload();
+    throw new Error("Session expired. Please log in again.");
   }
 
   if (!res.ok) {
@@ -55,5 +43,19 @@ export async function fetchApi(path, options = {}, retrySession = true) {
     throw new Error(errorMsg);
   }
 
+  return data;
+}
+
+export async function loginApi(email, password) {
+  const baseUrl = import.meta.env.VITE_API_URL || "";
+  const res = await fetch(`${baseUrl}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password }),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    throw new Error(data?.detail || "Login failed");
+  }
   return data;
 }
