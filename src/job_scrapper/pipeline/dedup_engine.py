@@ -121,7 +121,10 @@ class StandardDeduplicationEngine:
         changed = False
 
         for k, v in duplicate.items():
-            if k == "_attribute_evidence":
+            # Availability describes one source posting, not the merged job entity.
+            if k == "_attribute_evidence" or k in (
+                'posting_status', 'posting_status_evidence', 'posting_status_checked_at',
+            ):
                 continue
             if v is None or v == "" or v == []:
                 continue

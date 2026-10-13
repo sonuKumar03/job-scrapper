@@ -33,3 +33,16 @@ async def test_existing_identity_enriches_its_canonical_job() -> None:
     assert await sink.save_batch([posting("a", "a1"), posting("b", "b1")]) == 1
     assert await sink.save_batch([posting("b", "b1", salary_min=100)]) == 0
     assert sink.get_all()[0].attributes == {"salary_min": 100}
+
+
+async def test_closure_evidence_stays_with_the_primary_posting() -> None:
+    sink = InMemoryJobSink()
+    primary = posting('a', 'a1')
+    duplicate = posting('linkedin', '123456', posting_status='closed',
+                        posting_status_evidence='No longer accepting applications',
+                        posting_status_checked_at='2026-10-13T00:00:00+00:00')
+    assert await sink.save_batch([primary, duplicate]) == 1
+    assert 'posting_status' not in sink.get_all()[0].attributes
+    sink = InMemoryJobSink()
+    assert await sink.save_batch([duplicate, primary]) == 1
+    assert sink.get_all()[0].attributes['posting_status'] == 'closed'
