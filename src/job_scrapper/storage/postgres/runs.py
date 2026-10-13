@@ -47,12 +47,17 @@ def snapshot(row: ScrapeExecutionModel) -> RunSnapshot:
 
 
 @asynccontextmanager
-async def advisory_guard(manager: DatabaseSessionManager, key: int, *, shared: bool = False):
+async def advisory_guard(manager: DatabaseSessionManager, key: int, *, shared: bool = False,
+                         wait: bool = False, wait_timeout: int = 30):
     suffix = '_shared' if shared else ''
     async with manager.engine.connect() as connection:
         try:
             if shared:
                 await connection.execute(text('SELECT pg_advisory_lock_shared(:key)'), {'key': key})
+                acquired = True
+            elif wait:
+                await connection.execute(text(f'SET LOCAL lock_timeout = :timeout'), {'timeout': f'{wait_timeout}s'})
+                await connection.execute(text('SELECT pg_advisory_lock(:key)'), {'key': key})
                 acquired = True
             else:
                 acquired = await connection.scalar(
@@ -76,7 +81,7 @@ async def advisory_guard(manager: DatabaseSessionManager, key: int, *, shared: b
 
 
 def host_ownership(manager: DatabaseSessionManager):
-    return advisory_guard(manager, HOST_LOCK_KEY)
+    return advisory_guard(manager, HOST_LOCK_KEY, wait=True)
 
 
 def reset_guard(manager: DatabaseSessionManager):
