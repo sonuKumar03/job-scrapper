@@ -273,3 +273,14 @@ class PostgresJobSink:
             result = await session.execute(stmt)
             return result.scalar() or 0
 
+    async def prune_older_than(self, days: int) -> int:
+        from datetime import datetime, timezone
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        async with self._session() as session:
+            result = await session.execute(
+                text("DELETE FROM jobs WHERE posted_at < :cutoff"),
+                {"cutoff": cutoff},
+            )
+            await session.commit()
+            return result.rowcount
+

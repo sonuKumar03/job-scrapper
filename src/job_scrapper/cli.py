@@ -242,6 +242,29 @@ def status() -> None:
 
 
 @app.command()
+def prune(
+    days: int = typer.Option(
+        int(os.getenv('PRUNE_AFTER_DAYS', '30')), "--days", "-d",
+        help="Delete job postings older than this many days"
+    ),
+) -> None:
+    """Delete job postings older than N days."""
+    if days < 1 or days > 365:
+        raise typer.BadParameter("--days must be from 1 to 365")
+
+    async def _prune() -> None:
+        session_manager = DatabaseSessionManager()
+        try:
+            sink = PostgresJobSink(session_manager)
+            deleted = await sink.prune_older_than(days)
+            console.print(f"[green]Pruned {deleted} job(s) older than {days} days.[/green]")
+        finally:
+            await session_manager.close()
+
+    asyncio.run(_prune())
+
+
+@app.command()
 def reset() -> None:
     """Delete collected jobs, sightings, and scrape runs from the configured database."""
     async def _reset() -> None:

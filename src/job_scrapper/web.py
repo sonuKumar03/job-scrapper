@@ -62,16 +62,36 @@ def columns(row: Any) -> dict[str, Any]:
 def create_app() -> FastAPI:
     settings = get_settings()
     database_probe: asyncio.Task | None = None
+    prune_task: asyncio.Task | None = None
+
+    async def _periodic_prune(manager: DatabaseSessionManager) -> None:
+        from job_scrapper.storage.postgres.sink import PostgresJobSink
+        sink = PostgresJobSink(manager)
+        interval = settings.prune_interval_hours * 3600
+        while True:
+            await asyncio.sleep(interval)
+            try:
+                deleted = await sink.prune_older_than(settings.prune_after_days)
+                if deleted:
+                    logger.info('Pruned %d job(s) older than %d days', deleted, settings.prune_after_days)
+            except Exception:
+                logger.exception('Periodic prune failed')
+
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        nonlocal prune_task
         manager = DatabaseSessionManager()
         app.state.manager = manager
         app.state.token = secrets.token_urlsafe(32)
         try:
             async with execution_runtime(manager) as control:
                 app.state.control = control
+                prune_task = asyncio.create_task(_periodic_prune(manager))
                 yield
         finally:
+            if prune_task is not None:
+                prune_task.cancel()
+                await asyncio.gather(prune_task, return_exceptions=True)
             if database_probe is not None:
                 database_probe.cancel()
                 await asyncio.gather(database_probe, return_exceptions=True)
