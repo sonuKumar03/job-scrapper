@@ -247,7 +247,7 @@ def create_app() -> FastAPI:
     @app.get('/api/runs/active')
     async def active_runs():
         control = app.state.control
-        return {'items': [run.model_dump(mode='json') for run in await control.list_active()],
+        return {'items': [run.model_dump(mode='json', exclude={'results'}) for run in await control.list_active()],
                 'capacity': control.capacity.model_dump()}
 
     @app.get("/api/runs/{run_id}")
