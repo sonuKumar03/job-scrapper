@@ -14,6 +14,7 @@ class HimalayasConnector(BaseConnector):
     API_URL: str = "https://himalayas.app/jobs/api"
     PAGE_SIZE: int = 20
     MAX_PAGES: int = 500
+    STALE_PAGE_LIMIT: int = 5
 
     async def _fetch_page(
         self, cursor: str | None, page_number: int, stats: dict[str, Any]
@@ -49,6 +50,7 @@ class HimalayasConnector(BaseConnector):
         scanned_count = 0
         oldest_seen = None
         newest_seen = None
+        consecutive_stale_pages = 0
         stats['coverage'] = {'pages_scanned': 0, 'listings_scanned': 0, 'total_available': None,
                              'oldest_seen': None, 'newest_seen': None, 'requested_days': max_days}
         for page in range(self.MAX_PAGES):
@@ -130,6 +132,17 @@ class HimalayasConnector(BaseConnector):
                                      oldest_seen=oldest_seen.isoformat() if oldest_seen else None,
                                      newest_seen=newest_seen.isoformat() if newest_seen else None)
             await self.save_jobs(sink, batch, stats)
+
+            if batch:
+                consecutive_stale_pages = 0
+            else:
+                consecutive_stale_pages += 1
+                if consecutive_stale_pages >= self.STALE_PAGE_LIMIT:
+                    stats['truncated'] = True
+                    stats['errors'].append(
+                        f"{self.STALE_PAGE_LIMIT} consecutive pages with no in-window listings; "
+                        f"stopping early at page {page + 1}")
+                    break
 
             if next_cursor is None:
                 if total_count is not None and scanned_count < total_count:
