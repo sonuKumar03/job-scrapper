@@ -56,7 +56,7 @@ async def advisory_guard(manager: DatabaseSessionManager, key: int, *, shared: b
                 await connection.execute(text('SELECT pg_advisory_lock_shared(:key)'), {'key': key})
                 acquired = True
             elif wait:
-                await connection.execute(text(f'SET LOCAL lock_timeout = :timeout'), {'timeout': f'{wait_timeout}s'})
+                await connection.execute(text(f"SET LOCAL lock_timeout = '{wait_timeout}s'"))
                 await connection.execute(text('SELECT pg_advisory_lock(:key)'), {'key': key})
                 acquired = True
             else:
