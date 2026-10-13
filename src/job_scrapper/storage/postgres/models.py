@@ -107,21 +107,6 @@ class JobSightingModel(Base):
     )
 
 
-class ScrapeRunModel(Base):
-    __tablename__ = "scrape_runs"
-
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    source: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
-    started_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False
-    )
-    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    status: Mapped[str] = mapped_column(String(32), default="running", nullable=False)
-    jobs_found: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    jobs_inserted: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
-    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
-
-
 class ScrapeExecutionModel(Base):
     """One CLI or dashboard invocation, with durable source/account results."""
 

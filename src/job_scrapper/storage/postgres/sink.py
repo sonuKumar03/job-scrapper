@@ -10,7 +10,6 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import DisconnectionError, InterfaceError, OperationalError, TimeoutError
 from sqlalchemy.ext.asyncio import AsyncSession
 from job_scrapper.storage.base import StorageUnavailable
-from job_scrapper.domain.dedup import DeduplicationEngine
 from job_scrapper.domain.models import JobPosting
 from job_scrapper.pipeline.dedup_engine import StandardDeduplicationEngine
 from job_scrapper.storage.postgres.models import JobModel, JobSightingModel
@@ -23,7 +22,7 @@ class PostgresJobSink:
     def __init__(
         self,
         session_manager: DatabaseSessionManager,
-        dedup_engine: DeduplicationEngine | None = None,
+        dedup_engine: StandardDeduplicationEngine | None = None,
     ) -> None:
         self.session_manager = session_manager
         self.dedup_engine = dedup_engine or StandardDeduplicationEngine()
@@ -274,8 +273,3 @@ class PostgresJobSink:
             result = await session.execute(stmt)
             return result.scalar() or 0
 
-    async def count_sightings(self) -> int:
-        async with self._session() as session:
-            stmt = select(func.count(JobSightingModel.id))
-            result = await session.execute(stmt)
-            return result.scalar() or 0

@@ -243,7 +243,7 @@ def reset() -> None:
         session_manager = DatabaseSessionManager()
         try:
             async with reset_guard(session_manager), session_manager.session() as session:
-                await session.execute(text("TRUNCATE TABLE job_sightings, jobs, scrape_runs, scrape_dispatches, scrape_executions"))
+                await session.execute(text("TRUNCATE TABLE job_sightings, jobs, scrape_dispatches, scrape_executions"))
                 await session.commit()
             console.print("[green]Cleared jobs, sightings, and scrape runs.[/green]")
         except RunConflict as error:
